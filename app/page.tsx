@@ -7,8 +7,6 @@ import {
   ArrowUp,
   ArrowUpDown,
   CalendarDays,
-  ChevronLeft,
-  ChevronRight,
   Download,
   ExternalLink,
   Landmark,
@@ -162,6 +160,8 @@ type MethodView = ProfileView & {
   weightLabels?: RatioLabels;
   result2026?: MethodResultSummary;
   result2026Rows?: ScoreRow[];
+  departmentName?: string;
+  departmentTrack?: TrackCategory;
 };
 type FormulaRow = {
   formulaId: number;
@@ -195,8 +195,6 @@ declare global {
   }
 }
 
-const PAGE_SIZE = 25;
-const SCORE_PAGE_SIZE = 12;
 const MAJOR_SEOUL_UNIVERSITIES = new Set([
   '서울대',
   '연세대',
@@ -250,6 +248,7 @@ const PROFILE_SORTERS: Record<string, (row: MethodView) => string | number | boo
   examName: (row) => row.examName,
   trackCategory: (row) => methodTrackCategories(row).join(', '),
   trackName: (row) => row.trackName,
+  departmentName: (row) => row.departmentName ?? row.trackName,
   englishMethod: (row) => row.englishMethod,
   percentageMetric: (row) => row.metrics.includes('백분위') ? 1 : 0,
   gradeMetric: (row) => row.metrics.includes('등급') ? 1 : 0,
@@ -309,8 +308,10 @@ export default function Home() {
   const [profileMaximum, setProfileMaximum] = useState('전체');
   const [profileSort, setProfileSort] = useState<SortState>({ key: 'u', direction: 'asc' });
   const [showPractical, setShowPractical] = useState(false);
-  const [trackColumnWidth, setTrackColumnWidth] = useState(220);
-  const [profilePage, setProfilePage] = useState(1);
+  const [departmentColumnWidth, setDepartmentColumnWidth] = useState(250);
+  const [changeListBatch, setChangeListBatch] = useState(1);
+  const [recordListBatch, setRecordListBatch] = useState(1);
+  const [profileListBatch, setProfileListBatch] = useState(1);
   const [selectedProfile, setSelectedProfile] = useState<MethodView | null>(null);
   const [expandedMethodRows, setExpandedMethodRows] = useState<Set<string>>(() => new Set());
 
@@ -321,7 +322,8 @@ export default function Home() {
   const [scoreTrack, setScoreTrack] = useState('전체');
   const [scoreGroups, setScoreGroups] = useState<string[]>([]);
   const [scoreSort, setScoreSort] = useState<SortState>({ key: 'y', direction: 'desc' });
-  const [scorePage, setScorePage] = useState(1);
+  const [scoreListBatch, setScoreListBatch] = useState(1);
+  const [scheduleListBatch, setScheduleListBatch] = useState(1);
   const [selectedScore, setSelectedScore] = useState<ScoreView | null>(null);
   const [expandedScoreRows, setExpandedScoreRows] = useState<Set<number>>(() => new Set());
 
@@ -393,7 +395,7 @@ export default function Home() {
         if (typeof input.region === 'string') setScoreRegion(input.region);
         if (typeof input.year === 'number') setScoreYear(String(input.year));
         if (typeof input.department === 'string') setScoreQuery(input.department);
-        setScorePage(1);
+        setScoreListBatch(1);
         return { content: [{ type: 'text', text: '조건을 적용했습니다.' }] };
       },
     });
@@ -421,6 +423,7 @@ export default function Home() {
     const methods = mergeEquivalentAdmissionGroups(profileViews.flatMap(expandProfileMethods)).filter(isGeneralMethodRow);
     return attach2026ResultSummaries(methods, regularScores);
   }, [profileViews, regularScores]);
+  const methodDisplayViews = useMemo<MethodView[]>(() => splitMethodsByDepartment(methodViews, regularScores), [methodViews, regularScores]);
   const scoreViews = useMemo<ScoreView[]>(() => {
     const methodsByUniversity = new Map<string, MethodView[]>();
     methodViews.forEach((method) => {
@@ -450,16 +453,16 @@ export default function Home() {
 
   const changeUniversities = useMemo(() => unique(regularChanges.map((row) => row.u)), [regularChanges]);
   const changeCategories = useMemo(() => unique(regularChanges.map((row) => row.category)), [regularChanges]);
-  const profileRegions = useMemo(() => regionOptions(methodViews.map((row) => displayRegion(row.r, row.u))), [methodViews]);
-  const profileUniversities = useMemo(() => unique(methodViews.map((row) => row.u)), [methodViews]);
+  const profileRegions = useMemo(() => regionOptions(methodDisplayViews.map((row) => displayRegion(row.r, row.u))), [methodDisplayViews]);
+  const profileUniversities = useMemo(() => unique(methodDisplayViews.map((row) => row.u)), [methodDisplayViews]);
   const profileGroups = useMemo(() => {
-    const available = new Set(methodViews.flatMap((row) => atomicAdmissionGroups(row.admissionGroup)));
+    const available = new Set(methodDisplayViews.flatMap((row) => atomicAdmissionGroups(row.admissionGroup)));
     return ['가군', '나군', '다군', '군외'].filter((group) => available.has(group));
-  }, [methodViews]);
-  const profileExams = useMemo(() => unique(methodViews.map((row) => row.examName)), [methodViews]);
-  const profileTracks = useMemo(() => TRACK_CATEGORIES.filter((track) => methodViews.some((row) => methodTrackCategories(row).includes(track))), [methodViews]);
-  const profileEnglishMethods = useMemo(() => unique(methodViews.map((row) => row.englishMethod)), [methodViews]);
-  const profileDomainCounts = useMemo(() => unique(methodViews.map((row) => row.domainCount ? String(row.domainCount) : '')), [methodViews]);
+  }, [methodDisplayViews]);
+  const profileExams = useMemo(() => unique(methodDisplayViews.map((row) => row.examName)), [methodDisplayViews]);
+  const profileTracks = useMemo(() => TRACK_CATEGORIES.filter((track) => methodDisplayViews.some((row) => methodTrackCategories(row).includes(track))), [methodDisplayViews]);
+  const profileEnglishMethods = useMemo(() => unique(methodDisplayViews.map((row) => row.englishMethod)), [methodDisplayViews]);
+  const profileDomainCounts = useMemo(() => unique(methodDisplayViews.map((row) => row.domainCount ? String(row.domainCount) : '')), [methodDisplayViews]);
   const scoreRegions = useMemo(() => regionOptions(regularScores.map((row) => displayRegion(row.r, row.u))), [regularScores]);
   const scoreUniversities = useMemo(() => unique(regularScores.map((row) => row.u)), [regularScores]);
   const scoreTracks = useMemo(() => {
@@ -485,8 +488,8 @@ export default function Home() {
 
   const matchingProfiles = useMemo(() => {
     const query = normalize(profileQuery);
-    return methodViews.filter((row) => {
-      const matchesQuery = !query || normalize(`${row.u} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${row.englishMethod} ${row.ratio} ${row.metric}`).includes(query);
+    return methodDisplayViews.filter((row) => {
+      const matchesQuery = !query || normalize(`${row.u} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${row.departmentName ?? ''} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${row.englishMethod} ${row.ratio} ${row.metric}`).includes(query);
       const topDomains = highestRatioDomains(row.ratios).split('/');
       return matchesQuery
         && (profileRegion === '전체' || displayRegion(row.r, row.u) === profileRegion)
@@ -501,14 +504,16 @@ export default function Home() {
         && (profileTopDomain === '전체' || topDomains.includes(profileTopDomain))
         && (profileMaximum === '전체' || (profileMaximum === '수치 있음' ? row.conversionMax !== null : row.conversionMax === null));
     });
-  }, [methodViews, profileDomainCount, profileEnglish, profileExam, profileGroup, profileMaximum, profileMetric, profileQuery, profileRecord, profileRegion, profileTopDomain, profileTrack, profileUniversity]);
+  }, [methodDisplayViews, profileDomainCount, profileEnglish, profileExam, profileGroup, profileMaximum, profileMetric, profileQuery, profileRecord, profileRegion, profileTopDomain, profileTrack, profileUniversity]);
   const ratioProfiles = useMemo(() => sortRows(matchingProfiles, profileSort, PROFILE_SORTERS), [matchingProfiles, profileSort]);
   const profileAnalysis = useMemo(
     () => buildProfileAnalysis(matchingProfiles, profileRegion, profileUniversity),
     [matchingProfiles, profileRegion, profileUniversity],
   );
-  const profilePageCount = Math.max(1, Math.ceil(ratioProfiles.length / PAGE_SIZE));
-  const pagedProfiles = ratioProfiles.slice((profilePage - 1) * PAGE_SIZE, profilePage * PAGE_SIZE);
+  const initialListSize = mobileBuild ? 5 : 10;
+  const visibleChangeRows = changeRows.slice(0, initialListSize * changeListBatch);
+  const visibleRecordRows = (data?.studentRecord ?? []).slice(0, initialListSize * recordListBatch);
+  const visibleProfiles = ratioProfiles.slice(0, initialListSize * profileListBatch);
 
   const filteredScores = useMemo(() => {
     const query = normalize(scoreQuery);
@@ -546,8 +551,9 @@ export default function Home() {
     });
   }, [scoreGroups, scoreQuery, scoreRegion, scoreSort, scoreTrack, scoreUniversity, scoreViews, scoreYear]);
 
-  const scorePageCount = Math.max(1, Math.ceil(filteredScores.length / SCORE_PAGE_SIZE));
-  const pagedScores = filteredScores.slice((scorePage - 1) * SCORE_PAGE_SIZE, scorePage * SCORE_PAGE_SIZE);
+  const visibleScores = filteredScores.slice(0, initialListSize * scoreListBatch);
+  const scheduleItems = data?.overview.schedule ?? [];
+  const visibleScheduleItems = scheduleItems.slice(0, initialListSize * scheduleListBatch);
 
   function resetFilters() {
     if (tab === 'changes') {
@@ -555,6 +561,8 @@ export default function Home() {
       setChangeUniversity('전체');
       setChangeCategory('전체');
       setChangeSort({ key: 'u', direction: 'asc' });
+      setChangeListBatch(1);
+      setRecordListBatch(1);
     } else if (tab === 'rules') {
       setProfileQuery('');
       setProfileRegion('전체');
@@ -570,7 +578,7 @@ export default function Home() {
       setProfileMaximum('전체');
       setProfileSort({ key: 'u', direction: 'asc' });
       setShowPractical(false);
-      setProfilePage(1);
+      setProfileListBatch(1);
     } else if (tab === 'results') {
       setScoreQuery('');
       setScoreRegion('전체');
@@ -579,7 +587,7 @@ export default function Home() {
       setScoreTrack('전체');
       setScoreGroups([]);
       setScoreSort({ key: 'y', direction: 'desc' });
-      setScorePage(1);
+      setScoreListBatch(1);
     }
   }
 
@@ -589,8 +597,8 @@ export default function Home() {
     } else if (tab === 'rules') {
       downloadCsv(
         '2027_정시_반영방법.csv',
-        ['지역', '대학', '모집군', '모집전형', '계열', '적용 모집단위', '가점 부여사항', '영어 반영방법', '백분위', '등급', '표준점수', '변환표준점수', '학생부 평가', '반영영역 수', '국어', '국어 실질 가중치', '수학', '수학 실질 가중치', '영어', '영어 실질 가중치', '탐구', '탐구 실질 가중치', '한국사', '2026 입시결과', '2026 환산만점', '전형요소', '전체 반영비율'],
-        ratioProfiles.map((row) => [displayRegion(row.r, row.u), row.u, row.admissionGroup, row.examName, methodTrackCategories(row).join(', '), row.trackName, row.bonusDetail, row.englishMethod, metricValue(row, '백분위'), metricValue(row, '등급'), metricValue(row, '표준점수'), metricValue(row, '변환표준점수'), recordLabel(row), row.domainCount, displayRatioForRow(row, 'korean'), displayWeight(row.weights.korean, row.weightLabels?.korean), displayRatioForRow(row, 'math'), displayWeight(row.weights.math, row.weightLabels?.math), displayRatioForRow(row, 'english'), displayWeight(row.weights.english, row.weightLabels?.english), displayRatioForRow(row, 'inquiry'), displayWeight(row.weights.inquiry, row.weightLabels?.inquiry), row.ratios.history, `${row.result2026Rows?.length ?? 0}개 모집단위`, row.result2026?.maximum.label ?? '', row.selectionDetail, row.ratio]),
+        ['지역', '대학', '모집군', '모집전형', '계열', '모집단위', '가점 부여사항', '영어 반영방법', '백분위', '등급', '표준점수', '변환표준점수', '학생부 평가', '반영영역 수', '국어', '국어 실질 가중치', '수학', '수학 실질 가중치', '영어', '영어 실질 가중치', '탐구', '탐구 실질 가중치', '한국사', '2026 백분위', '2026 환산점수', '2026 환산만점', '전형요소', '전체 반영비율'],
+        ratioProfiles.map((row) => [displayRegion(row.r, row.u), row.u, row.admissionGroup, row.examName, methodTrackCategories(row).join(', '), row.departmentName ?? row.trackName, row.bonusDetail, row.englishMethod, metricValue(row, '백분위'), metricValue(row, '등급'), metricValue(row, '표준점수'), metricValue(row, '변환표준점수'), recordLabel(row), row.domainCount, displayRatioForRow(row, 'korean'), displayWeight(row.weights.korean, row.weightLabels?.korean), displayRatioForRow(row, 'math'), displayWeight(row.weights.math, row.weightLabels?.math), displayRatioForRow(row, 'english'), displayWeight(row.weights.english, row.weightLabels?.english), displayRatioForRow(row, 'inquiry'), displayWeight(row.weights.inquiry, row.weightLabels?.inquiry), row.ratios.history, row.result2026?.percentile.label ?? '', row.result2026?.converted.label ?? '', row.result2026?.maximum.label ?? '', row.selectionDetail, row.ratio]),
       );
     } else if (tab === 'results') {
       downloadCsv(
@@ -670,7 +678,7 @@ export default function Home() {
                   <SortableHead label="정시 변경 내용" column="current" sort={changeSort} onSort={setChangeSort} />
                 </TableRow></TableHeader>
                 <TableBody>
-                  {changeRows.map((row) => <Fragment key={row.id}>
+                  {visibleChangeRows.map((row) => <Fragment key={row.id}>
                     <TableRow className="change-year-row is-previous">
                       <TableCell rowSpan={2} className="university-cell change-group-cell">{row.u}</TableCell>
                       <TableCell rowSpan={2} className={`change-group-cell change-category-cell ${changeCategoryClass(row.category)}`}><span>{row.category}</span></TableCell>
@@ -684,34 +692,35 @@ export default function Home() {
                   </Fragment>)}
                 </TableBody>
               </Table>
-              {changeRows.length === 0 && <EmptyState />}
+              {changeRows.length === 0 ? <EmptyState /> : <ListDisclosure total={changeRows.length} shown={visibleChangeRows.length} initial={initialListSize} onExpand={() => setChangeListBatch((value) => value + 1)} onCollapse={() => setChangeListBatch(1)} />}
             </section>
 
             <section className="data-panel">
               <div className="section-head"><div><h2>학생부 반영 사례</h2></div></div>
               <Table className="data-table record-table">
                 <TableHeader><TableRow><TableHead>대학</TableHead><TableHead>전형방법</TableHead><TableHead>평가 방식</TableHead></TableRow></TableHeader>
-                <TableBody>{data.studentRecord.map((row) => <TableRow key={`${row.u}-${row.method}`}>
+                <TableBody>{visibleRecordRows.map((row) => <TableRow key={`${row.u}-${row.method}`}>
                   <TableCell className="university-cell">{row.u}</TableCell><TableCell>{row.method}</TableCell><TableCell>{row.type}</TableCell>
                 </TableRow>)}</TableBody>
               </Table>
+              <ListDisclosure total={data.studentRecord.length} shown={visibleRecordRows.length} initial={initialListSize} onExpand={() => setRecordListBatch((value) => value + 1)} onCollapse={() => setRecordListBatch(1)} />
             </section>
           </TabsContent>
 
           <TabsContent value="rules" className="tab-stack">
             <FilterPanel wide>
-              <SearchField value={profileQuery} onChange={(value) => { setProfileQuery(value); setProfilePage(1); }} placeholder="대학, 모집군, 전형명, 영어 반영방법 검색" />
-              <FilterSelect label="지역" value={profileRegion} onChange={(value) => { setProfileRegion(value); setProfilePage(1); }} options={profileRegions} />
-              <FilterSelect label="대학" value={profileUniversity} onChange={(value) => { setProfileUniversity(value); setProfilePage(1); }} options={profileUniversities} />
-              <FilterSelect label="모집군" value={profileGroup} onChange={(value) => { setProfileGroup(value); setProfilePage(1); }} options={profileGroups} />
-              <FilterSelect label="모집전형" value={profileExam} onChange={(value) => { setProfileExam(value); setProfilePage(1); }} options={profileExams} />
-              <FilterSelect label="계열" value={profileTrack} onChange={(value) => { setProfileTrack(value); setProfilePage(1); }} options={profileTracks} />
-              <FilterSelect label="영어 방식" value={profileEnglish} onChange={(value) => { setProfileEnglish(value); setProfilePage(1); }} options={profileEnglishMethods} />
-              <FilterSelect label="활용지표" value={profileMetric} onChange={(value) => { setProfileMetric(value); setProfilePage(1); }} options={['표준점수', '변환표준점수', '백분위', '등급']} />
-              <FilterSelect label="학생부" value={profileRecord} onChange={(value) => { setProfileRecord(value); setProfilePage(1); }} options={['정성평가', '정량평가', '미반영', '미기재']} />
-              <FilterSelect label="반영영역 수" value={profileDomainCount} onChange={(value) => { setProfileDomainCount(value); setProfilePage(1); }} options={profileDomainCounts} />
-              <FilterSelect label="최고 반영영역" value={profileTopDomain} onChange={(value) => { setProfileTopDomain(value); setProfilePage(1); }} options={['국어', '수학', '영어', '탐구']} />
-              <FilterSelect label="2026 환산만점" value={profileMaximum} onChange={(value) => { setProfileMaximum(value); setProfilePage(1); }} options={['수치 있음', '수치 없음']} />
+              <SearchField value={profileQuery} onChange={(value) => { setProfileQuery(value); setProfileListBatch(1); }} placeholder="대학, 전형, 계열, 모집단위 검색" />
+              <FilterSelect label="지역" value={profileRegion} onChange={(value) => { setProfileRegion(value); setProfileListBatch(1); }} options={profileRegions} />
+              <FilterSelect label="대학" value={profileUniversity} onChange={(value) => { setProfileUniversity(value); setProfileListBatch(1); }} options={profileUniversities} />
+              <FilterSelect label="모집군" value={profileGroup} onChange={(value) => { setProfileGroup(value); setProfileListBatch(1); }} options={profileGroups} />
+              <FilterSelect label="모집전형" value={profileExam} onChange={(value) => { setProfileExam(value); setProfileListBatch(1); }} options={profileExams} />
+              <FilterSelect label="계열" value={profileTrack} onChange={(value) => { setProfileTrack(value); setProfileListBatch(1); }} options={profileTracks} />
+              <FilterSelect label="영어 방식" value={profileEnglish} onChange={(value) => { setProfileEnglish(value); setProfileListBatch(1); }} options={profileEnglishMethods} />
+              <FilterSelect label="활용지표" value={profileMetric} onChange={(value) => { setProfileMetric(value); setProfileListBatch(1); }} options={['표준점수', '변환표준점수', '백분위', '등급']} />
+              <FilterSelect label="학생부" value={profileRecord} onChange={(value) => { setProfileRecord(value); setProfileListBatch(1); }} options={['정성평가', '정량평가', '미반영', '미기재']} />
+              <FilterSelect label="반영영역 수" value={profileDomainCount} onChange={(value) => { setProfileDomainCount(value); setProfileListBatch(1); }} options={profileDomainCounts} />
+              <FilterSelect label="최고 반영영역" value={profileTopDomain} onChange={(value) => { setProfileTopDomain(value); setProfileListBatch(1); }} options={['국어', '수학', '영어', '탐구']} />
+              <FilterSelect label="2026 환산만점" value={profileMaximum} onChange={(value) => { setProfileMaximum(value); setProfileListBatch(1); }} options={['수치 있음', '수치 없음']} />
             </FilterPanel>
 
             <section className="method-analysis" aria-live="polite">
@@ -736,37 +745,39 @@ export default function Home() {
                   <div className="ratio-legend"><span className="high">최고</span><span className="low">최저</span></div>
                 </div>
               </div>
-              <Table className="data-table ratio-table" style={{ '--track-column-width': `${trackColumnWidth}px` } as React.CSSProperties}>
+              <Table className="data-table ratio-table" style={{ '--department-column-width': `${departmentColumnWidth}px` } as React.CSSProperties}>
                 <TableHeader><TableRow>
                   <SortableHead label="지역" column="r" sort={profileSort} onSort={setProfileSort} />
                   <SortableHead label="대학" column="u" sort={profileSort} onSort={setProfileSort} />
                   <SortableHead label="모집군" column="admissionGroup" sort={profileSort} onSort={setProfileSort} />
                   <SortableHead label="모집전형" column="examName" sort={profileSort} onSort={setProfileSort} />
-                  <SortableHead label="계열" column="trackCategory" sort={profileSort} onSort={setProfileSort} width={trackColumnWidth} onWidthChange={setTrackColumnWidth} />
+                  <SortableHead label="계열" column="trackCategory" sort={profileSort} onSort={setProfileSort} />
+                  <SortableHead label="모집단위" column="departmentName" sort={profileSort} onSort={setProfileSort} width={departmentColumnWidth} onWidthChange={setDepartmentColumnWidth} />
                 </TableRow></TableHeader>
-                <TableBody>{pagedProfiles.map((row) => <Fragment key={row.rowId}><TableRow className="method-row">
+                <TableBody>{visibleProfiles.map((row) => <Fragment key={row.rowId}><TableRow className="method-row">
                   <TableCell className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
                   <TableCell><UniversityMethodCell row={row} expanded={expandedMethodRows.has(row.rowId)} onToggle={() => toggleMethodDetails(row.rowId)} onOpen={() => setSelectedProfile(row)} /></TableCell>
                   <TableCell className="group-cell">{row.admissionGroup}</TableCell>
                   <TableCell className="exam-cell">{row.examName}</TableCell>
-                  <TableCell className="track-cell" title={row.trackName}>{methodTrackCategories(row).join(', ')}</TableCell>
+                  <TableCell className="track-cell">{methodTrackCategories(row).join(', ')}</TableCell>
+                  <TableCell className="method-department-cell" title={row.departmentName ?? row.trackName}>{row.departmentName ?? row.trackName}</TableCell>
                 </TableRow>
                   <MethodSummaryRow row={row} practical={showPractical} sort={profileSort} onSort={setProfileSort} />
-                  {expandedMethodRows.has(row.rowId) && <MethodDetailRow row={row} colSpan={5} />}
+                  {expandedMethodRows.has(row.rowId) && <MethodDetailRow row={row} colSpan={6} />}
                 </Fragment>)}</TableBody>
               </Table>
-              {ratioProfiles.length === 0 ? <EmptyState /> : <Pagination page={profilePage} pageCount={profilePageCount} onChange={setProfilePage} />}
+              {ratioProfiles.length === 0 ? <EmptyState /> : <ListDisclosure total={ratioProfiles.length} shown={visibleProfiles.length} initial={initialListSize} onExpand={() => setProfileListBatch((value) => value + 1)} onCollapse={() => setProfileListBatch(1)} />}
             </section>
           </TabsContent>
 
           <TabsContent value="results" className="tab-stack">
             <FilterPanel wide>
-              <SearchField value={scoreQuery} onChange={(value) => { setScoreQuery(value); setScorePage(1); }} placeholder="대학, 모집단위, 전형명 검색" />
-              <FilterSelect label="연도" value={scoreYear} onChange={(value) => { setScoreYear(value); setScorePage(1); }} options={['2026', '2025', '2024']} />
-              <FilterSelect label="지역" value={scoreRegion} onChange={(value) => { setScoreRegion(value); setScorePage(1); }} options={scoreRegions} />
-              <FilterSelect label="대학" value={scoreUniversity} onChange={(value) => { setScoreUniversity(value); setScorePage(1); }} options={scoreUniversities} />
-              <FilterSelect label="계열" value={scoreTrack} onChange={(value) => { setScoreTrack(value); setScorePage(1); }} options={scoreTracks} />
-              <GroupCheckboxFilter values={scoreGroups} onChange={(values) => { setScoreGroups(values); setScorePage(1); }} />
+              <SearchField value={scoreQuery} onChange={(value) => { setScoreQuery(value); setScoreListBatch(1); }} placeholder="대학, 모집단위, 전형명 검색" />
+              <FilterSelect label="연도" value={scoreYear} onChange={(value) => { setScoreYear(value); setScoreListBatch(1); }} options={['2026', '2025', '2024']} />
+              <FilterSelect label="지역" value={scoreRegion} onChange={(value) => { setScoreRegion(value); setScoreListBatch(1); }} options={scoreRegions} />
+              <FilterSelect label="대학" value={scoreUniversity} onChange={(value) => { setScoreUniversity(value); setScoreListBatch(1); }} options={scoreUniversities} />
+              <FilterSelect label="계열" value={scoreTrack} onChange={(value) => { setScoreTrack(value); setScoreListBatch(1); }} options={scoreTracks} />
+              <GroupCheckboxFilter values={scoreGroups} onChange={(values) => { setScoreGroups(values); setScoreListBatch(1); }} />
             </FilterPanel>
 
             <section className="data-panel">
@@ -794,7 +805,7 @@ export default function Home() {
                   <SortableHead label="영어 반영" column="englishRatio" sort={scoreSort} onSort={setScoreSort} align="right" />
                   <SortableHead label="탐구 반영" column="inquiryRatio" sort={scoreSort} onSort={setScoreSort} align="right" />
                 </TableRow></TableHeader>
-                <TableBody>{pagedScores.map((row) => <Fragment key={row.id}>
+                <TableBody>{visibleScores.map((row) => <Fragment key={row.id}>
                   <TableRow className={`score-result-row ${expandedScoreRows.has(row.id) ? 'is-expanded' : ''}`}>
                     <TableCell className="year-cell">{row.y}</TableCell>
                     <TableCell className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
@@ -841,7 +852,7 @@ export default function Home() {
                     <TableHead className="number-head converted-head-label">환산점수 70%</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>{pagedScores.map((row) => <Fragment key={`pivot-${row.id}`}>
+                <TableBody>{visibleScores.map((row) => <Fragment key={`pivot-${row.id}`}>
                   <TableRow className={`pivot-result-main ${expandedScoreRows.has(row.id) ? 'is-expanded' : ''}`}>
                     <TableCell rowSpan={2} className="year-cell">{row.y}</TableCell>
                     <TableCell rowSpan={2} className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
@@ -889,14 +900,15 @@ export default function Home() {
                   </TableCell></TableRow>}
                 </Fragment>)}</TableBody>
               </Table>
-              {filteredScores.length === 0 ? <EmptyState /> : <Pagination page={scorePage} pageCount={scorePageCount} onChange={setScorePage} />}
+              {filteredScores.length === 0 ? <EmptyState /> : <ListDisclosure total={filteredScores.length} shown={visibleScores.length} initial={initialListSize} onExpand={() => setScoreListBatch((value) => value + 1)} onCollapse={() => setScoreListBatch(1)} />}
             </section>
           </TabsContent>
 
           <TabsContent value="sources" className="tab-stack">
             <section className="data-panel schedule-panel">
               <div className="section-head schedule-head"><CalendarDays aria-hidden="true" /><div><h2>2027학년도 정시 일정</h2></div></div>
-              <div className="schedule-list">{data.overview.schedule.map((item, index) => <div key={item.label}><b aria-hidden="true">{String(index + 1).padStart(2, '0')}</b><strong>{item.label}</strong><span>{item.value}</span></div>)}</div>
+              <div className="schedule-list">{visibleScheduleItems.map((item, index) => <div key={item.label}><b aria-hidden="true">{String(index + 1).padStart(2, '0')}</b><strong>{item.label}</strong><span>{item.value}</span></div>)}</div>
+              <ListDisclosure total={data.overview.schedule.length} shown={visibleScheduleItems.length} initial={initialListSize} onExpand={() => setScheduleListBatch((value) => value + 1)} onCollapse={() => setScheduleListBatch(1)} />
             </section>
           </TabsContent>
         </Tabs>
@@ -973,7 +985,7 @@ function MethodSummaryRow({ row, practical, sort, onSort }: { row: MethodView; p
       onSort={onSort}
     />;
   };
-  return <TableRow className="method-summary-row"><TableCell colSpan={5}>
+  return <TableRow className="method-summary-row"><TableCell colSpan={6}>
     <div className="method-summary-grid">
       {ratioItem('국어', 'korean')}
       {ratioItem('수학', 'math')}
@@ -1156,37 +1168,20 @@ function MethodDetailRow({ row, colSpan }: { row: MethodView; colSpan: number })
   return <TableRow className="method-detail-row">
     <TableCell colSpan={colSpan}>
       <div className="method-detail-lines">
-        <p><strong><Search aria-hidden="true" />적용 모집단위</strong><span>{row.trackName}</span></p>
+        <p><strong><Search aria-hidden="true" />모집단위</strong><span>{row.departmentName ?? row.trackName}</span></p>
         <p><strong><Sparkles aria-hidden="true" />특이사항</strong><span>{special}</span></p>
         <p><strong><Languages aria-hidden="true" />영어 반영방법</strong><span>{row.englishMethod || '별도 표기 없음'}</span><strong><Landmark aria-hidden="true" />한국사 반영방법</strong><span>{history}</span><strong>학생부</strong><span>{recordLabel(row)}</span></p>
-        <MethodResultDetails rows={row.result2026Rows ?? []} />
       </div>
     </TableCell>
   </TableRow>;
 }
 
-function MethodResultDetails({ rows }: { rows: ScoreRow[] }) {
-  if (!rows.length) return null;
-  return <section className="method-result-details">
-    <header><strong>2026 모집단위별 입시결과</strong><span>{rows.length}개</span></header>
-    <div className="method-result-list">
-      {rows.map((score) => {
-        const percentile = scoreCutMetric(score) === '백분위';
-        return <article key={score.id}>
-          <div className="method-result-name"><strong>{score.d}</strong><span>{score.g ? `${score.g.replace(/군$/, '')}군` : '군외'}</span></div>
-          <DetailNumber label="백분위 50%" value={percentile ? score.p50 : null} suffix="%" grouping={false} fixedDecimals />
-          <DetailNumber label="백분위 70%" value={percentile ? score.p70 : null} suffix="%" grouping={false} fixedDecimals />
-          <DetailNumber label="환산점수 50%" value={score.cv50} suffix="점" grouping={false} fixedDecimals />
-          <DetailNumber label="환산점수 70%" value={score.cv70} suffix="점" grouping={false} fixedDecimals />
-          <DetailNumber label="환산만점" value={score.max} suffix="점" grouping={false} fixedDecimals />
-        </article>;
-      })}
-    </div>
-  </section>;
-}
-
-function Pagination({ page, pageCount, onChange }: { page: number; pageCount: number; onChange: (page: number) => void }) {
-  return <div className="pagination"><Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onChange(page - 1)}><ChevronLeft />이전</Button><span>{page} / {pageCount}</span><Button variant="outline" size="sm" disabled={page >= pageCount} onClick={() => onChange(page + 1)}>다음<ChevronRight /></Button></div>;
+function ListDisclosure({ total, shown, initial, onExpand, onCollapse }: { total: number; shown: number; initial: number; onExpand: () => void; onCollapse: () => void }) {
+  if (total <= initial) return null;
+  return <div className="list-disclosure">
+    {shown < total && <Button type="button" variant="outline" size="sm" onClick={onExpand}>펼치기</Button>}
+    {shown > initial && <Button type="button" variant="outline" size="sm" onClick={onCollapse}>접기</Button>}
+  </div>;
 }
 
 function DetailBlock({ title, text }: { title: string; text: string }) {
@@ -1231,7 +1226,8 @@ function scoreTrackCategory(row: Pick<ScoreRow, 'u' | 'd' | 't'>): TrackCategory
   return '인문';
 }
 
-function methodTrackCategories(row: Pick<MethodView, 'trackName'>): TrackCategory[] {
+function methodTrackCategories(row: Pick<MethodView, 'trackName' | 'departmentTrack'>): TrackCategory[] {
+  if (row.departmentTrack) return [row.departmentTrack];
   const text = normalize(row.trackName);
   const isAll = /(?:전모집단위|전체모집단위|공통계열|통합계열)/.test(text);
   if (isAll) {
@@ -2880,20 +2876,84 @@ function attach2026ResultSummaries(methods: MethodView[], scores: ScoreRow[]) {
   return methods.map((method) => {
     const rows = assignedRows.get(method.rowId) ?? [];
     const result2026Rows = [...rows].sort((left, right) => left.d.localeCompare(right.d, 'ko') || left.id - right.id);
-    const maximumValues = rows.map((score) => score.max).filter((value): value is number => value !== null);
-    if (!maximumValues.length && method.conversionMax !== null) maximumValues.push(method.conversionMax);
-    const emptyLabel = rows.length ? '미공개' : '—';
-    const converted = summarizeRange(rows.map((score) => score.cv50 ?? score.cv70), emptyLabel, '점', true);
     return {
       ...method,
       result2026Rows,
-      result2026: {
-        percentile: summarizeRange(rows.map((score) => scoreCutMetric(score) === '백분위' ? score.p50 ?? score.p70 : null), emptyLabel, '%', true),
-        converted,
-        maximum: summarizeRange(maximumValues, emptyLabel),
-      },
+      result2026: summarizeMethodResults(result2026Rows, method.conversionMax),
     };
   });
+}
+
+function splitMethodsByDepartment(methods: MethodView[], scores: ScoreRow[]) {
+  const latestRowsByUniversity = new Map<string, ScoreRow[]>();
+  const scoreGroups = new Map<string, ScoreRow[]>();
+  scores.forEach((score) => {
+    const profileName = SCORE_PROFILE_ALIASES[score.u] ?? score.u;
+    const rows = scoreGroups.get(profileName) ?? [];
+    rows.push(score);
+    scoreGroups.set(profileName, rows);
+  });
+  scoreGroups.forEach((rows, university) => {
+    const latestYear = Math.max(...rows.map((score) => score.y));
+    latestRowsByUniversity.set(university, rows.filter((score) => score.y === latestYear));
+  });
+
+  return methods.flatMap((method) => {
+    const resultRows = method.result2026Rows ?? [];
+    let departmentRows = resultRows;
+    if (!departmentRows.length) {
+      const latestRows = latestRowsByUniversity.get(method.u) ?? [];
+      const categories = methodTrackCategories(method);
+      const categoryMatches = latestRows.filter((score) => categories.includes(scoreTrackCategory(score)));
+      const categoryPool = categoryMatches.length ? categoryMatches : latestRows;
+      const groupMatches = categoryPool.filter((score) => {
+        const scoreGroup = score.g ? `${score.g.replace(/군$/, '')}군` : '군외';
+        return atomicAdmissionGroups(method.admissionGroup).includes(scoreGroup);
+      });
+      const groupPool = groupMatches.length ? groupMatches : categoryPool;
+      const examMatches = groupPool.filter((score) => historicalExamMatches(score, method));
+      const examPool = examMatches.length ? examMatches : groupPool;
+      const namedMatches = examPool.filter((score) => departmentGroupRank(score.d, method.trackName) > 0);
+      departmentRows = namedMatches.length ? namedMatches : examPool;
+    }
+
+    const uniqueDepartmentRows = [...new Map(departmentRows.map((score) => [normalize(score.d), score])).values()]
+      .sort((left, right) => left.d.localeCompare(right.d, 'ko') || left.id - right.id);
+    if (uniqueDepartmentRows.length) {
+      return uniqueDepartmentRows.map((score) => {
+        const exact2026Rows = score.y === 2026 && historicalExamMatches(score, method) ? [score] : [];
+        return {
+        ...method,
+        rowId: `${method.rowId}-department-${score.id}`,
+        departmentName: score.d,
+        departmentTrack: scoreTrackCategory(score),
+        conversionMax: score.max ?? method.conversionMax,
+        result2026Rows: exact2026Rows,
+        result2026: summarizeMethodResults(exact2026Rows, score.max ?? method.conversionMax),
+        };
+      });
+    }
+
+    return methodTrackCategories(method).map((departmentTrack) => ({
+      ...method,
+      rowId: `${method.rowId}-track-${departmentTrack}`,
+      departmentName: method.trackName,
+      departmentTrack,
+      result2026Rows: [],
+      result2026: summarizeMethodResults([], method.conversionMax),
+    }));
+  });
+}
+
+function summarizeMethodResults(rows: ScoreRow[], fallbackMaximum: number | null): MethodResultSummary {
+  const maximumValues = rows.map((score) => score.max).filter((value): value is number => value !== null);
+  if (!maximumValues.length && fallbackMaximum !== null) maximumValues.push(fallbackMaximum);
+  const emptyLabel = rows.length ? '미공개' : '—';
+  return {
+    percentile: summarizeRange(rows.map((score) => scoreCutMetric(score) === '백분위' ? score.p50 ?? score.p70 : null), emptyLabel, '%', true),
+    converted: summarizeRange(rows.map((score) => score.cv50 ?? score.cv70), emptyLabel, '점', true),
+    maximum: summarizeRange(maximumValues, emptyLabel),
+  };
 }
 
 function summarizeRange(values: (number | null)[], emptyLabel = '—', unit = '', describeRange = false): ResultRange {

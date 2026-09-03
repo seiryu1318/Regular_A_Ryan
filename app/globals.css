@@ -218,13 +218,14 @@ button, input, select { font: inherit; font-weight: 850; }
 .change-year-cell { padding-right: 8px !important; padding-left: 8px !important; vertical-align: middle !important; background: transparent !important; }
 .change-year-cell span { display: inline; padding: 0; color: #c3d3da; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; background: transparent; border: 0; }
 .is-current .change-year-cell span { color: #a7e8fc; }
-.ratio-table { width: 100%; min-width: 760px; table-layout: fixed; font-size: 14px; }
+.ratio-table { width: 100%; min-width: 980px; table-layout: fixed; font-size: 14px; }
 .ratio-table th { font-size: 12px; line-height: 1.25; white-space: normal; }
 .ratio-table :is(th, td):nth-child(1) { position: sticky; left: 0; width: 76px; min-width: 76px; max-width: 76px; }
 .ratio-table :is(th, td):nth-child(2) { position: sticky; left: 76px; width: 150px; min-width: 150px; max-width: 150px; }
 .ratio-table :is(th, td):nth-child(3) { position: sticky; left: 226px; width: 78px; min-width: 78px; max-width: 78px; }
 .ratio-table :is(th, td):nth-child(4) { position: sticky; left: 304px; width: 158px; min-width: 158px; max-width: 158px; box-shadow: 10px 0 18px rgba(0, 6, 10, 0.28); }
-.ratio-table :is(th, td):nth-child(5) { width: auto; min-width: var(--track-column-width); white-space: normal; }
+.ratio-table :is(th, td):nth-child(5) { width: 86px; min-width: 86px; max-width: 86px; white-space: normal; }
+.ratio-table :is(th, td):nth-child(6) { width: var(--department-column-width); min-width: var(--department-column-width); white-space: normal; }
 .ratio-table tbody :is(th, td):nth-child(-n+4) { z-index: 2; overflow: hidden; background: #071d26; line-height: 1.35; white-space: normal; }
 .ratio-table tbody .method-row:hover :is(th, td):nth-child(-n+4) { background: #0c2b37; }
 .ratio-table thead :is(th, td):nth-child(-n+4) { z-index: 5; background: #031219; }
@@ -317,7 +318,8 @@ button, input, select { font: inherit; font-weight: 850; }
 .group-light.is-on.group-나 { border-color: #f0c85d; background: #c69b2f; color: #fff; box-shadow: 0 0 10px rgba(231, 185, 63, 0.24); }
 .group-light.is-on.group-다 { border-color: #64d59c; background: #299d65; color: #fff; box-shadow: 0 0 10px rgba(66, 196, 130, 0.24); }
 .exam-cell { color: #f0faff; font-weight: 850; }
-.track-cell { min-width: 180px; color: #d8f0f8; font-weight: 900; }
+.track-cell { color: #d8f0f8; font-weight: 900; text-align: center; }
+.method-department-cell { overflow: hidden; color: #f0faff; font-weight: 900; line-height: 1.4; text-overflow: ellipsis; }
 .english-method-cell { color: #ffd2a8; font-weight: 850; }
 .metric-active { color: #a9e8fc; background: rgba(63, 169, 218, 0.16); font-weight: 900; text-align: center; }
 .record-active { color: #ffe1ae; background: rgba(208, 151, 57, 0.14); font-weight: 900; }
@@ -341,18 +343,6 @@ button, input, select { font: inherit; font-weight: 850; }
 .method-detail-lines strong { display: inline-flex; align-items: center; gap: 5px; color: #8edcf7; font-size: 12px; font-weight: 900; }
 .method-detail-lines strong svg { width: 13px; height: 13px; stroke-width: 2.4; }
 .method-detail-lines span { margin-right: 18px; }
-.method-result-details { display: grid; gap: 7px; margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--border); }
-.method-result-details > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--foreground); }
-.method-result-details > header strong { font-size: 14px; }
-.method-result-details > header span { margin: 0; color: var(--muted-foreground); font-size: 12px; font-weight: 900; }
-.method-result-list { display: grid; gap: 5px; }
-.method-result-list article { display: grid; grid-template-columns: minmax(190px, 1.45fr) repeat(5, minmax(94px, 0.7fr)); align-items: stretch; overflow: hidden; border: 1px solid var(--border); border-radius: 5px; background: var(--card); }
-.method-result-list article > div { display: grid; align-content: center; gap: 2px; min-width: 0; min-height: 48px; padding: 6px 8px; border-left: 1px solid var(--border); }
-.method-result-list article > div:first-child { border-left: 0; }
-.method-result-list article > div > span { margin: 0; color: var(--muted-foreground); font-size: 11px; font-weight: 850; }
-.method-result-list article > div > strong { overflow: hidden; color: var(--foreground); font-size: 13px; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
-.method-result-name { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-.method-result-name > span { color: var(--primary) !important; }
 .top-domain-cell { color: #a9e8fc; font-weight: 900; }
 .table-scroll-container { scrollbar-color: #4aa9c8 #061820; scrollbar-width: thin; }
 .table-scroll-container::-webkit-scrollbar { height: 11px; }
@@ -363,6 +353,8 @@ button, input, select { font: inherit; font-weight: 850; }
 .pagination { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; padding: 8px 14px; border-top: 1px solid var(--border); }
 .pagination button { border-radius: 4px; border-color: rgba(173, 221, 238, 0.24); }
 .pagination span { min-width: 76px; color: #c6d7dd; font-size: 14px; font-weight: 900; text-align: center; font-variant-numeric: tabular-nums; }
+.list-disclosure { display: flex; min-height: 48px; align-items: center; justify-content: center; padding: 7px 12px; border-top: 1px solid var(--border); }
+.list-disclosure button { min-width: 112px; border-color: rgba(112, 210, 242, 0.35); border-radius: 5px; color: var(--foreground); font-weight: 900; }
 .empty-state { padding: 44px 18px; color: #bdd0d7; font-size: 15px; font-weight: 850; text-align: center; }
 
 .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -846,7 +838,7 @@ html.mobile-build .ratio-table tr { width: 100%; min-width: 0; }
 html.mobile-build .ratio-table .method-row {
   display: grid;
   grid-template-columns: 62px minmax(0, 1fr) auto;
-  grid-template-areas: 'region university group' 'exam exam exam' 'track track track';
+  grid-template-areas: 'region university group' 'exam exam track' 'department department department';
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 6px 6px 0 0;
@@ -856,7 +848,8 @@ html.mobile-build .ratio-table .method-row td:nth-child(1) { grid-area: region; 
 html.mobile-build .ratio-table .method-row td:nth-child(2) { grid-area: university; }
 html.mobile-build .ratio-table .method-row td:nth-child(3) { grid-area: group; }
 html.mobile-build .ratio-table .method-row td:nth-child(4) { grid-area: exam; border-top: 1px solid var(--border); }
-html.mobile-build .ratio-table .method-row td:nth-child(5) { grid-area: track; border-top: 1px solid var(--border); }
+html.mobile-build .ratio-table .method-row td:nth-child(5) { grid-area: track; border-top: 1px solid var(--border); text-align: right; }
+html.mobile-build .ratio-table .method-row td:nth-child(6) { grid-area: department; border-top: 1px solid var(--border); }
 html.mobile-build .ratio-table .method-summary-row { display: block; margin-bottom: 10px; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 6px 6px; }
 html.mobile-build .ratio-table .method-summary-row td,
 html.mobile-build .ratio-table .method-detail-row td { display: block; width: 100%; }
@@ -865,10 +858,6 @@ html.mobile-build .method-summary-value,
 html.mobile-build .method-summary-metrics { min-height: 48px; }
 html.mobile-build .method-summary-metrics { grid-column: 1 / -1; }
 html.mobile-build .ratio-table .method-detail-row { display: block; margin: -10px 0 10px; }
-html.mobile-build .method-result-list article { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-html.mobile-build .method-result-list article > div { border-top: 1px solid var(--border); }
-html.mobile-build .method-result-list article > div:nth-child(even) { border-left: 0; }
-html.mobile-build .method-result-list article > .method-result-name { grid-column: 1 / -1; border-top: 0; }
 
 html.mobile-build .results-table-wide { display: none !important; }
 html.mobile-build .results-table-pivot,
@@ -911,6 +900,7 @@ html.mobile-build .compact-ratio { border-top: 1px solid var(--border); }
 html.mobile-build .pivot-method-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 html.mobile-build .pivot-method-meta strong { white-space: normal; }
 html.mobile-build .pagination { flex-wrap: wrap; padding: 10px; }
+html.mobile-build .list-disclosure { padding: 8px 10px; }
 html.mobile-build .schedule-list > div { grid-template-columns: 34px minmax(0, 1fr); gap: 5px 9px; padding: 12px; }
 html.mobile-build .schedule-list span { grid-column: 2; }
 html.mobile-build .detail-overlay { padding: 8px; }
