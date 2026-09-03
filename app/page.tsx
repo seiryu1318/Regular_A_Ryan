@@ -42,6 +42,9 @@ const ADMISSION_PORTAL_URL = 'https://seiryu1318.github.io/admission_Ryan/';
 type SortDirection = 'asc' | 'desc';
 type SortState = { key: string; direction: SortDirection };
 type ThemeMode = 'light' | 'dark';
+type TrackCategory = '인문' | '자연' | '예체능' | '의약학';
+
+const TRACK_CATEGORIES: TrackCategory[] = ['인문', '자연', '예체능', '의약학'];
 
 type Overview = {
   totalRegular: number;
@@ -158,6 +161,7 @@ type MethodView = ProfileView & {
   ratioLabels?: RatioLabels;
   weightLabels?: RatioLabels;
   result2026?: MethodResultSummary;
+  result2026Rows?: ScoreRow[];
 };
 type FormulaRow = {
   formulaId: number;
@@ -244,6 +248,7 @@ const PROFILE_SORTERS: Record<string, (row: MethodView) => string | number | boo
   u: (row) => row.u,
   admissionGroup: (row) => row.admissionGroup,
   examName: (row) => row.examName,
+  trackCategory: (row) => methodTrackCategories(row).join(', '),
   trackName: (row) => row.trackName,
   englishMethod: (row) => row.englishMethod,
   percentageMetric: (row) => row.metrics.includes('백분위') ? 1 : 0,
@@ -434,6 +439,7 @@ export default function Home() {
       const fallbackGroup = historicalGroups.get(scoreGroupKey(score)) ?? (score.g ? `${score.g.replace(/군$/, '')}군` : '군외');
       return {
         ...score,
+        t: scoreTrackCategory(score),
         ruleMatches,
         displayGroup: fallbackGroup,
         cutMetric: scoreCutMetric(score),
@@ -451,15 +457,15 @@ export default function Home() {
     return ['가군', '나군', '다군', '군외'].filter((group) => available.has(group));
   }, [methodViews]);
   const profileExams = useMemo(() => unique(methodViews.map((row) => row.examName)), [methodViews]);
-  const profileTracks = useMemo(() => unique(methodViews.map((row) => row.trackName)), [methodViews]);
+  const profileTracks = useMemo(() => TRACK_CATEGORIES.filter((track) => methodViews.some((row) => methodTrackCategories(row).includes(track))), [methodViews]);
   const profileEnglishMethods = useMemo(() => unique(methodViews.map((row) => row.englishMethod)), [methodViews]);
   const profileDomainCounts = useMemo(() => unique(methodViews.map((row) => row.domainCount ? String(row.domainCount) : '')), [methodViews]);
   const scoreRegions = useMemo(() => regionOptions(regularScores.map((row) => displayRegion(row.r, row.u))), [regularScores]);
   const scoreUniversities = useMemo(() => unique(regularScores.map((row) => row.u)), [regularScores]);
   const scoreTracks = useMemo(() => {
-    const available = new Set(regularScores.map((row) => row.t).filter(Boolean));
-    return ['인문', '자연', '의약학', '예체능', '통합'].filter((track) => available.has(track));
-  }, [regularScores]);
+    const available = new Set(scoreViews.map((row) => row.t).filter(Boolean));
+    return TRACK_CATEGORIES.filter((track) => available.has(track));
+  }, [scoreViews]);
 
   const changeRows = useMemo(() => {
     const query = normalize(changeQuery);
@@ -480,14 +486,14 @@ export default function Home() {
   const matchingProfiles = useMemo(() => {
     const query = normalize(profileQuery);
     return methodViews.filter((row) => {
-      const matchesQuery = !query || normalize(`${row.u} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${row.selectionDetail} ${row.bonusDetail} ${row.englishMethod} ${row.ratio} ${row.metric}`).includes(query);
+      const matchesQuery = !query || normalize(`${row.u} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${row.englishMethod} ${row.ratio} ${row.metric}`).includes(query);
       const topDomains = highestRatioDomains(row.ratios).split('/');
       return matchesQuery
         && (profileRegion === '전체' || displayRegion(row.r, row.u) === profileRegion)
         && (profileUniversity === '전체' || row.u === profileUniversity)
         && (profileGroup === '전체' || atomicAdmissionGroups(row.admissionGroup).includes(profileGroup))
         && (profileExam === '전체' || row.examName === profileExam)
-        && (profileTrack === '전체' || row.trackName === profileTrack)
+        && (profileTrack === '전체' || methodTrackCategories(row).includes(profileTrack as TrackCategory))
         && (profileEnglish === '전체' || row.englishMethod === profileEnglish)
         && (profileMetric === '전체' || row.metrics.includes(profileMetric))
         && (profileRecord === '전체' || studentRecordEvaluation(row).mode === profileRecord)
@@ -583,8 +589,8 @@ export default function Home() {
     } else if (tab === 'rules') {
       downloadCsv(
         '2027_정시_반영방법.csv',
-        ['지역', '대학', '모집군', '모집전형', '계열', '가점 부여사항', '영어 반영방법', '백분위', '등급', '표준점수', '변환표준점수', '학생부 평가', '반영영역 수', '국어', '국어 실질 가중치', '수학', '수학 실질 가중치', '영어', '영어 실질 가중치', '탐구', '탐구 실질 가중치', '한국사', '2026 백분위 50/70', '2026 환산/표준점수 50/70', '2026 환산만점', '전형요소', '전체 반영비율'],
-        ratioProfiles.map((row) => [displayRegion(row.r, row.u), row.u, row.admissionGroup, row.examName, row.trackName, row.bonusDetail, row.englishMethod, metricValue(row, '백분위'), metricValue(row, '등급'), metricValue(row, '표준점수'), metricValue(row, '변환표준점수'), recordLabel(row), row.domainCount, displayRatioForRow(row, 'korean'), displayWeight(row.weights.korean, row.weightLabels?.korean), displayRatioForRow(row, 'math'), displayWeight(row.weights.math, row.weightLabels?.math), displayRatioForRow(row, 'english'), displayWeight(row.weights.english, row.weightLabels?.english), displayRatioForRow(row, 'inquiry'), displayWeight(row.weights.inquiry, row.weightLabels?.inquiry), row.ratios.history, row.result2026?.percentile.label ?? '', row.result2026?.converted.label ?? '', row.result2026?.maximum.label ?? '', row.selectionDetail, row.ratio]),
+        ['지역', '대학', '모집군', '모집전형', '계열', '적용 모집단위', '가점 부여사항', '영어 반영방법', '백분위', '등급', '표준점수', '변환표준점수', '학생부 평가', '반영영역 수', '국어', '국어 실질 가중치', '수학', '수학 실질 가중치', '영어', '영어 실질 가중치', '탐구', '탐구 실질 가중치', '한국사', '2026 입시결과', '2026 환산만점', '전형요소', '전체 반영비율'],
+        ratioProfiles.map((row) => [displayRegion(row.r, row.u), row.u, row.admissionGroup, row.examName, methodTrackCategories(row).join(', '), row.trackName, row.bonusDetail, row.englishMethod, metricValue(row, '백분위'), metricValue(row, '등급'), metricValue(row, '표준점수'), metricValue(row, '변환표준점수'), recordLabel(row), row.domainCount, displayRatioForRow(row, 'korean'), displayWeight(row.weights.korean, row.weightLabels?.korean), displayRatioForRow(row, 'math'), displayWeight(row.weights.math, row.weightLabels?.math), displayRatioForRow(row, 'english'), displayWeight(row.weights.english, row.weightLabels?.english), displayRatioForRow(row, 'inquiry'), displayWeight(row.weights.inquiry, row.weightLabels?.inquiry), row.ratios.history, `${row.result2026Rows?.length ?? 0}개 모집단위`, row.result2026?.maximum.label ?? '', row.selectionDetail, row.ratio]),
       );
     } else if (tab === 'results') {
       downloadCsv(
@@ -736,14 +742,14 @@ export default function Home() {
                   <SortableHead label="대학" column="u" sort={profileSort} onSort={setProfileSort} />
                   <SortableHead label="모집군" column="admissionGroup" sort={profileSort} onSort={setProfileSort} />
                   <SortableHead label="모집전형" column="examName" sort={profileSort} onSort={setProfileSort} />
-                  <SortableHead label="계열" column="trackName" sort={profileSort} onSort={setProfileSort} width={trackColumnWidth} onWidthChange={setTrackColumnWidth} />
+                  <SortableHead label="계열" column="trackCategory" sort={profileSort} onSort={setProfileSort} width={trackColumnWidth} onWidthChange={setTrackColumnWidth} />
                 </TableRow></TableHeader>
                 <TableBody>{pagedProfiles.map((row) => <Fragment key={row.rowId}><TableRow className="method-row">
                   <TableCell className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
                   <TableCell><UniversityMethodCell row={row} expanded={expandedMethodRows.has(row.rowId)} onToggle={() => toggleMethodDetails(row.rowId)} onOpen={() => setSelectedProfile(row)} /></TableCell>
                   <TableCell className="group-cell">{row.admissionGroup}</TableCell>
                   <TableCell className="exam-cell">{row.examName}</TableCell>
-                  <TableCell className="track-cell" title={row.trackName}>{row.trackName}</TableCell>
+                  <TableCell className="track-cell" title={row.trackName}>{methodTrackCategories(row).join(', ')}</TableCell>
                 </TableRow>
                   <MethodSummaryRow row={row} practical={showPractical} sort={profileSort} onSort={setProfileSort} />
                   {expandedMethodRows.has(row.rowId) && <MethodDetailRow row={row} colSpan={5} />}
@@ -975,8 +981,8 @@ function MethodSummaryRow({ row, practical, sort, onSort }: { row: MethodView; p
       {ratioItem('탐구', 'inquiry')}
       <MethodSummaryValue label="영어 방식" column="englishMethod" value={row.englishMethod || '—'} sort={sort} onSort={onSort} />
       <MethodSummaryValue label="한국사" column="history" value={row.ratios.history} sort={sort} onSort={onSort} />
-      <MethodSummaryValue label="2026 백분위 50/70" column="percentile2026" value={row.result2026?.percentile.label ?? '—'} sort={sort} onSort={onSort} />
-      <MethodSummaryValue label="2026 환산/표준 50/70" column="converted2026" value={row.result2026?.converted.label ?? '—'} sort={sort} onSort={onSort} />
+      <MethodSummaryValue label="2026 백분위 50/70" column="percentile2026" value={methodResultSummaryValue(row, 'percentile')} sort={sort} onSort={onSort} />
+      <MethodSummaryValue label="2026 환산점수 50/70" column="converted2026" value={methodResultSummaryValue(row, 'converted')} sort={sort} onSort={onSort} />
       <MethodSummaryValue label="2026 환산만점" column="conversionMax" value={row.conversionMax === null ? '—' : formatPlainNumber(row.conversionMax)} sort={sort} onSort={onSort} />
       <div className="method-summary-metrics"><span>활용지표</span><strong>{row.metrics.join(', ') || '—'}</strong></div>
       <MethodSummaryValue label="학생부" column="sb" value={recordLabel(row)} sort={sort} onSort={onSort} />
@@ -991,6 +997,12 @@ function MethodSummaryValue({ label, column, value, tone = '', sort, onSort }: {
   return <button type="button" className={`method-summary-value ${tone} ${active ? 'is-active' : ''}`} onClick={() => onSort({ key: column, direction: nextDirection })}>
     <span>{label}<Icon aria-hidden="true" /></span><strong>{value}</strong>
   </button>;
+}
+
+function methodResultSummaryValue(row: MethodView, key: keyof Pick<MethodResultSummary, 'percentile' | 'converted'>) {
+  const count = row.result2026Rows?.length ?? 0;
+  if (count > 1) return `${count}개 모집단위`;
+  return row.result2026?.[key].label ?? '—';
 }
 
 function CompactSortValue({ label, column, value, sort, onSort }: { label: string; column: string; value: string; sort: SortState; onSort: (sort: SortState) => void }) {
@@ -1144,11 +1156,33 @@ function MethodDetailRow({ row, colSpan }: { row: MethodView; colSpan: number })
   return <TableRow className="method-detail-row">
     <TableCell colSpan={colSpan}>
       <div className="method-detail-lines">
+        <p><strong><Search aria-hidden="true" />적용 모집단위</strong><span>{row.trackName}</span></p>
         <p><strong><Sparkles aria-hidden="true" />특이사항</strong><span>{special}</span></p>
         <p><strong><Languages aria-hidden="true" />영어 반영방법</strong><span>{row.englishMethod || '별도 표기 없음'}</span><strong><Landmark aria-hidden="true" />한국사 반영방법</strong><span>{history}</span><strong>학생부</strong><span>{recordLabel(row)}</span></p>
+        <MethodResultDetails rows={row.result2026Rows ?? []} />
       </div>
     </TableCell>
   </TableRow>;
+}
+
+function MethodResultDetails({ rows }: { rows: ScoreRow[] }) {
+  if (!rows.length) return null;
+  return <section className="method-result-details">
+    <header><strong>2026 모집단위별 입시결과</strong><span>{rows.length}개</span></header>
+    <div className="method-result-list">
+      {rows.map((score) => {
+        const percentile = scoreCutMetric(score) === '백분위';
+        return <article key={score.id}>
+          <div className="method-result-name"><strong>{score.d}</strong><span>{score.g ? `${score.g.replace(/군$/, '')}군` : '군외'}</span></div>
+          <DetailNumber label="백분위 50%" value={percentile ? score.p50 : null} suffix="%" grouping={false} fixedDecimals />
+          <DetailNumber label="백분위 70%" value={percentile ? score.p70 : null} suffix="%" grouping={false} fixedDecimals />
+          <DetailNumber label="환산점수 50%" value={score.cv50} suffix="점" grouping={false} fixedDecimals />
+          <DetailNumber label="환산점수 70%" value={score.cv70} suffix="점" grouping={false} fixedDecimals />
+          <DetailNumber label="환산만점" value={score.max} suffix="점" grouping={false} fixedDecimals />
+        </article>;
+      })}
+    </div>
+  </section>;
 }
 
 function Pagination({ page, pageCount, onChange }: { page: number; pageCount: number; onChange: (page: number) => void }) {
@@ -1183,6 +1217,36 @@ function StatusScreen({ children }: { children: React.ReactNode }) {
 
 function unique(values: string[]) {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
+}
+
+function scoreTrackCategory(row: Pick<ScoreRow, 'u' | 'd' | 't'>): TrackCategory {
+  const department = normalize(row.d);
+  const sourceTrack = normalize(row.t);
+  if (/(?:의예|의학|치의|한의|약학|수의|간호|임상병리|물리치료|작업치료|치위생|방사선|응급구조|보건|재활치료|의료)/.test(department)) return '의약학';
+  if (/(?:예체능|미술|디자인|음악|성악|작곡|피아노|관현악|무용|체육|스포츠|연극|영화|공연|조형|회화|공예|사진|웹툰|만화|애니메이션|뷰티|패션|실용음악|골프|태권도|경호|레저)/.test(department)) return '예체능';
+  if (sourceTrack === '인문' || sourceTrack === '자연') return sourceTrack;
+  if (sourceTrack === '예체능' || sourceTrack === '의약학') return sourceTrack;
+  if (/(?:자연|공학|과학|수학|통계|물리|화학|생명|환경|컴퓨터|소프트웨어|ai|인공지능|데이터|반도체|전자|기계|건축|토목|항공|산업|식품|에너지|스마트|첨단|it|ict)/.test(department)) return '자연';
+  if (/(?:공과대|과학기술대|과학기술원)/.test(normalize(row.u))) return '자연';
+  return '인문';
+}
+
+function methodTrackCategories(row: Pick<MethodView, 'trackName'>): TrackCategory[] {
+  const text = normalize(row.trackName);
+  const isAll = /(?:전모집단위|전체모집단위|공통계열|통합계열)/.test(text);
+  if (isAll) {
+    return TRACK_CATEGORIES.filter((track) => {
+      if (track === '의약학' && /(?:의예|의약학|의학)과?제외/.test(text)) return false;
+      if (track === '예체능' && /예체능(?:계열)?제외/.test(text)) return false;
+      return true;
+    });
+  }
+  const categories: TrackCategory[] = [];
+  if (/(?:인문|사회|경영|상경|어문|문과|언어중심)/.test(text)) categories.push('인문');
+  if (/(?:자연|공학|이과|수리중심|과학|ai|소프트웨어|컴퓨터|데이터|반도체)/.test(text)) categories.push('자연');
+  if (/(?:예체능|미술|음악|체육|스포츠|디자인|연극|영화|공연|무용)/.test(text)) categories.push('예체능');
+  if (/(?:의예|의학|치의|한의|약학|수의|간호|보건|의료)/.test(text) && !/(?:의예|의약학|의학)과?제외/.test(text)) categories.push('의약학');
+  return categories.length ? [...new Set(categories)] : ['인문'];
 }
 
 function isGeneralScoreRow(row: ScoreRow) {
@@ -2780,63 +2844,78 @@ function ratioTone(ratios: WeightSnapshot, key: keyof WeightSnapshot) {
 }
 
 function attach2026ResultSummaries(methods: MethodView[], scores: ScoreRow[]) {
-  const byUniversity = new Map<string, ScoreRow[]>();
+  const methodsByUniversity = new Map<string, MethodView[]>();
+  methods.forEach((method) => {
+    const list = methodsByUniversity.get(method.u) ?? [];
+    list.push(method);
+    methodsByUniversity.set(method.u, list);
+  });
+  const assignedRows = new Map<string, ScoreRow[]>();
+
   scores.filter((score) => score.y === 2026).forEach((score) => {
     const profileName = SCORE_PROFILE_ALIASES[score.u] ?? score.u;
-    const list = byUniversity.get(profileName) ?? [];
-    list.push(score);
-    byUniversity.set(profileName, list);
+    const universityMethods = methodsByUniversity.get(profileName) ?? [];
+    if (!universityMethods.length) return;
+    const scoreGroup = score.g ? `${score.g.replace(/군$/, '')}군` : '';
+    const groupMatches = universityMethods.filter((method) => !scoreGroup || atomicAdmissionGroups(method.admissionGroup).includes(scoreGroup));
+    const groupPool = groupMatches.length ? groupMatches : universityMethods;
+    const examMatches = groupPool.filter((method) => historicalExamMatches(score, method));
+    const examPool = examMatches.length ? examMatches : groupPool;
+    const ranked = examPool
+      .map((method, index) => ({
+        method,
+        index,
+        rank: scoreMethodRank(score, method),
+        groupRank: departmentGroupRank(score.d, method.trackName),
+        categoryCount: methodTrackCategories(method).length,
+      }))
+      .sort((left, right) => right.groupRank - left.groupRank || right.rank - left.rank || left.categoryCount - right.categoryCount || left.index - right.index);
+    const selected = ranked[0]?.method;
+    if (!selected) return;
+    const rows = assignedRows.get(selected.rowId) ?? [];
+    rows.push(score);
+    assignedRows.set(selected.rowId, rows);
   });
 
   return methods.map((method) => {
-    const universityRows = byUniversity.get(method.u) ?? [];
-    const groups = new Set(atomicAdmissionGroups(method.admissionGroup).map((group) => group.replace(/군$/, '')));
-    const groupRows = universityRows.filter((score) => !score.g || groups.has(score.g.replace(/군$/, '')));
-    const groupPool = groupRows.length ? groupRows : universityRows;
-    const examRows = groupPool.filter((score) => historicalExamMatches(score, method));
-    const examPool = examRows.length ? examRows : groupPool;
-    const trackRows = examPool.filter((score) => scoreMethodRank(score, method) > 0);
-    const rows = trackRows.length ? trackRows : examPool;
+    const rows = assignedRows.get(method.rowId) ?? [];
+    const result2026Rows = [...rows].sort((left, right) => left.d.localeCompare(right.d, 'ko') || left.id - right.id);
     const maximumValues = rows.map((score) => score.max).filter((value): value is number => value !== null);
     if (!maximumValues.length && method.conversionMax !== null) maximumValues.push(method.conversionMax);
     const emptyLabel = rows.length ? '미공개' : '—';
-    const converted = summarizeRange(rows.map((score) => score.cv50 ?? score.cv70), emptyLabel);
-    const standard = summarizeRange(rows.map((score) => scoreCutMetric(score) === '표준점수' ? score.p50 ?? score.p70 : null), emptyLabel);
+    const converted = summarizeRange(rows.map((score) => score.cv50 ?? score.cv70), emptyLabel, '점', true);
     return {
       ...method,
+      result2026Rows,
       result2026: {
-        percentile: summarizeRange(rows.map((score) => scoreCutMetric(score) === '백분위' ? score.p50 ?? score.p70 : null), emptyLabel),
-        converted: standard.sortValue !== null
-          ? { ...standard, label: `표준 ${standard.label}` }
-          : converted.sortValue !== null
-            ? { ...converted, label: `환산 ${converted.label}` }
-            : converted,
+        percentile: summarizeRange(rows.map((score) => scoreCutMetric(score) === '백분위' ? score.p50 ?? score.p70 : null), emptyLabel, '%', true),
+        converted,
         maximum: summarizeRange(maximumValues, emptyLabel),
       },
     };
   });
 }
 
-function summarizeRange(values: (number | null)[], emptyLabel = '—'): ResultRange {
+function summarizeRange(values: (number | null)[], emptyLabel = '—', unit = '', describeRange = false): ResultRange {
   const numbers = [...new Set(values.filter((value): value is number => value !== null && Number.isFinite(value)))].sort((a, b) => a - b);
   if (!numbers.length) return { label: emptyLabel, sortValue: null };
   const first = numbers[0];
   const last = numbers[numbers.length - 1];
+  const display = (value: number) => unit ? `${formatFixedNumber(value, false)}${unit}` : formatPlainNumber(value);
   return {
-    label: first === last ? formatPlainNumber(first) : `${formatPlainNumber(first)}~${formatPlainNumber(last)}`,
+    label: first === last ? display(first) : describeRange ? `최저 ${display(first)} / 최고 ${display(last)}` : `${display(first)}~${display(last)}`,
     sortValue: first,
   };
 }
 
 function scoreCutMetric(score: ScoreRow): CutMetric {
-  if (normalize(score.metric).includes('표준점수')) return '표준점수';
-  if (normalize(score.metric).includes('백분위')) return '백분위';
   const values = [score.p50, score.p70].filter((value): value is number => value !== null);
   if (!values.length) return '성적';
+  const metric = normalize(score.metric);
   const hasSubjectPercentile = [score.ko, score.ma, score.inq].some((value) => value !== null);
-  if (!hasSubjectPercentile && values.every((value) => value >= 1 && value <= 9)) return '등급';
-  if (values.some((value) => value > 100)) return '성적';
-  if (values.some((value) => value > 9) || hasSubjectPercentile) return '백분위';
+  if (/등급/.test(metric) && !/백분위/.test(metric) && !hasSubjectPercentile && values.every((value) => value >= 1 && value <= 9)) return '등급';
+  if (values.every((value) => value >= 0 && value <= 100)) return '백분위';
+  if (metric.includes('표준점수')) return '표준점수';
   return '성적';
 }
 
@@ -2930,6 +3009,21 @@ function scoreMethodRank(score: ScoreRow, method: MethodView) {
   if (targetDepartmentKeys.some((key) => department.includes(key))) return 10;
   if (targetDepartmentKeys.length && !/전체|공통|전모집단위|인문|자연|공학|예체능|통합/.test(target)) return 0;
   return scoreTrackRank(score.t, method.trackName);
+}
+
+function departmentGroupRank(departmentName: string, methodTrackName: string) {
+  const department = normalize(departmentName);
+  const target = normalize(methodTrackName);
+  const mappings: { target: RegExp; department: RegExp }[] = [
+    { target: /인문대|인문계열/, department: /국어|문예|영어영문|철학|역사|어문|문화|언어|문학|종교/ },
+    { target: /사회과학|사회계열/, department: /정치|행정|공공|문헌정보|미디어|언론|사회|심리|도시계획|부동산|아동|가족|복지|광고홍보/ },
+    { target: /경영경제|경영대|상경/, department: /경영|경제|무역|회계|금융|통계|국제물류/ },
+    { target: /사범|교육계열/, department: /교육과|유아교육|교육학/ },
+    { target: /예체|예술|체육/, department: /미술|디자인|음악|성악|작곡|피아노|관현악|무용|체육|스포츠|연극|영화|공연|조형|회화|공예|사진|웹툰|만화|애니메이션/ },
+    { target: /의약학|의학|의예|치의|한의|약학|수의|간호|보건|의료/, department: /의학|의예|치의|한의|약학|수의|간호|임상병리|물리치료|작업치료|치위생|방사선|응급구조|보건|의료/ },
+    { target: /자연|공학|이공/, department: /공학|과학|수학|통계|물리|화학|생명|환경|컴퓨터|소프트웨어|ai|인공지능|데이터|반도체|전자|기계|건축|토목|항공|식품|에너지/ },
+  ];
+  return mappings.reduce((rank, mapping) => mapping.target.test(target) && mapping.department.test(department) ? rank + 1 : rank, 0);
 }
 
 function scoreTrackRank(scoreTrack: string, methodTrack: string) {
