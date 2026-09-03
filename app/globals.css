@@ -164,6 +164,12 @@ button, input, select { font: inherit; font-weight: 850; }
 .group-check.group-나 [data-slot='checkbox'][data-checked] { border-color: #e7b93f; background: #e7b93f; }
 .group-check.group-다 [data-slot='checkbox'][data-checked] { border-color: #42c482; background: #42c482; }
 .group-check [data-slot='checkbox-indicator'] { color: #07151b; }
+.range-filter { min-width: 0; margin: 0; padding: 0; border: 0; }
+.range-filter legend { margin-bottom: 6px; color: #d4e1e6; font-size: 12px; font-weight: 900; }
+.range-filter legend small { margin-left: 6px; color: #72cce9; font-size: 10px; font-weight: 900; }
+.range-filter > div { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; align-items: center; gap: 5px; }
+.range-filter input { min-width: 0; height: 46px; padding-inline: 9px; border-radius: 5px; background: #04171e; font-size: 14px; font-weight: 900; text-align: right; }
+.range-filter > div span, .range-filter > div b { color: #8eb0bd; font-size: 11px; font-weight: 900; }
 
 .method-analysis { display: grid; grid-template-columns: minmax(150px, 1.1fr) repeat(6, minmax(110px, 1fr)); overflow: hidden; border: 1px solid var(--border); border-radius: 6px; background: #061a22; }
 .method-analysis > strong, .method-analysis > span { display: grid; min-width: 0; align-content: center; gap: 3px; min-height: 58px; padding: 8px 12px; border-right: 1px solid rgba(173, 221, 238, 0.12); }
@@ -272,6 +278,9 @@ button, input, select { font: inherit; font-weight: 850; }
 .score-cut-cell strong { color: #b8edff; font-size: inherit; font-weight: 900; font-variant-numeric: tabular-nums; }
 .score-cut-cell small { margin-left: 4px; color: #7796a1; font-size: 9px; font-weight: 900; }
 .score-result-row .department-cell { color: #eefaff; font-weight: 900; line-height: 1.4; }
+.department-cell > strong { display: block; overflow: hidden; text-overflow: ellipsis; }
+.department-cell > small { display: block; margin-top: 3px; overflow: hidden; color: #76d4f1; font-size: 10px; font-weight: 900; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.department-cell > .standard-score-summary { color: #ffd27a; }
 .score-track-cell { color: #b9e9f8; font-weight: 900; }
 .year-cell { text-align: right; font-variant-numeric: tabular-nums; font-weight: 900; }
 .score-rule-heading { color: #9bdff5; background: rgba(45, 133, 166, 0.16) !important; font-size: 12px; font-weight: 900; text-align: center; }
@@ -413,7 +422,7 @@ button, input, select { font: inherit; font-weight: 850; }
   .tabs-list [data-slot='tabs-trigger'] { font-size: 16px; }
   .tab-stack { gap: 10px; padding-top: 8px; }
   .filter-panel { gap: 8px; padding: 10px; }
-  .search-input, .filter-field select, .group-checkbox-filter > div { height: 40px; }
+  .search-input, .filter-field select, .group-checkbox-filter > div, .range-filter input { height: 40px; }
   .section-head { min-height: 58px; padding: 11px 14px; }
   .section-head h2 { font-size: 20px; }
   .section-head p { margin-top: 3px; font-size: 12px; }
@@ -570,12 +579,15 @@ html:not(.dark) .compact-sort-value span,
 html:not(.dark) .compact-ratio span { color: #547180; }
 html:not(.dark) .search-input,
 html:not(.dark) .filter-field select,
-html:not(.dark) .group-checkbox-filter > div { border-color: #8eacbb; background: #fff; color: #152a35; box-shadow: inset 0 0 0 1px rgba(94, 133, 151, 0.08), 0 1px 2px rgba(36, 67, 82, 0.06); }
+html:not(.dark) .group-checkbox-filter > div,
+html:not(.dark) .range-filter input { border-color: #8eacbb; background: #fff; color: #152a35; box-shadow: inset 0 0 0 1px rgba(94, 133, 151, 0.08), 0 1px 2px rgba(36, 67, 82, 0.06); }
 html:not(.dark) .search-input:hover,
 html:not(.dark) .filter-field select:hover,
-html:not(.dark) .group-checkbox-filter > div:hover { border-color: #5d8da4; }
+html:not(.dark) .group-checkbox-filter > div:hover,
+html:not(.dark) .range-filter input:hover { border-color: #5d8da4; }
 html:not(.dark) .search-input:focus,
-html:not(.dark) .filter-field select:focus { border-color: #167eaa; box-shadow: 0 0 0 3px rgba(22, 126, 170, 0.14); }
+html:not(.dark) .filter-field select:focus,
+html:not(.dark) .range-filter input:focus { border-color: #167eaa; box-shadow: 0 0 0 3px rgba(22, 126, 170, 0.14); }
 html:not(.dark) .group-check { border-right-color: rgba(46, 81, 99, 0.14); color: #5a707c; }
 html:not(.dark) .group-check.group-가 { color: #c74641; }
 html:not(.dark) .group-check.group-나 { color: #9a6e05; }
@@ -614,6 +626,8 @@ html:not(.dark) .track-cell,
 html:not(.dark) .score-track-cell,
 html:not(.dark) .score-result-row .department-cell,
 html:not(.dark) .pivot-result-main .department-cell { color: #244754; }
+html:not(.dark) .department-cell > small { color: #13769b; }
+html:not(.dark) .department-cell > .standard-score-summary { color: #9b5b00; }
 html:not(.dark) .method-summary-row td { background: #f6f9fb !important; }
 html:not(.dark) .method-summary-grid { border-top-color: rgba(46, 81, 99, 0.12); }
 html:not(.dark) .method-summary-value,
@@ -792,9 +806,12 @@ html.mobile-build .filter-panel-wide {
 html.mobile-build .search-field { grid-column: 1 / -1; }
 html.mobile-build .search-input,
 html.mobile-build .filter-field select,
-html.mobile-build .group-checkbox-filter > div { height: 44px; }
+html.mobile-build .group-checkbox-filter > div,
+html.mobile-build .range-filter input { height: 44px; }
 html.mobile-build .filter-field { min-width: 0; font-size: 12px; }
 html.mobile-build .group-checkbox-filter { min-width: 0; }
+html.mobile-build .range-filter input { width: 100%; padding-inline: 7px; font-size: 16px; }
+html.mobile-build .range-filter > div { gap: 4px; }
 html.mobile-build .method-analysis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 html.mobile-build .method-analysis > strong,
 html.mobile-build .method-analysis > span { min-height: 54px; padding: 8px 9px; }
