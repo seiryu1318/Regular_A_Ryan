@@ -1,0 +1,422 @@
+[
+  {
+    "id": 1427,
+    "university": "경남대",
+    "year": 2024,
+    "department": "부동산경제금융학과",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7517,
+    "university": "덕성여대",
+    "year": 2024,
+    "department": "과학기술대학(체육전형)",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7518,
+    "university": "덕성여대",
+    "year": 2024,
+    "department": "과학기술대학(체육전형제외)",
+    "field": "t",
+    "before": "0",
+    "after": "자연",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7519,
+    "university": "덕성여대",
+    "year": 2024,
+    "department": "글로벌융합대학(유아교육과)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7520,
+    "university": "덕성여대",
+    "year": 2024,
+    "department": "글로벌융합대학(인문사회)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7522,
+    "university": "덕성여대",
+    "year": 2024,
+    "department": "약학대학(약학과)",
+    "field": "t",
+    "before": "0",
+    "after": "의약학",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7526,
+    "university": "덕성여대",
+    "year": 2025,
+    "department": "글로벌융합대학(유아교육과)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7527,
+    "university": "덕성여대",
+    "year": 2025,
+    "department": "글로벌융합대학(인문사회)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7529,
+    "university": "덕성여대",
+    "year": 2025,
+    "department": "약학대학(약학과)",
+    "field": "t",
+    "before": "0",
+    "after": "의약학",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7588,
+    "university": "동국대",
+    "year": 2024,
+    "department": "AI소프트웨어융합학부(인문)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7589,
+    "university": "동국대",
+    "year": 2024,
+    "department": "AI소프트웨어융합학부(자연)",
+    "field": "t",
+    "before": "0",
+    "after": "자연",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7600,
+    "university": "동국대",
+    "year": 2024,
+    "department": "국어국문 문예창작학부",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7630,
+    "university": "동국대",
+    "year": 2024,
+    "department": "조소전공",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7634,
+    "university": "동국대",
+    "year": 2024,
+    "department": "체육교육과",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7650,
+    "university": "동국대",
+    "year": 2025,
+    "department": "국어국문 문예창작학부",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7656,
+    "university": "동국대",
+    "year": 2025,
+    "department": "바이오시스템대학(광역화)",
+    "field": "t",
+    "before": "0",
+    "after": "자연",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7683,
+    "university": "동국대",
+    "year": 2025,
+    "department": "조소전공",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7687,
+    "university": "동국대",
+    "year": 2025,
+    "department": "체육교육과",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7688,
+    "university": "동국대",
+    "year": 2025,
+    "department": "컴퓨터 AI학부(인문)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7689,
+    "university": "동국대",
+    "year": 2025,
+    "department": "컴퓨터 AI학부(자연)",
+    "field": "t",
+    "before": "0",
+    "after": "자연",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7714,
+    "university": "동국대",
+    "year": 2026,
+    "department": "사회언론정보학부 미디어커뮤니케이션학전공",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7736,
+    "university": "동국대",
+    "year": 2026,
+    "department": "정치행정학부 북한학 전공",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7737,
+    "university": "동국대",
+    "year": 2026,
+    "department": "정치행정학부 정치외교학 전공",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7738,
+    "university": "동국대",
+    "year": 2026,
+    "department": "정치행정학부 행정학전공",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7743,
+    "university": "동국대",
+    "year": 2026,
+    "department": "체육교육과",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 7745,
+    "university": "동국대",
+    "year": 2026,
+    "department": "컴퓨터 AI학부(인문)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 9938,
+    "university": "상명대(서울)",
+    "year": 2024,
+    "department": "조형예술전공",
+    "field": "t",
+    "before": "#N/A",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 11860,
+    "university": "세명대",
+    "year": 2024,
+    "department": "시각 영상디자인학과",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 11872,
+    "university": "세명대",
+    "year": 2024,
+    "department": "회계세무학과",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 11891,
+    "university": "세명대",
+    "year": 2025,
+    "department": "생활체육학과",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 11894,
+    "university": "세명대",
+    "year": 2025,
+    "department": "시각 영상디자인학과",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 11908,
+    "university": "세명대",
+    "year": 2025,
+    "department": "회계세무학과",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 12740,
+    "university": "숭실대",
+    "year": 2024,
+    "department": "융합특성화자유전공학부",
+    "field": "t",
+    "before": "통",
+    "after": "통합",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 14698,
+    "university": "을지대",
+    "year": 2024,
+    "department": "임상병리학과",
+    "field": "t",
+    "before": "0",
+    "after": "자연",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 14699,
+    "university": "을지대",
+    "year": 2024,
+    "department": "임상병리학과",
+    "field": "t",
+    "before": "0",
+    "after": "자연",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 14750,
+    "university": "을지대",
+    "year": 2026,
+    "department": "임상병리학과",
+    "field": "t",
+    "before": "0",
+    "after": "자연",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 14751,
+    "university": "을지대",
+    "year": 2026,
+    "department": "임상병리학과",
+    "field": "t",
+    "before": "0",
+    "after": "자연",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 17569,
+    "university": "추계예술대",
+    "year": 2026,
+    "department": "융합예술학부",
+    "field": "t",
+    "before": "0",
+    "after": "예체능",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 19912,
+    "university": "한양대",
+    "year": 2024,
+    "department": "정보시스템학과(상경)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 19965,
+    "university": "한양대",
+    "year": 2025,
+    "department": "정보시스템학과(상경)",
+    "field": "t",
+    "before": "0",
+    "after": "인문",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 19972,
+    "university": "한양대",
+    "year": 2025,
+    "department": "한양인터칼리지학부",
+    "field": "t",
+    "before": "공통",
+    "after": "통합",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  },
+  {
+    "id": 20028,
+    "university": "한양대",
+    "year": 2026,
+    "department": "한양인터칼리지학부",
+    "field": "t",
+    "before": "공통",
+    "after": "통합",
+    "reason": "모집단위 명칭과 공식 계열 구분으로 보정"
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "tabs": {
+    "정시 변화": 28,
+    "반영방법": 185,
+    "3개년 입시결과": 15337,
+    "일정": 5
+  },
+  "missingPublishedValues": {
+    "percentileBothBlank": 1764,
+    "conversionBothBlank": 929
+  },
+  "officialCrosscheck": {
+    "adigaPairs": 514,
+    "adigaMatchedRows": 13092,
+    "adigaMismatchedRows": 0,
+    "officialMethodProfiles": 185,
+    "educationOfficeSources": 3
+  },
+  "issues": 0,
+  "details": []
+}

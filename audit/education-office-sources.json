@@ -1,0 +1,38 @@
+{
+  "sources": [
+    {
+      "agency": "울산교육청",
+      "path": "C:\\Users\\User\\iCloudDrive\\02. 진학 및 상담자료\\01. 진학자료\\02. 공통자료\\08. 전공안내서 및 학생부종합 가이드북\\시도교육청 발간자료\\2027학년도 울산교육청 대입전형 가이드북.pdf",
+      "exists": true,
+      "pages": 16,
+      "contains2027": true,
+      "containsRegularAdmission": true,
+      "textCharacters": 83670
+    },
+    {
+      "agency": "서울교육청",
+      "path": "C:\\Users\\User\\iCloudDrive\\02. 진학 및 상담자료\\01. 진학자료\\02. 공통자료\\08. 전공안내서 및 학생부종합 가이드북\\시도교육청 발간자료\\2027학년도 서울교육청 대입전형 가이드북.pdf",
+      "exists": true,
+      "pages": 274,
+      "contains2027": true,
+      "containsRegularAdmission": true,
+      "textCharacters": 340210
+    },
+    {
+      "agency": "인천교육청",
+      "path": "C:\\Users\\User\\Desktop\\2027대입전형프리뷰수정(인천시교육청배포판).pdf",
+      "exists": true,
+      "pages": 24,
+      "contains2027": true,
+      "containsRegularAdmission": true,
+      "textCharacters": 101487
+    }
+  ],
+  "sourceFailures": [],
+  "universitiesChecked": 185,
+  "universitiesNamedInEducationOfficeSources": 184,
+  "universitiesNotNamed": [
+    "감신대"
+  ],
+  "note": "시도교육청 자료에 대학별 수치가 없는 경우 대학 입학처 모집요강과 대학어디가를 기준으로 검증"
+}

@@ -1,0 +1,605 @@
+{
+  "officialSource": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+  "adigaSource": "https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&searchSyr=2026&unvCd=0000154",
+  "correctionCount": 26,
+  "changes": [
+    {
+      "id": 14631,
+      "university": "유원대",
+      "department": "AI소프트웨어학과",
+      "before": {
+        "cv50": 10,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 655,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14632,
+      "university": "유원대",
+      "department": "간호학과",
+      "before": {
+        "cv50": 60,
+        "cv70": 63.5,
+        "max": 100,
+        "p50": null,
+        "p70": 63.5,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 663,
+        "max": 1000,
+        "p50": null,
+        "p70": 63.5,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14633,
+      "university": "유원대",
+      "department": "경찰 소방행정학부",
+      "before": {
+        "cv50": 10,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 645,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14634,
+      "university": "유원대",
+      "department": "국방인재개발학과",
+      "before": {
+        "cv50": 1,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 740,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14635,
+      "university": "유원대",
+      "department": "드론로봇응용학과",
+      "before": {
+        "cv50": 1,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 510,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14636,
+      "university": "유원대",
+      "department": "문화복지융합학과",
+      "before": {
+        "cv50": 3,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 545,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14637,
+      "university": "유원대",
+      "department": "물리치료학과",
+      "before": {
+        "cv50": 15,
+        "cv70": 72.8,
+        "max": 100,
+        "p50": null,
+        "p70": 72.8,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 731,
+        "max": 1000,
+        "p50": null,
+        "p70": 72.8,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14638,
+      "university": "유원대",
+      "department": "미디어콘텐츠학과",
+      "before": {
+        "cv50": 4,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 640,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14639,
+      "university": "유원대",
+      "department": "미래라이프융합학부",
+      "before": {
+        "cv50": 2,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": null,
+        "max": null,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": "대학 입학처 공개 결과표에 해당 모집단위 성적 미기재"
+      }
+    },
+    {
+      "id": 14640,
+      "university": "유원대",
+      "department": "미래자동차학과",
+      "before": {
+        "cv50": 8,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 655,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14641,
+      "university": "유원대",
+      "department": "뷰티케어학과",
+      "before": {
+        "cv50": 2,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 585,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14642,
+      "university": "유원대",
+      "department": "사회복지학부",
+      "before": {
+        "cv50": 14,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 640,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14643,
+      "university": "유원대",
+      "department": "산업안전보건학과",
+      "before": {
+        "cv50": 5,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 620,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14644,
+      "university": "유원대",
+      "department": "스마트팜학과",
+      "before": {
+        "cv50": 2,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 585,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14645,
+      "university": "유원대",
+      "department": "스마트평생교육학부",
+      "before": {
+        "cv50": 2,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": null,
+        "max": null,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": "대학 입학처 공개 결과표에 해당 모집단위 성적 미기재"
+      }
+    },
+    {
+      "id": 14646,
+      "university": "유원대",
+      "department": "스포츠학부",
+      "before": {
+        "cv50": 3,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 585,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14647,
+      "university": "유원대",
+      "department": "와인사이언스학과",
+      "before": {
+        "cv50": null,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": null,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": "대학 입학처 공개 결과표 성적 공란"
+      }
+    },
+    {
+      "id": 14648,
+      "university": "유원대",
+      "department": "유아교육과",
+      "before": {
+        "cv50": null,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 480,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14649,
+      "university": "유원대",
+      "department": "응급구조학과",
+      "before": {
+        "cv50": 5,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 595,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14650,
+      "university": "유원대",
+      "department": "자율설계학부",
+      "before": {
+        "cv50": 3,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 645,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14651,
+      "university": "유원대",
+      "department": "작업치료학과",
+      "before": {
+        "cv50": 23,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 695,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14652,
+      "university": "유원대",
+      "department": "중등특수교육과",
+      "before": {
+        "cv50": null,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 545,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14653,
+      "university": "유원대",
+      "department": "창의설계학부",
+      "before": {
+        "cv50": null,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 670,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14654,
+      "university": "유원대",
+      "department": "초등특수교육과",
+      "before": {
+        "cv50": null,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 595,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14655,
+      "university": "유원대",
+      "department": "치위생학과",
+      "before": {
+        "cv50": 19,
+        "cv70": 65,
+        "max": 100,
+        "p50": null,
+        "p70": 65,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 665,
+        "max": 1000,
+        "p50": null,
+        "p70": 65.0,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    },
+    {
+      "id": 14656,
+      "university": "유원대",
+      "department": "호텔외식조리학과",
+      "before": {
+        "cv50": 3,
+        "cv70": null,
+        "max": 100,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/main.do",
+        "missingReason": null
+      },
+      "after": {
+        "cv50": null,
+        "cv70": 620,
+        "max": 1000,
+        "p50": null,
+        "p70": null,
+        "admission": "https://ipsi.u1.ac.kr/ipsi/data/result.do?article.offset=0&articleLimit=10&articleNo=25934&mode=view",
+        "missingReason": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,485 @@
+[
+  {
+    "id": 8,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 9,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 10,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 12,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 13,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 14,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 3989,
+    "field": "max",
+    "before": 420,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 4647,
+    "field": "max",
+    "before": 700,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 6808,
+    "field": "max",
+    "before": 700,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8121,
+    "field": "max",
+    "before": 200,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8142,
+    "field": "max",
+    "before": 200,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8153,
+    "field": "max",
+    "before": 200,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8174,
+    "field": "max",
+    "before": 200,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8574,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8598,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8755,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8756,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 8787,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 9218,
+    "field": "max",
+    "before": 600,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 9245,
+    "field": "max",
+    "before": 600,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 10070,
+    "field": "max",
+    "before": 400,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 10961,
+    "field": "max",
+    "before": 500,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 11387,
+    "field": "max",
+    "before": 200,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 11592,
+    "field": "max",
+    "before": 600,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 11594,
+    "field": "max",
+    "before": 600,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 14074,
+    "field": "max",
+    "before": 36,
+    "after": null,
+    "reason": "백분위 값이 만점 칸에 입력됨"
+  },
+  {
+    "id": 14075,
+    "field": "max",
+    "before": 91,
+    "after": null,
+    "reason": "백분위 값이 만점 칸에 입력됨"
+  },
+  {
+    "id": 14076,
+    "field": "max",
+    "before": 86,
+    "after": null,
+    "reason": "백분위 값이 만점 칸에 입력됨"
+  },
+  {
+    "id": 14077,
+    "field": "max",
+    "before": 92,
+    "after": null,
+    "reason": "백분위 값이 만점 칸에 입력됨"
+  },
+  {
+    "id": 14116,
+    "field": "max",
+    "before": 141.6,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14117,
+    "field": "max",
+    "before": 138.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14118,
+    "field": "max",
+    "before": 185.6,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14119,
+    "field": "max",
+    "before": 183.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14120,
+    "field": "max",
+    "before": 120,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14121,
+    "field": "max",
+    "before": 147.6,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14122,
+    "field": "max",
+    "before": 128.8,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14123,
+    "field": "max",
+    "before": 150.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14124,
+    "field": "max",
+    "before": 131.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14125,
+    "field": "max",
+    "before": 167.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14126,
+    "field": "max",
+    "before": 147.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14127,
+    "field": "max",
+    "before": 124.8,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14128,
+    "field": "max",
+    "before": 158.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14129,
+    "field": "max",
+    "before": 126.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14130,
+    "field": "max",
+    "before": 179.6,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14131,
+    "field": "max",
+    "before": 152,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14132,
+    "field": "max",
+    "before": 152.8,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14133,
+    "field": "max",
+    "before": 134.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14134,
+    "field": "max",
+    "before": 72.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14135,
+    "field": "max",
+    "before": 116.8,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14136,
+    "field": "max",
+    "before": 158.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14137,
+    "field": "max",
+    "before": 171.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14138,
+    "field": "max",
+    "before": 89.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14139,
+    "field": "max",
+    "before": 172,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14140,
+    "field": "max",
+    "before": 163.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14141,
+    "field": "max",
+    "before": 107.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14142,
+    "field": "max",
+    "before": 162.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14143,
+    "field": "max",
+    "before": 152,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14144,
+    "field": "max",
+    "before": 168.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14145,
+    "field": "max",
+    "before": 144.8,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14146,
+    "field": "max",
+    "before": 165.6,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14147,
+    "field": "max",
+    "before": 150.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14148,
+    "field": "max",
+    "before": 139.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14149,
+    "field": "max",
+    "before": 167.2,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14150,
+    "field": "max",
+    "before": 145.6,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14151,
+    "field": "max",
+    "before": 142.8,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14152,
+    "field": "max",
+    "before": 121.6,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 14153,
+    "field": "max",
+    "before": 138.4,
+    "after": null,
+    "reason": "환산 70% 값이 만점 칸에 중복 입력됨"
+  },
+  {
+    "id": 19235,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  },
+  {
+    "id": 19776,
+    "field": "max",
+    "before": 300,
+    "after": null,
+    "reason": "공개 환산점수가 기재 만점을 초과함"
+  }
+]

@@ -1,0 +1,716 @@
+[
+  {
+    "collection": "profiles",
+    "id": 6,
+    "university": "강릉원주대",
+    "before": "기타",
+    "after": "강원"
+  },
+  {
+    "collection": "profiles",
+    "id": 8,
+    "university": "건국대(글로컬)",
+    "before": "기타",
+    "after": "충북"
+  },
+  {
+    "collection": "profiles",
+    "id": 61,
+    "university": "차의과학대",
+    "before": "기타",
+    "after": "경기"
+  },
+  {
+    "collection": "profiles",
+    "id": 72,
+    "university": "한국외국어대",
+    "before": "기타",
+    "after": "서울"
+  },
+  {
+    "collection": "profiles",
+    "id": 108,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "profiles",
+    "id": 169,
+    "university": "추계예술대",
+    "before": "확인 필요",
+    "after": "서울"
+  },
+  {
+    "collection": "scores",
+    "id": 4071,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4072,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4073,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4074,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4075,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4076,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4077,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4078,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4079,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4080,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4081,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4082,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4083,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4084,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4085,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4086,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4087,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4088,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4089,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4090,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4091,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4092,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4093,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4094,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4095,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4096,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4097,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4098,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4099,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 4100,
+    "university": "광주대",
+    "before": "광주 전남",
+    "after": "광주"
+  },
+  {
+    "collection": "scores",
+    "id": 11210,
+    "university": "서울장신대",
+    "before": "서울",
+    "after": "경기"
+  },
+  {
+    "collection": "scores",
+    "id": 11211,
+    "university": "서울장신대",
+    "before": "서울",
+    "after": "경기"
+  },
+  {
+    "collection": "scores",
+    "id": 11212,
+    "university": "서울장신대",
+    "before": "서울",
+    "after": "경기"
+  },
+  {
+    "collection": "scores",
+    "id": 11213,
+    "university": "서울장신대",
+    "before": "서울",
+    "after": "경기"
+  },
+  {
+    "collection": "scores",
+    "id": 11214,
+    "university": "서울장신대",
+    "before": "확인 필요",
+    "after": "경기"
+  },
+  {
+    "collection": "scores",
+    "id": 11215,
+    "university": "서울장신대",
+    "before": "확인 필요",
+    "after": "경기"
+  },
+  {
+    "collection": "scores",
+    "id": 15826,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15827,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15828,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15829,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15830,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15831,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15832,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15833,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15834,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15835,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15836,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15837,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15838,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15839,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15840,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15841,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15842,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15843,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15844,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15845,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15846,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15847,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15848,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15849,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15850,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15851,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15852,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15853,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15854,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15855,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15856,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15857,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15858,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15859,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15860,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15861,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15862,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15863,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15864,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15865,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15866,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15867,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15868,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15869,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15870,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15871,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15872,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15873,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15874,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15875,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15876,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15877,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15878,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15879,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15880,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15881,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 15882,
+    "university": "전남대(여수)",
+    "before": "광주 전남",
+    "after": "전남"
+  },
+  {
+    "collection": "scores",
+    "id": 17569,
+    "university": "추계예술대",
+    "before": "확인 필요",
+    "after": "서울"
+  },
+  {
+    "collection": "profiles",
+    "id": 19,
+    "university": "단국대",
+    "before": "기타",
+    "after": "경기"
+  },
+  {
+    "collection": "profiles",
+    "id": 30,
+    "university": "상명대",
+    "before": "기타",
+    "after": "서울"
+  }
+]

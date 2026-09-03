@@ -1,0 +1,10 @@
+{
+  "excel_rows": 15616,
+  "json_rows": 15616,
+  "missing_json_rows": 0,
+  "extra_json_rows": 0,
+  "field_differences": 10451,
+  "official_or_recomputed_differences": 10451,
+  "unexplained_differences": 0,
+  "unexplained_by_field": {}
+}
