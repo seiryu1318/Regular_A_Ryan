@@ -13,11 +13,14 @@ import {
   ExternalLink,
   Landmark,
   Languages,
+  House,
+  Monitor,
   Moon,
   Minus,
   Plus,
   RotateCcw,
   Search,
+  Smartphone,
   Sparkles,
   Sun,
 } from 'lucide-react';
@@ -31,6 +34,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ryanLogo from '@/public/ryan.jpg';
 
 import { RELEASE_VERSION } from './release';
+
+const PC_SITE_URL = 'https://seiryu1318.github.io/Regular_A_Ryan/';
+const MOBILE_SITE_URL = 'https://seiryu1318.github.io/Regular_A_RyanM/';
+const ADMISSION_PORTAL_URL = 'https://seiryu1318.github.io/admission_Ryan/';
 
 type SortDirection = 'asc' | 'desc';
 type SortState = { key: string; direction: SortDirection };
@@ -264,6 +271,8 @@ const PROFILE_SORTERS: Record<string, (row: MethodView) => string | number | boo
 };
 
 export default function Home() {
+  const mobileBuild = typeof window !== 'undefined'
+    && (window as Window & { __MOBILE_VERSION__?: boolean }).__MOBILE_VERSION__ === true;
   const [data, setData] = useState<AdmissionsData | null>(() => typeof window === 'undefined' ? null : window.__ADMISSIONS_DATA__ ?? null);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('changes');
@@ -600,11 +609,18 @@ export default function Home() {
               <span className="release-version">{RELEASE_VERSION}</span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="header-actions">
+            <a className="toolbar-button navigation-button" href={mobileBuild ? PC_SITE_URL : MOBILE_SITE_URL}>
+              {mobileBuild ? <Monitor aria-hidden="true" /> : <Smartphone aria-hidden="true" />}
+              {mobileBuild ? 'PC 버전' : '모바일 버전'}
+            </a>
             <Button variant="outline" className="toolbar-button theme-button" onClick={() => setThemeMode((current) => current === 'light' ? 'dark' : 'light')} aria-label={themeMode === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}>
               {themeMode === 'light' ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
               {themeMode === 'light' ? '다크' : '라이트'}
             </Button>
+            <a className="toolbar-button navigation-button portal-button" href={ADMISSION_PORTAL_URL}>
+              <House aria-hidden="true" />라이언의 대입포털로 돌아가기
+            </a>
             <Button variant="outline" className="toolbar-button" onClick={resetFilters}><RotateCcw />필터 초기화</Button>
             {tab !== 'sources' && <Button className="toolbar-button primary-button" onClick={exportCurrent}><Download />현재 결과 저장</Button>}
           </div>
