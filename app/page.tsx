@@ -953,7 +953,7 @@ export default function Home() {
             <div className="dialog-links">
               {selectedProfile.officialSourcePath && <a href={localFileHref(selectedProfile.officialSourcePath)} target="_blank" rel="noreferrer">2027 정시 모집요강{selectedProfile.officialSourcePages?.length ? ` ${selectedProfile.officialSourcePages.join(', ')}쪽` : ''} <ExternalLink /></a>}
               {selectedProfile.admission && <a href={selectedProfile.admission} target="_blank" rel="noreferrer">입학처 <ExternalLink /></a>}
-              {selectedProfile.resultSource && <a href={selectedProfile.resultSource} target="_blank" rel="noreferrer">대입정보포털 <ExternalLink /></a>}
+              {selectedProfile.resultSource && <a href={selectedProfile.resultSource} target="_blank" rel="noreferrer">대입정보포털 2027 수능위주전형 <ExternalLink /></a>}
             </div>
       </DetailModal>}
 

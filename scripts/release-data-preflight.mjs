@@ -23,12 +23,15 @@ function readAudit(name) {
 run('audit-result-consistency.py');
 run('audit-official-results.py', { ADIGA_REFRESH: '1' });
 run('apply-adiga-missing-reasons.py');
+run('apply-adiga-2027-method-sources.py');
+run('audit-adiga-2027-methods.py', { ADIGA_2027_REFRESH: '1' });
 run('audit-official-methods.py');
 run('audit-education-office-sources.py');
 run('audit-all-tabs.py');
 
 const consistency = readAudit('result-consistency-summary.json');
 const results = readAudit('official-results-summary.json');
+const adiga2027Methods = readAudit('adiga-2027-methods-summary.json');
 const methods = readAudit('official-methods-summary.json');
 const education = readAudit('education-office-sources.json');
 const allTabs = readAudit('all-tabs-summary.json');
@@ -37,6 +40,8 @@ const failures = [];
 if (consistency.issues !== 0) failures.push(`입시결과 이상값 ${consistency.issues}건`);
 if (results.official_pairs_failed !== 0 || results.download_failed_rows !== 0) failures.push('대학어디가 페이지 수집 실패');
 if (results.mismatched_rows !== 0) failures.push(`대학어디가 수치 불일치 ${results.mismatched_rows}건`);
+if (adiga2027Methods.download_failures !== 0) failures.push(`대학어디가 2027 수능위주전형 수집 실패 ${adiga2027Methods.download_failures}건`);
+if (adiga2027Methods.needs_review !== 0) failures.push(`대학어디가 2027 수능위주전형 재검토 ${adiga2027Methods.needs_review}건`);
 if (methods.needs_review !== 0) failures.push(`대학 공식 모집요강 재검토 ${methods.needs_review}건`);
 if (education.sourceFailures.length !== 0) failures.push(`시도교육청 자료 확인 실패 ${education.sourceFailures.length}건`);
 if (allTabs.issues !== 0) failures.push(`전체 탭 내용 검사 ${allTabs.issues}건`);

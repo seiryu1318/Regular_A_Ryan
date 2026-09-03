@@ -39,6 +39,7 @@ next-env.d.ts
 /release/
 /tmp/
 /audit/adiga-results/
+/audit/adiga-2027-methods/
 /audit/preview-8767.err.log
 /audit/preview-8767.out.log
 /tsconfig.tsbuildinfo
