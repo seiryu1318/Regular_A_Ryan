@@ -116,7 +116,7 @@ type ScoreRow = {
   exam?: string;
   missingReason?: string | null;
 };
-type CutMetric = '백분위' | '표준점수' | '등급' | '성적';
+type CutMetric = '백분위' | '성적';
 type ScoreView = ScoreRow & {
   ruleMatches: MethodView[];
   displayGroup: string;
@@ -323,8 +323,8 @@ export default function Home() {
   const [scoreGroups, setScoreGroups] = useState<string[]>([]);
   const [scorePercentileMin, setScorePercentileMin] = useState('');
   const [scorePercentileMax, setScorePercentileMax] = useState('');
-  const [scoreStandardMin, setScoreStandardMin] = useState('');
-  const [scoreStandardMax, setScoreStandardMax] = useState('');
+  const [scoreConvertedMin, setScoreConvertedMin] = useState('');
+  const [scoreConvertedMax, setScoreConvertedMax] = useState('');
   const [scoreSort, setScoreSort] = useState<SortState>({ key: 'y', direction: 'desc' });
   const [scoreListBatch, setScoreListBatch] = useState(1);
   const [scheduleListBatch, setScheduleListBatch] = useState(1);
@@ -527,9 +527,9 @@ export default function Home() {
   const filteredScores = useMemo(() => {
     const query = normalize(scoreQuery);
     const percentileRange = numericRange(scorePercentileMin, scorePercentileMax);
-    const standardRange = numericRange(scoreStandardMin, scoreStandardMax);
+    const convertedRange = numericRange(scoreConvertedMin, scoreConvertedMax);
     const hasPercentileRange = percentileRange.minimum !== null || percentileRange.maximum !== null;
-    const hasStandardRange = standardRange.minimum !== null || standardRange.maximum !== null;
+    const hasConvertedRange = convertedRange.minimum !== null || convertedRange.maximum !== null;
     const hasDepartmentMatch = Boolean(query && scoreViews.some((row) => (
       normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.d}`).includes(query)
     )));
@@ -537,12 +537,13 @@ export default function Home() {
       const departmentIdentity = normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.d}`);
       const fullSearchText = normalize(`${departmentIdentity} ${row.a} ${row.exam ?? ''} ${row.t} ${row.ruleMatches.map((rule) => scoreMethodLabel(rule, row)).join(' ')}`);
       const matchesQuery = !query || (hasDepartmentMatch ? departmentIdentity.includes(query) : fullSearchText.includes(query));
-      const representativeCut = row.p50 ?? row.p70;
-      const matchesPercentileRange = hasPercentileRange && row.cutMetric === '백분위' && inNumericRange(representativeCut, percentileRange);
-      const matchesStandardRange = hasStandardRange && row.cutMetric === '표준점수' && inNumericRange(representativeCut, standardRange);
-      const matchesScoreRange = (!hasPercentileRange && !hasStandardRange) || matchesPercentileRange || matchesStandardRange;
+      const representativePercentile = row.p50 ?? row.p70;
+      const representativeConverted = row.cv50 ?? row.cv70;
+      const matchesPercentileRange = !hasPercentileRange || (row.cutMetric === '백분위' && inNumericRange(representativePercentile, percentileRange));
+      const matchesConvertedRange = !hasConvertedRange || inNumericRange(representativeConverted, convertedRange);
       return matchesQuery
-        && matchesScoreRange
+        && matchesPercentileRange
+        && matchesConvertedRange
         && (scoreRegion === '전체' || displayRegion(row.r, row.u) === scoreRegion)
         && (scoreUniversity === '전체' || row.u === scoreUniversity)
         && (scoreYear === '전체' || row.y === Number(scoreYear))
@@ -572,7 +573,7 @@ export default function Home() {
       englishRatio: (row) => row.ruleMatches[0]?.ratios.english,
       inquiryRatio: (row) => row.ruleMatches[0]?.ratios.inquiry,
     });
-  }, [scoreGroups, scorePercentileMax, scorePercentileMin, scoreQuery, scoreRegion, scoreSort, scoreStandardMax, scoreStandardMin, scoreTrack, scoreUniversity, scoreViews, scoreYear]);
+  }, [scoreConvertedMax, scoreConvertedMin, scoreGroups, scorePercentileMax, scorePercentileMin, scoreQuery, scoreRegion, scoreSort, scoreTrack, scoreUniversity, scoreViews, scoreYear]);
 
   const visibleScores = filteredScores.slice(0, initialListSize * scoreListBatch);
   const scheduleItems = data?.overview.schedule ?? [];
@@ -611,8 +612,8 @@ export default function Home() {
       setScoreGroups([]);
       setScorePercentileMin('');
       setScorePercentileMax('');
-      setScoreStandardMin('');
-      setScoreStandardMax('');
+      setScoreConvertedMin('');
+      setScoreConvertedMax('');
       setScoreSort({ key: 'y', direction: 'desc' });
       setScoreListBatch(1);
     }
@@ -806,7 +807,7 @@ export default function Home() {
               <FilterSelect label="계열" value={scoreTrack} onChange={(value) => { setScoreTrack(value); setScoreListBatch(1); }} options={scoreTracks} />
               <GroupCheckboxFilter values={scoreGroups} onChange={(values) => { setScoreGroups(values); setScoreListBatch(1); }} />
               <RangeFilter label="백분위 범위" unit="%" minimum={scorePercentileMin} maximum={scorePercentileMax} onMinimumChange={(value) => { setScorePercentileMin(value); setScoreListBatch(1); }} onMaximumChange={(value) => { setScorePercentileMax(value); setScoreListBatch(1); }} max={100} />
-              <RangeFilter label="표준점수 범위" unit="점" minimum={scoreStandardMin} maximum={scoreStandardMax} onMinimumChange={(value) => { setScoreStandardMin(value); setScoreListBatch(1); }} onMaximumChange={(value) => { setScoreStandardMax(value); setScoreListBatch(1); }} />
+              <RangeFilter label="환산점수 범위" unit="점" minimum={scoreConvertedMin} maximum={scoreConvertedMax} onMinimumChange={(value) => { setScoreConvertedMin(value); setScoreListBatch(1); }} onMaximumChange={(value) => { setScoreConvertedMax(value); setScoreListBatch(1); }} />
             </FilterPanel>
 
             <section className="data-panel">
@@ -840,7 +841,7 @@ export default function Home() {
                     <TableCell className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
                     <TableCell><UniversityScoreCell row={row} expanded={expandedScoreRows.has(row.id)} onToggle={() => toggleScoreDetails(row.id)} onOpen={() => setSelectedScore(row)} /></TableCell>
                     <TableCell className="group-cell"><AdmissionGroupLights group={row.displayGroup} /></TableCell>
-                    <TableCell className="department-cell" title={`${row.d} ${conciseExamName(row)}`}><strong>{row.d}</strong><small>{conciseExamName(row)}</small><StandardScoreSummary row={row} /></TableCell>
+                    <TableCell className="department-cell" title={`${row.d} ${conciseExamName(row)}`}><strong>{row.d}</strong><small>{conciseExamName(row)}</small></TableCell>
                     <TableCell className="score-track-cell">{row.t || '—'}</TableCell>
                     <PercentileCutCell value={row.cutMetric === '백분위' ? row.p50 : null} />
                     <PercentileCutCell value={row.cutMetric === '백분위' ? row.p70 : null} />
@@ -887,7 +888,7 @@ export default function Home() {
                     <TableCell rowSpan={2} className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
                     <TableCell rowSpan={2}><UniversityScoreCell row={row} expanded={expandedScoreRows.has(row.id)} onToggle={() => toggleScoreDetails(row.id)} onOpen={() => setSelectedScore(row)} /></TableCell>
                     <TableCell rowSpan={2} className="group-cell"><AdmissionGroupLights group={row.displayGroup} /></TableCell>
-                    <TableCell rowSpan={2} className="department-cell" title={`${row.d} ${conciseExamName(row)}`}><strong>{row.d}</strong><small>{conciseExamName(row)}</small><StandardScoreSummary row={row} /></TableCell>
+                    <TableCell rowSpan={2} className="department-cell" title={`${row.d} ${conciseExamName(row)}`}><strong>{row.d}</strong><small>{conciseExamName(row)}</small></TableCell>
                     <TableCell rowSpan={2} className="score-track-cell">{row.t || '—'}</TableCell>
                     <PercentileCutCell value={row.cutMetric === '백분위' ? row.p50 : null} />
                     <PercentileCutCell value={row.cutMetric === '백분위' ? row.p70 : null} />
@@ -964,8 +965,8 @@ export default function Home() {
               <DetailNumber label="충원" value={selectedScore.add} />
               <DetailNumber label="환산점수 70%" value={selectedScore.cv70} suffix="점" grouping={false} fixedDecimals />
               <DetailNumber label="환산점수 만점" value={selectedScore.max} grouping={false} />
-              <DetailNumber label={`${selectedScore.cutMetric} 50%`} value={selectedScore.p50} suffix={scoreMetricSuffix(selectedScore.cutMetric)} grouping={false} fixedDecimals />
-              <DetailNumber label={`${selectedScore.cutMetric} 70%`} value={selectedScore.p70} suffix={scoreMetricSuffix(selectedScore.cutMetric)} grouping={false} fixedDecimals />
+              <DetailNumber label="백분위 50%" value={selectedScore.cutMetric === '백분위' ? selectedScore.p50 : null} suffix="%" grouping={false} fixedDecimals />
+              <DetailNumber label="백분위 70%" value={selectedScore.cutMetric === '백분위' ? selectedScore.p70 : null} suffix="%" grouping={false} fixedDecimals />
             </div>
             <DetailBlock title="2027학년도 수능 반영방법" text={scoreRulesForDisplay(selectedScore).map((rule) => rule ? scoreMethodLabel(rule, selectedScore) : '반영방법 미연결').join(' / ')} />
             {selectedScore.missingReason && <DetailBlock title="미공개 사유" text={selectedScore.missingReason} />}
@@ -1159,19 +1160,6 @@ function PercentileCutCell({ value }: { value: number | null }) {
   return <TableCell className="number-cell score-cut-cell">
     {value === null ? <span className="unpublished-value">미공개</span> : <strong>{formatFixedNumber(value, false)}%</strong>}
   </TableCell>;
-}
-
-function StandardScoreSummary({ row }: { row: Pick<ScoreView, 'cutMetric' | 'p50' | 'p70'> }) {
-  if (row.cutMetric !== '표준점수') return null;
-  const score50 = row.p50 === null ? '미공개' : `${formatFixedNumber(row.p50, false)}점`;
-  const score70 = row.p70 === null ? '미공개' : `${formatFixedNumber(row.p70, false)}점`;
-  return <small className="standard-score-summary">표준 50% {score50} / 70% {score70}</small>;
-}
-
-function scoreMetricSuffix(metric: CutMetric) {
-  if (metric === '백분위') return '%';
-  if (metric === '등급') return '등급';
-  return '점';
 }
 
 function RatioCell({ row, domain }: { row: MethodView; domain: DomainKey }) {
@@ -3059,13 +3047,7 @@ function summarizeRange(values: (number | null)[], emptyLabel = '—', unit = ''
 function scoreCutMetric(score: ScoreRow): CutMetric {
   const values = [score.p50, score.p70].filter((value): value is number => value !== null);
   if (!values.length) return '성적';
-  const metric = normalize(score.metric);
-  const hasSubjectPercentile = [score.ko, score.ma, score.inq].some((value) => value !== null);
-  if (/등급/.test(metric) && !/백분위/.test(metric) && !hasSubjectPercentile && values.every((value) => value >= 1 && value <= 9)) return '등급';
-  if (metric.includes('표준점수') && !metric.includes('백분위')) return '표준점수';
-  if (metric.includes('백분위') && !metric.includes('표준점수')) return '백분위';
   if (values.every((value) => value >= 0 && value <= 100)) return '백분위';
-  if (metric.includes('표준점수')) return '표준점수';
   return '성적';
 }
 

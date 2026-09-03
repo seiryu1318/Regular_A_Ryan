@@ -280,7 +280,6 @@ button, input, select { font: inherit; font-weight: 850; }
 .score-result-row .department-cell { color: #eefaff; font-weight: 900; line-height: 1.4; }
 .department-cell > strong { display: block; overflow: hidden; text-overflow: ellipsis; }
 .department-cell > small { display: block; margin-top: 3px; overflow: hidden; color: #76d4f1; font-size: 10px; font-weight: 900; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
-.department-cell > .standard-score-summary { color: #ffd27a; }
 .score-track-cell { color: #b9e9f8; font-weight: 900; }
 .year-cell { text-align: right; font-variant-numeric: tabular-nums; font-weight: 900; }
 .score-rule-heading { color: #9bdff5; background: rgba(45, 133, 166, 0.16) !important; font-size: 12px; font-weight: 900; text-align: center; }
@@ -627,7 +626,6 @@ html:not(.dark) .score-track-cell,
 html:not(.dark) .score-result-row .department-cell,
 html:not(.dark) .pivot-result-main .department-cell { color: #244754; }
 html:not(.dark) .department-cell > small { color: #13769b; }
-html:not(.dark) .department-cell > .standard-score-summary { color: #9b5b00; }
 html:not(.dark) .method-summary-row td { background: #f6f9fb !important; }
 html:not(.dark) .method-summary-grid { border-top-color: rgba(46, 81, 99, 0.12); }
 html:not(.dark) .method-summary-value,
