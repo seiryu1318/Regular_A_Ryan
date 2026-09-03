@@ -488,8 +488,13 @@ export default function Home() {
 
   const matchingProfiles = useMemo(() => {
     const query = normalize(profileQuery);
+    const hasDepartmentMatch = Boolean(query && methodDisplayViews.some((row) => (
+      normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.departmentName ?? ''}`).includes(query)
+    )));
     return methodDisplayViews.filter((row) => {
-      const matchesQuery = !query || normalize(`${row.u} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${row.departmentName ?? ''} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${row.englishMethod} ${row.ratio} ${row.metric}`).includes(query);
+      const departmentIdentity = normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.departmentName ?? ''}`);
+      const fullSearchText = normalize(`${departmentIdentity} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${row.englishMethod} ${row.ratio} ${row.metric}`);
+      const matchesQuery = !query || (hasDepartmentMatch ? departmentIdentity.includes(query) : fullSearchText.includes(query));
       const topDomains = highestRatioDomains(row.ratios).split('/');
       return matchesQuery
         && (profileRegion === '전체' || displayRegion(row.r, row.u) === profileRegion)
@@ -517,8 +522,13 @@ export default function Home() {
 
   const filteredScores = useMemo(() => {
     const query = normalize(scoreQuery);
+    const hasDepartmentMatch = Boolean(query && scoreViews.some((row) => (
+      normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.d}`).includes(query)
+    )));
     const filtered = scoreViews.filter((row) => {
-      const matchesQuery = !query || normalize(`${row.u} ${row.d} ${row.a} ${row.exam ?? ''} ${row.t} ${row.ruleMatches.map((rule) => scoreMethodLabel(rule, row)).join(' ')}`).includes(query);
+      const departmentIdentity = normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.d}`);
+      const fullSearchText = normalize(`${departmentIdentity} ${row.a} ${row.exam ?? ''} ${row.t} ${row.ruleMatches.map((rule) => scoreMethodLabel(rule, row)).join(' ')}`);
+      const matchesQuery = !query || (hasDepartmentMatch ? departmentIdentity.includes(query) : fullSearchText.includes(query));
       return matchesQuery
         && (scoreRegion === '전체' || displayRegion(row.r, row.u) === scoreRegion)
         && (scoreUniversity === '전체' || row.u === scoreUniversity)
@@ -1217,7 +1227,8 @@ function unique(values: string[]) {
 function scoreTrackCategory(row: Pick<ScoreRow, 'u' | 'd' | 't'>): TrackCategory {
   const department = normalize(row.d);
   const sourceTrack = normalize(row.t);
-  if (/(?:의예|의학|치의|한의|약학|수의|간호|임상병리|물리치료|작업치료|치위생|방사선|응급구조|보건|재활치료|의료)/.test(department)) return '의약학';
+  if (/(?:간호|임상병리|물리치료|작업치료|치위생|방사선학|응급구조|재활치료|언어치료|청각재활)/.test(department)) return '자연';
+  if (/(?:의예|치의예|치의학|한의예|한의학|약학|제약학|수의예|수의학|의과대학)/.test(department) || /^(?:의학과|의학부)$/.test(department)) return '의약학';
   if (/(?:예체능|미술|디자인|음악|성악|작곡|피아노|관현악|무용|체육|스포츠|연극|영화|공연|조형|회화|공예|사진|웹툰|만화|애니메이션|뷰티|패션|실용음악|골프|태권도|경호|레저)/.test(department)) return '예체능';
   if (sourceTrack === '인문' || sourceTrack === '자연') return sourceTrack;
   if (sourceTrack === '예체능' || sourceTrack === '의약학') return sourceTrack;
@@ -1239,9 +1250,9 @@ function methodTrackCategories(row: Pick<MethodView, 'trackName' | 'departmentTr
   }
   const categories: TrackCategory[] = [];
   if (/(?:인문|사회|경영|상경|어문|문과|언어중심)/.test(text)) categories.push('인문');
-  if (/(?:자연|공학|이과|수리중심|과학|ai|소프트웨어|컴퓨터|데이터|반도체)/.test(text)) categories.push('자연');
+  if (/(?:자연|공학|이과|수리중심|과학|ai|소프트웨어|컴퓨터|데이터|반도체|간호|임상병리|물리치료|작업치료|치위생|방사선학|응급구조|재활치료|언어치료|청각재활)/.test(text)) categories.push('자연');
   if (/(?:예체능|미술|음악|체육|스포츠|디자인|연극|영화|공연|무용)/.test(text)) categories.push('예체능');
-  if (/(?:의예|의학|치의|한의|약학|수의|간호|보건|의료)/.test(text) && !/(?:의예|의약학|의학)과?제외/.test(text)) categories.push('의약학');
+  if (/(?:의예|의약학|치의예|치의학|한의예|한의학|약학|제약학|수의예|수의학|의과대학)/.test(text) && !/(?:의예|의약학|의학)과?제외/.test(text)) categories.push('의약학');
   return categories.length ? [...new Set(categories)] : ['인문'];
 }
 
