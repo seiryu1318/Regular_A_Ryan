@@ -64,6 +64,27 @@ type ChangeRow = {
   current: string;
   previous: string;
   sourceFile: string;
+  referenceLabel?: string;
+};
+
+type Reference2027Row = {
+  label: string;
+  region: string;
+  socialStudyAdvantage: boolean;
+  indicator: string;
+  studentRecord: string;
+  korean: string;
+  math: string;
+  calculusGeometryBonus: string;
+  english: string;
+  inquiry2: string;
+  inquiry1: string;
+  socialBonus: string;
+  scienceBonus: string;
+  note: string;
+  trackLabel: string;
+  trackCategories: string[];
+  sourceRow: number;
 };
 
 type Profile = {
@@ -85,6 +106,9 @@ type Profile = {
   historyMethod?: string;
   admission: string | null;
   resultSource: string | null;
+  reference2027?: Reference2027Row;
+  reference2027Rows?: Reference2027Row[];
+  referenceSupplementOnly?: boolean;
 };
 
 type ScoreRow = {
@@ -246,6 +270,8 @@ const PROFILE_SORTERS: Record<string, (row: MethodView) => string | number | boo
   u: (row) => row.u,
   admissionGroup: (row) => row.admissionGroup,
   examName: (row) => row.examName,
+  socialAdvantage: (row) => row.reference2027?.socialStudyAdvantage ? 1 : 0,
+  indicator: (row) => row.reference2027?.indicator ?? row.metric,
   trackCategory: (row) => methodTrackCategories(row).join(', '),
   trackName: (row) => row.trackName,
   departmentName: (row) => row.departmentName ?? row.trackName,
@@ -306,6 +332,7 @@ export default function Home() {
   const [profileDomainCount, setProfileDomainCount] = useState('전체');
   const [profileTopDomain, setProfileTopDomain] = useState('전체');
   const [profileMaximum, setProfileMaximum] = useState('전체');
+  const [profileSocialAdvantage, setProfileSocialAdvantage] = useState('전체');
   const [profileSort, setProfileSort] = useState<SortState>({ key: 'u', direction: 'asc' });
   const [showPractical, setShowPractical] = useState(false);
   const [departmentColumnWidth, setDepartmentColumnWidth] = useState(250);
@@ -497,7 +524,8 @@ export default function Home() {
     )));
     return methodDisplayViews.filter((row) => {
       const departmentIdentity = normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.departmentName ?? ''}`);
-      const fullSearchText = normalize(`${departmentIdentity} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${row.englishMethod} ${row.ratio} ${row.metric}`);
+      const reference = row.reference2027;
+      const fullSearchText = normalize(`${departmentIdentity} ${reference?.label ?? ''} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${reference?.calculusGeometryBonus ?? ''} ${reference?.socialBonus ?? ''} ${reference?.scienceBonus ?? ''} ${row.englishMethod} ${row.ratio} ${row.metric}`);
       const matchesQuery = !query || (hasDepartmentMatch ? departmentIdentity.includes(query) : fullSearchText.includes(query));
       const topDomains = highestRatioDomains(row.ratios).split('/');
       return matchesQuery
@@ -511,9 +539,10 @@ export default function Home() {
         && (profileRecord === '전체' || studentRecordEvaluation(row).mode === profileRecord)
         && (profileDomainCount === '전체' || row.domainCount === Number(profileDomainCount))
         && (profileTopDomain === '전체' || topDomains.includes(profileTopDomain))
-        && (profileMaximum === '전체' || (profileMaximum === '수치 있음' ? row.conversionMax !== null : row.conversionMax === null));
+        && (profileMaximum === '전체' || (profileMaximum === '수치 있음' ? row.conversionMax !== null : row.conversionMax === null))
+        && (profileSocialAdvantage === '전체' || row.reference2027?.socialStudyAdvantage === true);
     });
-  }, [methodDisplayViews, profileDomainCount, profileEnglish, profileExam, profileGroup, profileMaximum, profileMetric, profileQuery, profileRecord, profileRegion, profileTopDomain, profileTrack, profileUniversity]);
+  }, [methodDisplayViews, profileDomainCount, profileEnglish, profileExam, profileGroup, profileMaximum, profileMetric, profileQuery, profileRecord, profileRegion, profileSocialAdvantage, profileTopDomain, profileTrack, profileUniversity]);
   const ratioProfiles = useMemo(() => sortRows(matchingProfiles, profileSort, PROFILE_SORTERS), [matchingProfiles, profileSort]);
   const profileAnalysis = useMemo(
     () => buildProfileAnalysis(matchingProfiles, profileRegion, profileUniversity),
@@ -600,6 +629,7 @@ export default function Home() {
       setProfileDomainCount('전체');
       setProfileTopDomain('전체');
       setProfileMaximum('전체');
+      setProfileSocialAdvantage('전체');
       setProfileSort({ key: 'u', direction: 'asc' });
       setShowPractical(false);
       setProfileListBatch(1);
@@ -625,8 +655,8 @@ export default function Home() {
     } else if (tab === 'rules') {
       downloadCsv(
         '2027_정시_반영방법.csv',
-        ['지역', '대학', '모집군', '모집전형', '계열', '모집단위', '가점 부여사항', '영어 반영방법', '백분위', '등급', '표준점수', '변환표준점수', '학생부 평가', '반영영역 수', '국어', '국어 실질 가중치', '수학', '수학 실질 가중치', '영어', '영어 실질 가중치', '탐구', '탐구 실질 가중치', '한국사', '2026 백분위', '2026 환산점수', '2026 환산만점', '전형요소', '전체 반영비율'],
-        ratioProfiles.map((row) => [displayRegion(row.r, row.u), row.u, row.admissionGroup, row.examName, methodTrackCategories(row).join(', '), row.departmentName ?? row.trackName, row.bonusDetail, row.englishMethod, metricValue(row, '백분위'), metricValue(row, '등급'), metricValue(row, '표준점수'), metricValue(row, '변환표준점수'), recordLabel(row), row.domainCount, displayRatioForRow(row, 'korean'), displayWeight(row.weights.korean, row.weightLabels?.korean), displayRatioForRow(row, 'math'), displayWeight(row.weights.math, row.weightLabels?.math), displayRatioForRow(row, 'english'), displayWeight(row.weights.english, row.weightLabels?.english), displayRatioForRow(row, 'inquiry'), displayWeight(row.weights.inquiry, row.weightLabels?.inquiry), row.ratios.history, row.result2026?.percentile.label ?? '', row.result2026?.converted.label ?? '', row.result2026?.maximum.label ?? '', row.selectionDetail, row.ratio]),
+        ['지역', '대학', '기준 구분', '모집군', '모집전형', '계열', '모집단위', '사탐런 유리', '미기 가산', '사탐 가산', '과탐 가산', '특이사항', '영어 반영방법', '지표', '백분위', '등급', '표준점수', '변환표준점수', '학생부 평가', '반영영역 수', '국어', '국어 실질 가중치', '수학', '수학 실질 가중치', '영어', '영어 실질 가중치', '탐구2', '탐구1', '탐구 실질 가중치', '한국사', '2026 백분위', '2026 환산점수', '2026 환산만점', '전형요소', '전체 반영비율'],
+        ratioProfiles.map((row) => [displayRegion(row.r, row.u), row.u, row.reference2027?.label ?? '', row.admissionGroup, row.examName, methodTrackCategories(row).join(', '), row.departmentName ?? row.trackName, row.reference2027?.socialStudyAdvantage ? '유리' : '', row.reference2027?.calculusGeometryBonus ?? '', row.reference2027?.socialBonus ?? '', row.reference2027?.scienceBonus ?? '', row.reference2027?.note ?? row.bonusDetail, row.englishMethod, row.reference2027?.indicator ?? row.metric, metricValue(row, '백분위'), metricValue(row, '등급'), metricValue(row, '표준점수'), metricValue(row, '변환표준점수'), recordLabel(row), row.domainCount, displayRatioForRow(row, 'korean'), displayWeight(row.weights.korean, row.weightLabels?.korean), displayRatioForRow(row, 'math'), displayWeight(row.weights.math, row.weightLabels?.math), displayRatioForRow(row, 'english'), displayWeight(row.weights.english, row.weightLabels?.english), row.reference2027?.inquiry2 ?? displayRatioForRow(row, 'inquiry'), row.reference2027?.inquiry1 ?? '', displayWeight(row.weights.inquiry, row.weightLabels?.inquiry), row.ratios.history, row.result2026?.percentile.label ?? '', row.result2026?.converted.label ?? '', row.result2026?.maximum.label ?? '', row.selectionDetail, row.ratio]),
       );
     } else if (tab === 'results') {
       downloadCsv(
@@ -745,10 +775,11 @@ export default function Home() {
               <FilterSelect label="계열" value={profileTrack} onChange={(value) => { setProfileTrack(value); setProfileListBatch(1); }} options={profileTracks} />
               <FilterSelect label="영어 방식" value={profileEnglish} onChange={(value) => { setProfileEnglish(value); setProfileListBatch(1); }} options={profileEnglishMethods} />
               <FilterSelect label="활용지표" value={profileMetric} onChange={(value) => { setProfileMetric(value); setProfileListBatch(1); }} options={['표준점수', '변환표준점수', '백분위', '등급']} />
-              <FilterSelect label="학생부" value={profileRecord} onChange={(value) => { setProfileRecord(value); setProfileListBatch(1); }} options={['정성평가', '정량평가', '미반영', '미기재']} />
+              <FilterSelect label="학생부" value={profileRecord} onChange={(value) => { setProfileRecord(value); setProfileListBatch(1); }} options={['정성평가', '정량평가']} />
               <FilterSelect label="반영영역 수" value={profileDomainCount} onChange={(value) => { setProfileDomainCount(value); setProfileListBatch(1); }} options={profileDomainCounts} />
               <FilterSelect label="최고 반영영역" value={profileTopDomain} onChange={(value) => { setProfileTopDomain(value); setProfileListBatch(1); }} options={['국어', '수학', '영어', '탐구']} />
               <FilterSelect label="2026 환산만점" value={profileMaximum} onChange={(value) => { setProfileMaximum(value); setProfileListBatch(1); }} options={['수치 있음', '수치 없음']} />
+              <FilterSelect label="사탐런" value={profileSocialAdvantage} onChange={(value) => { setProfileSocialAdvantage(value); setProfileListBatch(1); }} options={['유리']} />
             </FilterPanel>
 
             <section className="method-analysis" aria-live="polite">
@@ -785,7 +816,7 @@ export default function Home() {
                 <TableBody>{visibleProfiles.map((row) => <Fragment key={row.rowId}><TableRow className="method-row">
                   <TableCell className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
                   <TableCell><UniversityMethodCell row={row} expanded={expandedMethodRows.has(row.rowId)} onToggle={() => toggleMethodDetails(row.rowId)} onOpen={() => setSelectedProfile(row)} /></TableCell>
-                  <TableCell className="group-cell">{row.admissionGroup}</TableCell>
+                  <TableCell className="group-cell"><AdmissionGroupLights group={row.admissionGroup} /></TableCell>
                   <TableCell className="exam-cell">{row.examName}</TableCell>
                   <TableCell className="track-cell">{methodTrackCategories(row).join(', ')}</TableCell>
                   <TableCell className="method-department-cell" title={row.departmentName ?? row.trackName}>{row.departmentName ?? row.trackName}</TableCell>
@@ -944,16 +975,16 @@ export default function Home() {
         </Tabs>
       </div>
 
-      {selectedProfile && <DetailModal title={selectedProfile.formal} description={`${selectedProfile.r} | ${selectedProfile.admissionGroup} | ${selectedProfile.examName} | ${selectedProfile.trackName}`} onClose={() => setSelectedProfile(null)}>
+      {selectedProfile && <DetailModal title={selectedProfile.formal} description={`${selectedProfile.r} | ${selectedProfile.admissionGroup} | ${selectedProfile.examName} | ${selectedProfile.reference2027?.label ?? selectedProfile.trackName}`} onClose={() => setSelectedProfile(null)}>
             <DetailBlock title="전형요소" text={selectedProfile.selectionDetail} />
             <DetailBlock title="영어 반영방법" text={selectedProfile.englishMethod} />
             <DetailBlock title="학생부 반영" text={recordLabel(selectedProfile)} />
-            <DetailBlock title="영역별 반영비율" text={selectedProfile.ratio || selectedProfile.metric} />
-            <DetailBlock title="가점 부여사항" text={selectedProfile.bonusDetail} />
+            <DetailBlock title="영역별 반영비율" text={selectedProfile.reference2027 ? referenceRatioText(selectedProfile.reference2027) : selectedProfile.ratio || selectedProfile.metric} />
+            <DetailBlock title="가점 부여사항" text={selectedProfile.reference2027 ? referenceBonusText(selectedProfile.reference2027) : selectedProfile.bonusDetail} />
             <div className="dialog-links">
               {selectedProfile.officialSourcePath && <a href={localFileHref(selectedProfile.officialSourcePath)} target="_blank" rel="noreferrer">2027 정시 모집요강{selectedProfile.officialSourcePages?.length ? ` ${selectedProfile.officialSourcePages.join(', ')}쪽` : ''} <ExternalLink /></a>}
               {selectedProfile.admission && <a href={selectedProfile.admission} target="_blank" rel="noreferrer">입학처 <ExternalLink /></a>}
-              {selectedProfile.resultSource && <a href={selectedProfile.resultSource} target="_blank" rel="noreferrer">대입정보포털 2027 수능위주전형 <ExternalLink /></a>}
+              {selectedProfile.resultSource && <a href={selectedProfile.resultSource} target="_blank" rel="noreferrer">{selectedProfile.reference2027 ? '2027 정시 기준 시트' : '대입정보포털 2027 수능위주전형'} <ExternalLink /></a>}
             </div>
       </DetailModal>}
 
@@ -1001,9 +1032,11 @@ function MethodSummaryRow({ row, practical, sort, onSort }: { row: MethodView; p
     const nominal = row.ratios[domain];
     const practicalValue = row.weights[domain];
     const fallback = practical ? row.weightLabels?.[domain] : row.ratioLabels?.[domain];
-    const value = practical
-      ? practicalValue === null ? fallback ?? '—' : `${practicalValue.toFixed(2)}배`
-      : nominal === null ? fallback ?? '—' : `${formatNumber(nominal)}%`;
+    const value = row.reference2027 && fallback
+      ? fallback
+      : practical
+        ? practicalValue === null ? fallback ?? '—' : `${practicalValue.toFixed(2)}배`
+        : nominal === null ? fallback ?? '—' : `${formatNumber(nominal)}%`;
     const source = practical ? row.weights : row.ratios;
     return <MethodSummaryValue
       key={domain}
@@ -1020,13 +1053,16 @@ function MethodSummaryRow({ row, practical, sort, onSort }: { row: MethodView; p
       {ratioItem('국어', 'korean')}
       {ratioItem('수학', 'math')}
       {ratioItem('영어', 'english')}
-      {ratioItem('탐구', 'inquiry')}
+      {row.reference2027 ? <>
+        <MethodSummaryValue label="탐구2" column={practical ? 'inquiryWeight' : 'inquiry'} value={practical ? referenceWeightLabel(row.reference2027.inquiry2, row.domainCount) ?? '—' : row.reference2027.inquiry2 || '—'} sort={sort} onSort={onSort} />
+        <MethodSummaryValue label="탐구1" column={practical ? 'inquiryWeight' : 'inquiry'} value={practical ? referenceWeightLabel(row.reference2027.inquiry1, row.domainCount) ?? '—' : row.reference2027.inquiry1 || '—'} sort={sort} onSort={onSort} />
+      </> : ratioItem('탐구', 'inquiry')}
       <MethodSummaryValue label="영어 방식" column="englishMethod" value={row.englishMethod || '—'} sort={sort} onSort={onSort} />
       <MethodSummaryValue label="한국사" column="history" value={row.ratios.history} sort={sort} onSort={onSort} />
       <MethodSummaryValue label="2026 백분위 50/70" column="percentile2026" value={methodResultSummaryValue(row, 'percentile')} sort={sort} onSort={onSort} />
       <MethodSummaryValue label="2026 환산점수 50/70" column="converted2026" value={methodResultSummaryValue(row, 'converted')} sort={sort} onSort={onSort} />
       <MethodSummaryValue label="2026 환산만점" column="conversionMax" value={row.conversionMax === null ? '—' : formatPlainNumber(row.conversionMax)} sort={sort} onSort={onSort} />
-      <div className="method-summary-metrics"><span>활용지표</span><strong>{row.metrics.join(', ') || '—'}</strong></div>
+      <div className="method-summary-metrics"><span>활용지표</span><strong>{row.reference2027?.indicator || row.metrics.join(', ') || '—'}</strong></div>
       <MethodSummaryValue label="학생부" column="sb" value={recordLabel(row)} sort={sort} onSort={onSort} />
     </div>
   </TableCell></TableRow>;
@@ -1165,6 +1201,7 @@ function PercentileCutCell({ value }: { value: number | null }) {
 function RatioCell({ row, domain }: { row: MethodView; domain: DomainKey }) {
   const value = row.ratios[domain];
   const label = row.ratioLabels?.[domain];
+  if (label) return <TableCell className="dynamic-ratio-cell">{label}</TableCell>;
   if (value !== null) return <NumberCell value={value} suffix="%" className={ratioTone(row.ratios, domain)} />;
   return <TableCell className={label ? 'dynamic-ratio-cell' : 'number-cell muted-cell'}>{label ?? '—'}</TableCell>;
 }
@@ -1191,6 +1228,24 @@ function AdmissionGroupLights({ group }: { group: string }) {
 }
 
 function MethodDetailRow({ row, colSpan }: { row: MethodView; colSpan: number }) {
+  if (row.reference2027) {
+    const reference = row.reference2027;
+    return <TableRow className="method-detail-row">
+      <TableCell colSpan={colSpan}>
+        <div className="method-detail-lines">
+          <p><strong><Search aria-hidden="true" />구분</strong><span>{reference.label}</span></p>
+          <p><strong><Sparkles aria-hidden="true" />특이사항</strong><span>{reference.note || '—'}</span></p>
+          <p className="reference-bonus-line">
+            {reference.socialStudyAdvantage && <><strong>사탐런</strong><span>유리</span></>}
+            {reference.calculusGeometryBonus && <><strong>미기 가산</strong><span>{reference.calculusGeometryBonus}</span></>}
+            {reference.socialBonus && <><strong>사탐 가산</strong><span>{reference.socialBonus}</span></>}
+            {reference.scienceBonus && <><strong>과탐 가산</strong><span>{reference.scienceBonus}</span></>}
+          </p>
+          <p><strong><Languages aria-hidden="true" />영어 반영방법</strong><span>{row.englishMethod}</span><strong><Landmark aria-hidden="true" />한국사 반영방법</strong><span>{row.ratios.history}</span><strong>학생부</strong><span>{recordLabel(row)}</span></p>
+        </div>
+      </TableCell>
+    </TableRow>;
+  }
   const notes: string[] = [];
   if (row.bonusDetail && row.bonusDetail !== '없음') {
     notes.push(/가산|가점|감점|응시|미반영/.test(row.bonusDetail) ? row.bonusDetail : `가점 ${row.bonusDetail}`);
@@ -1218,6 +1273,25 @@ function ListDisclosure({ total, shown, initial, onExpand, onCollapse }: { total
     {shown < total && <Button type="button" variant="outline" size="sm" onClick={onExpand}>펼치기</Button>}
     {shown > initial && <Button type="button" variant="outline" size="sm" onClick={onCollapse}>접기</Button>}
   </div>;
+}
+
+function referenceBonusText(reference: Reference2027Row) {
+  return [
+    reference.socialStudyAdvantage ? '사탐런 유리' : '',
+    reference.calculusGeometryBonus ? `미기 ${reference.calculusGeometryBonus}` : '',
+    reference.socialBonus ? `사탐 ${reference.socialBonus}` : '',
+    reference.scienceBonus ? `과탐 ${reference.scienceBonus}` : '',
+  ].filter(Boolean).join(', ') || '—';
+}
+
+function referenceRatioText(reference: Reference2027Row) {
+  return [
+    reference.korean ? `국어 ${reference.korean}` : '',
+    reference.math ? `수학 ${reference.math}` : '',
+    reference.english ? `영어 ${reference.english}` : '',
+    reference.inquiry2 ? `탐구2 ${reference.inquiry2}` : '',
+    reference.inquiry1 ? `탐구1 ${reference.inquiry1}` : '',
+  ].filter(Boolean).join(', ') || '—';
 }
 
 function DetailBlock({ title, text }: { title: string; text: string }) {
@@ -1263,8 +1337,11 @@ function scoreTrackCategory(row: Pick<ScoreRow, 'u' | 'd' | 't'>): TrackCategory
   return '인문';
 }
 
-function methodTrackCategories(row: Pick<MethodView, 'trackName' | 'departmentTrack'>): TrackCategory[] {
+function methodTrackCategories(row: Pick<MethodView, 'trackName' | 'departmentTrack' | 'reference2027'>): TrackCategory[] {
   if (row.departmentTrack) return [row.departmentTrack];
+  if (row.reference2027?.trackCategories.length) {
+    return row.reference2027.trackCategories.filter((value): value is TrackCategory => TRACK_CATEGORIES.includes(value as TrackCategory));
+  }
   const text = normalize(row.trackName);
   const isAll = /(?:전모집단위|전체모집단위|공통계열|통합계열)/.test(text);
   if (isAll) {
@@ -1307,6 +1384,21 @@ function regionOptions(values: string[]) {
 
 function buildProfileAnalysis(rows: MethodView[], region: string, university: string) {
   const title = university !== '전체' ? `${university} 2027 정시` : region !== '전체' ? `${region} 2027 정시` : '전국 2027 정시';
+  if (rows.some((row) => row.reference2027)) {
+    const referenceRows = rows.map((row) => row.reference2027).filter((row): row is Reference2027Row => Boolean(row));
+    const values = (key: keyof Pick<Reference2027Row, 'indicator' | 'studentRecord'>) => [...new Set(referenceRows.map((row) => row[key]).filter(Boolean))].join(', ') || '—';
+    return {
+      title,
+      items: [
+        { label: '반영유형', value: formatNumber(referenceRows.length) },
+        { label: '지표', value: values('indicator') },
+        { label: '사탐런 유리', value: formatNumber(referenceRows.filter((row) => row.socialStudyAdvantage).length) },
+        { label: '미기 가산', value: formatNumber(referenceRows.filter((row) => row.calculusGeometryBonus).length) },
+        { label: '사탐 가산', value: formatNumber(referenceRows.filter((row) => row.socialBonus).length) },
+        { label: '과탐 가산', value: formatNumber(referenceRows.filter((row) => row.scienceBonus).length) },
+      ],
+    };
+  }
   const domainOrder = ['국어', '수학', '영어', '탐구'];
   const domainCounts = new Map(domainOrder.map((domain) => [domain, 0]));
   rows.forEach((row) => highestRatioDomains(row.ratios).split('/').filter(Boolean).forEach((domain) => domainCounts.set(domain, (domainCounts.get(domain) ?? 0) + 1)));
@@ -1348,7 +1440,112 @@ function normalizedHistoryMethod(value: string, officialMethod?: string) {
   return officialMethod && ['가점', '감점', '등급 환산', '미반영'].includes(officialMethod) ? officialMethod : '미반영';
 }
 
+function referenceRatioValue(value: string) {
+  const match = value.match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : null;
+}
+
+function referenceDomainCount(reference: Reference2027Row) {
+  const values = [reference.korean, reference.math, reference.english, reference.inquiry2 || reference.inquiry1].filter(Boolean);
+  const parenthesized = values.filter((value) => value.startsWith('(')).length;
+  const fixed = values.length - parenthesized;
+  const selected = Number(reference.note.match(/상위\s*(\d+)개/)?.[1] ?? 0);
+  return selected && parenthesized ? fixed + Math.min(selected, parenthesized) : values.length;
+}
+
+function referenceWeightLabel(value: string, domainCount: number) {
+  if (!value || !domainCount) return undefined;
+  const numbers = [...value.matchAll(/\d+(?:\.\d+)?/g)].map((match) => Number(match[0]));
+  if (!numbers.length) return undefined;
+  const weights = numbers.map((number) => `${(number / (100 / domainCount)).toFixed(2)}배`);
+  return value.startsWith('(') ? `(${weights.join(' / ')})` : weights.join(' / ');
+}
+
+function referenceEnglishMethod(reference: Reference2027Row) {
+  if (/영어.{0,30}감점|감점.{0,30}영어/.test(reference.note)) return '감점';
+  if (reference.english || /영어.{0,30}(?:등급점수|등급 점수|환산|반영점수)/.test(reference.note)) return '등급 환산';
+  return '—';
+}
+
+function referenceHistoryMethod(reference: Reference2027Row) {
+  if (!reference.note.includes('한국사')) return '—';
+  if (/한국사.{0,30}감점|감점.{0,30}한국사/.test(reference.note)) return '감점';
+  if (/한국사.{0,30}(?:가점|가산)|(?:가점|가산).{0,30}한국사/.test(reference.note)) return '가점';
+  if (/한국사.{0,30}(?:등급점수|등급 점수|환산|반영점수)/.test(reference.note)) return '등급 환산';
+  return '—';
+}
+
+function referenceMetrics(indicator: string) {
+  if (indicator === '표+표') return ['표준점수'];
+  if (indicator === '표+변') return ['표준점수', '변환표준점수'];
+  if (indicator === '백') return ['백분위'];
+  if (indicator === '등급') return ['등급'];
+  return [];
+}
+
+function referenceExamName(reference: Reference2027Row) {
+  if (/일반Ⅰ/.test(`${reference.studentRecord} ${reference.note}`)) return '일반Ⅰ';
+  const numbered = reference.label.match(/일반\s*([12])/);
+  return numbered ? `일반전형${numbered[1]}` : '일반전형';
+}
+
 function expandProfileMethods(profile: ProfileView): MethodView[] {
+  const references = profile.reference2027Rows ?? (profile.reference2027 ? [profile.reference2027] : []);
+  if (references.length) {
+    const legacyMethods = profile.referenceSupplementOnly
+      ? []
+      : expandProfileMethods({ ...profile, reference2027: undefined, reference2027Rows: undefined });
+    return references.map((reference, referenceIndex) => {
+    const categories = new Set(reference.trackCategories);
+    const candidates = legacyMethods.filter((method) => methodTrackCategories(method).some((category) => categories.has(category)));
+    const candidateGroups = unique(candidates.map((method) => method.admissionGroup));
+    const candidateExams = unique(candidates.map((method) => method.examName));
+    const inquiry = reference.inquiry2 || reference.inquiry1;
+    const domainCount = referenceDomainCount(reference);
+    const ratios: RatioSnapshot = {
+      korean: referenceRatioValue(reference.korean),
+      math: referenceRatioValue(reference.math),
+      english: referenceRatioValue(reference.english),
+      inquiry: referenceRatioValue(inquiry),
+      history: referenceHistoryMethod(reference),
+    };
+    const denominator = domainCount ? 100 / domainCount : 0;
+    const weights = Object.fromEntries((['korean', 'math', 'english', 'inquiry'] as DomainKey[]).map((key) => [
+      key,
+      ratios[key] === null || !denominator ? null : Number((ratios[key] / denominator).toFixed(2)),
+    ])) as WeightSnapshot;
+    const ratioLabels: RatioLabels = {
+      korean: reference.korean || undefined,
+      math: reference.math || undefined,
+      english: reference.english || undefined,
+      inquiry: inquiry || undefined,
+    };
+    const weightLabels: RatioLabels = {
+      korean: referenceWeightLabel(reference.korean, domainCount),
+      math: referenceWeightLabel(reference.math, domainCount),
+      english: referenceWeightLabel(reference.english, domainCount),
+      inquiry: referenceWeightLabel(inquiry, domainCount),
+    };
+    const examName = referenceExamName(reference);
+    return {
+      ...profile,
+      reference2027: reference,
+      rowId: `${profile.id}-reference-${referenceIndex}`,
+      admissionGroup: candidateGroups.length === 1 ? candidateGroups[0] : '—',
+      examName: candidateExams.length === 1 ? candidateExams[0] : examName,
+      trackName: reference.trackLabel,
+      ratios,
+      weights,
+      domainCount,
+      englishMethod: referenceEnglishMethod(reference),
+      bonusDetail: reference.note,
+      metrics: referenceMetrics(reference.indicator),
+      ratioLabels,
+      weightLabels,
+      selectionDetail: reference.note,
+    };
+    });
+  }
   const bracketPattern = /\[([^\]]+)\]\s*([\s\S]*?)(?=\[[^\]]+\]|$)/g;
   const bracketed = [...profile.selection.matchAll(bracketPattern)].map((match) => ({
     name: match[1].trim(),
@@ -2816,7 +3013,7 @@ function displayRatio(value: number | null) {
 }
 
 function displayRatioForRow(row: MethodView, domain: DomainKey) {
-  return displayRatio(row.ratios[domain]) || row.ratioLabels?.[domain] || '';
+  return row.ratioLabels?.[domain] || displayRatio(row.ratios[domain]) || '';
 }
 
 function displayWeight(value: number | null, fallback?: string) {
@@ -2975,6 +3172,7 @@ function splitMethodsByDepartment(methods: MethodView[], scores: ScoreRow[]) {
   });
 
   return methods.flatMap((method) => {
+    if (method.reference2027) return [method];
     const resultRows = method.result2026Rows ?? [];
     let departmentRows = resultRows;
     if (!departmentRows.length) {
@@ -3212,7 +3410,8 @@ function highestRatioDomains(ratios: WeightSnapshot) {
   return entries.filter(([, value]) => value === maximum).map(([label]) => label).join('/');
 }
 
-function recordLabel(row: Pick<ProfileView, 'sb' | 'sbDetail'>) {
+function recordLabel(row: Pick<ProfileView, 'sb' | 'sbDetail' | 'reference2027'>) {
+  if (row.reference2027) return row.reference2027.studentRecord || '—';
   const evaluation = studentRecordEvaluation(row);
   if (evaluation.mode === '정성평가' || evaluation.mode === '정량평가') {
     if (evaluation.rate !== null) return `${evaluation.mode} ${formatPlainNumber(evaluation.rate)}%`;
@@ -3222,7 +3421,13 @@ function recordLabel(row: Pick<ProfileView, 'sb' | 'sbDetail'>) {
   return evaluation.mode;
 }
 
-function studentRecordEvaluation(row: Pick<ProfileView, 'sb' | 'sbDetail'>) {
+function studentRecordEvaluation(row: Pick<ProfileView, 'sb' | 'sbDetail' | 'reference2027'>) {
+  if (row.reference2027) {
+    const detail = row.reference2027.studentRecord;
+    if (!detail) return { mode: '—', rate: null, detail: '' } as const;
+    const rate = Number(detail.match(/(\d+(?:\.\d+)?)\s*%/)?.[1] ?? NaN);
+    return { mode: detail.startsWith('정성') ? '정성평가' : '정량평가', rate: Number.isFinite(rate) ? rate : null, detail } as const;
+  }
   if (row.sb === false) return { mode: '미반영', rate: null, detail: '미반영' } as const;
   if (row.sb !== true) return { mode: '미기재', rate: null, detail: row.sbDetail || '' } as const;
 

@@ -29,10 +29,13 @@
     }
   ],
   "sourceFailures": [],
-  "universitiesChecked": 185,
-  "universitiesNamedInEducationOfficeSources": 184,
+  "universitiesChecked": 203,
+  "universitiesNamedInEducationOfficeSources": 199,
   "universitiesNotNamed": [
-    "감신대"
+    "감신대",
+    "한국침례신대",
+    "한예종",
+    "호남신대"
   ],
   "note": "시도교육청 자료에 대학별 수치가 없는 경우 대학 입학처 모집요강과 대학어디가를 기준으로 검증"
 }

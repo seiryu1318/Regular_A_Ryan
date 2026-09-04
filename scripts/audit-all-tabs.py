@@ -36,8 +36,9 @@ def main() -> None:
     app_source = APP_PATH.read_text(encoding="utf-8")
     issues: list[dict] = []
 
-    # 정시 변화 탭: 화면의 명시적 정시 전형 목록만 검사한다.
-    change_ids = regular_change_ids(app_source)
+    # 정시 분석 탭: 기준 시트 동기화 행이 있으면 그 행 전체를 검사한다.
+    reference_changes = [row for row in data.get("changes", []) if "docs.google.com/spreadsheets" in str(row.get("sourceFile", ""))]
+    change_ids = {int(row["id"]) for row in reference_changes} or regular_change_ids(app_source)
     change_by_id = {row.get("id"): row for row in data.get("changes", [])}
     if not change_ids:
         issue(issues, "정시 변화", "visible-id-parser", "화면 노출 ID 목록을 읽지 못함")
@@ -46,21 +47,29 @@ def main() -> None:
         if row is None:
             issue(issues, "정시 변화", "missing-row", f"ID {change_id}")
             continue
-        for field in ("u", "category", "current", "previous", "sourceFile"):
+        required_fields = ("u", "category", "current", "sourceFile") if reference_changes else ("u", "category", "current", "previous", "sourceFile")
+        for field in required_fields:
             if not str(row.get(field, "")).strip():
                 issue(issues, "정시 변화", "blank-field", f"ID {change_id} {field}")
     if "regularAdmissionChanges(data?.changes" not in app_source:
         issue(issues, "정시 변화", "render-filter", "정시 전용 필터 연결을 확인할 수 없음")
 
-    # 반영방법 탭: 대학별 공식 모집요강 연결, 대학명 중복, 필수 표기를 검사한다.
+    # 반영방법 탭: 기준 시트의 대학별 분리 행과 필수 표기를 검사한다.
     profiles = data.get("profiles", [])
     profile_names = [str(row.get("u", "")).strip() for row in profiles]
-    duplicates = sorted({name for name in profile_names if name and profile_names.count(name) > 1})
+    reference_labels = [
+        str(reference.get("label", "")).strip()
+        for row in profiles
+        for reference in row.get("reference2027Rows", [])
+    ]
+    duplicates = sorted({name for name in reference_labels if name and reference_labels.count(name) > 1})
     for name in duplicates:
-        issue(issues, "반영방법", "duplicate-university", name)
+        issue(issues, "반영방법", "duplicate-reference-row", name)
     for row in profiles:
         name = str(row.get("u", "")).strip() or f"ID {row.get('id')}"
-        for field in ("u", "r", "selection", "metric", "officialSourceFile"):
+        reference_rows = row.get("reference2027Rows", [])
+        required_fields = ("u", "r", "sourceFile") if reference_rows else ("u", "r", "selection", "metric", "officialSourceFile")
+        for field in required_fields:
             if not str(row.get(field, "")).strip():
                 issue(issues, "반영방법", "blank-field", f"{name} {field}")
         source_path = row.get("officialSourcePath")
@@ -70,7 +79,11 @@ def main() -> None:
         if pages is not None and (not isinstance(pages, list) or any(not isinstance(page, int) or page < 1 for page in pages)):
             issue(issues, "반영방법", "invalid-source-pages", name)
         no_regular_selection = any(token in str(row.get("selection", "")) for token in ("정시 미선발", "모집인원 없음"))
-        if (not isinstance(row.get("metrics"), list) or not row.get("metrics")) and not no_regular_selection:
+        no_exam_metric = bool(reference_rows) and all(
+            not any(str(reference.get(field, "")).strip() for field in ("korean", "math", "english", "inquiry2", "inquiry1"))
+            for reference in reference_rows
+        )
+        if (not isinstance(row.get("metrics"), list) or not row.get("metrics")) and not no_regular_selection and not no_exam_metric:
             issue(issues, "반영방법", "missing-metric", name)
 
     # 3개년 입시결과 탭: 전 행의 식별자, 범위, 단위, 반영방법 연결을 검사한다.
@@ -150,19 +163,19 @@ def main() -> None:
             issue(issues, "정시 변화", "rate-arithmetic", f"{calculated}!={rate}")
 
     official_results = json.loads((ROOT / "audit" / "official-results-summary.json").read_text(encoding="utf-8"))
-    official_methods = json.loads((ROOT / "audit" / "official-methods-summary.json").read_text(encoding="utf-8"))
+    reference_2027 = json.loads((ROOT / "audit" / "regular-2027-reference-summary.json").read_text(encoding="utf-8"))
     education = json.loads((ROOT / "audit" / "education-office-sources.json").read_text(encoding="utf-8"))
     if official_results.get("mismatched_rows") != 0 or official_results.get("official_pairs_failed") != 0:
         issue(issues, "3개년 입시결과", "official-crosscheck", json.dumps(official_results, ensure_ascii=False))
-    if official_methods.get("needs_review") != 0:
-        issue(issues, "반영방법", "official-crosscheck", json.dumps(official_methods, ensure_ascii=False))
+    if reference_2027.get("issues") != 0:
+        issue(issues, "반영방법", "reference-crosscheck", json.dumps(reference_2027, ensure_ascii=False))
     if education.get("sourceFailures"):
         issue(issues, "전체", "education-office-crosscheck", json.dumps(education["sourceFailures"], ensure_ascii=False))
 
     report = {
         "tabs": {
             "정시 변화": len(change_ids),
-            "반영방법": len(profiles),
+            "반영방법": reference_2027.get("project_reference_rows") or len(profiles),
             "3개년 입시결과": len(scores),
             "일정": len(schedule),
         },
@@ -174,7 +187,7 @@ def main() -> None:
             "adigaPairs": official_results.get("official_pairs"),
             "adigaMatchedRows": official_results.get("matched_rows"),
             "adigaMismatchedRows": official_results.get("mismatched_rows"),
-            "officialMethodProfiles": official_methods.get("verified"),
+            "reference2027Rows": reference_2027.get("project_reference_rows"),
             "educationOfficeSources": len(education.get("sources", [])),
         },
         "issues": len(issues),
