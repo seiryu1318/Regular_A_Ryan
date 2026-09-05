@@ -96,6 +96,7 @@ def main() -> None:
     allowed_groups = {"가", "나", "다", "가군", "나군", "다군"}
     missing_percentile = 0
     missing_conversion = 0
+    department_groups: dict[tuple[int, str, str], set[str]] = {}
     for row in scores:
         row_id = row.get("id")
         for field in ("u", "y", "a", "g", "d", "t", "r", "source"):
@@ -105,6 +106,9 @@ def main() -> None:
             issue(issues, "3개년 입시결과", "invalid-year", f"ID {row_id}: {row.get('y')}")
         if row.get("g") not in allowed_groups:
             issue(issues, "3개년 입시결과", "invalid-group", f"ID {row_id}: {row.get('g')}")
+        else:
+            key = (int(row.get("y")), str(row.get("u", "")), str(row.get("d", "")))
+            department_groups.setdefault(key, set()).add(str(row.get("g", "")).replace("군", ""))
         metric = re.sub(r"\s+", "", str(row.get("metric", "")))
         if "백분위" in metric:
             for field in ("p50", "p70"):
@@ -122,10 +126,21 @@ def main() -> None:
         linked_profile = university if university in profile_name_set else aliases.get(university)
         if linked_profile not in profile_name_set:
             issue(issues, "3개년 입시결과", "unlinked-method", f"ID {row_id}: {university}")
-        if row.get("p50") is None and row.get("p70") is None:
+        valid_p50 = isinstance(row.get("p50"), (int, float)) and 0 <= row["p50"] <= 100
+        valid_p70 = isinstance(row.get("p70"), (int, float)) and 0 <= row["p70"] <= 100
+        if not valid_p50 and not valid_p70:
             missing_percentile += 1
         if row.get("cv50") is None and row.get("cv70") is None:
             missing_conversion += 1
+        if (not valid_p50 or not valid_p70 or row.get("cv50") is None or row.get("cv70") is None) and not str(row.get("missingReason", "")).strip():
+            issue(issues, "3개년 입시결과", "missing-reason", f"ID {row_id}")
+
+    if "historicalAdmissionGroups(regularScores)" not in app_source or "AdmissionGroupLights group={row.displayGroup}" not in app_source:
+        issue(issues, "3개년 입시결과", "group-light-link", "모집단위별 복수 모집군 신호 연결을 확인할 수 없음")
+    if "const groups = score.g" not in app_source:
+        issue(issues, "반영방법", "department-group-link", "반영방법의 모집단위별 실제 모집군 연결을 확인할 수 없음")
+    multi_group_departments = sum(1 for groups in department_groups.values() if len(groups) > 1)
+    all_group_departments = sum(1 for groups in department_groups.values() if groups == {"가", "나", "다"})
 
     # 일정 탭과 상단 전국 수치: 날짜 순서와 산술 일치를 검사한다.
     overview = data.get("overview", {})
@@ -164,11 +179,14 @@ def main() -> None:
 
     official_results = json.loads((ROOT / "audit" / "official-results-summary.json").read_text(encoding="utf-8"))
     reference_2027 = json.loads((ROOT / "audit" / "regular-2027-reference-summary.json").read_text(encoding="utf-8"))
+    methods_2027 = json.loads((ROOT / "audit" / "adiga-2027-methods-summary.json").read_text(encoding="utf-8"))
     education = json.loads((ROOT / "audit" / "education-office-sources.json").read_text(encoding="utf-8"))
     if official_results.get("mismatched_rows") != 0 or official_results.get("official_pairs_failed") != 0:
         issue(issues, "3개년 입시결과", "official-crosscheck", json.dumps(official_results, ensure_ascii=False))
     if reference_2027.get("issues") != 0:
         issue(issues, "반영방법", "reference-crosscheck", json.dumps(reference_2027, ensure_ascii=False))
+    if methods_2027.get("download_failures") != 0 or methods_2027.get("needs_review") != 0:
+        issue(issues, "반영방법", "adiga-2027-crosscheck", json.dumps(methods_2027, ensure_ascii=False))
     if education.get("sourceFailures"):
         issue(issues, "전체", "education-office-crosscheck", json.dumps(education["sourceFailures"], ensure_ascii=False))
 
@@ -188,7 +206,12 @@ def main() -> None:
             "adigaMatchedRows": official_results.get("matched_rows"),
             "adigaMismatchedRows": official_results.get("mismatched_rows"),
             "reference2027Rows": reference_2027.get("project_reference_rows"),
+            "adiga2027Profiles": methods_2027.get("adiga_profiles"),
             "educationOfficeSources": len(education.get("sources", [])),
+        },
+        "admissionGroupLights": {
+            "multiGroupDepartments": multi_group_departments,
+            "allThreeGroupDepartments": all_group_departments,
         },
         "issues": len(issues),
         "details": issues,

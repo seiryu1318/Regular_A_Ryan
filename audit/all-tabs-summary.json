@@ -6,15 +6,20 @@
     "일정": 5
   },
   "missingPublishedValues": {
-    "percentileBothBlank": 1764,
+    "percentileBothBlank": 2014,
     "conversionBothBlank": 929
   },
   "officialCrosscheck": {
     "adigaPairs": 514,
-    "adigaMatchedRows": 13092,
+    "adigaMatchedRows": 13094,
     "adigaMismatchedRows": 0,
     "reference2027Rows": 410,
+    "adiga2027Profiles": 195,
     "educationOfficeSources": 3
+  },
+  "admissionGroupLights": {
+    "multiGroupDepartments": 8,
+    "allThreeGroupDepartments": 0
   },
   "issues": 0,
   "details": []

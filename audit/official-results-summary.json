@@ -5,14 +5,14 @@
   "official_pairs_downloaded": 514,
   "official_pairs_failed": 0,
   "official_rows_parsed": 20540,
-  "matched_rows": 13092,
-  "exact_or_name_matched_rows": 13080,
+  "matched_rows": 13094,
+  "exact_or_name_matched_rows": 13082,
   "numeric_fingerprint_matched_rows": 12,
   "mismatched_rows": 0,
   "unmatched_rows": 1290,
   "download_failed_rows": 0,
   "official_values_unavailable_rows": 0,
   "official_result_unavailable_rows": 690,
-  "low_confidence_candidate_rows": 205,
+  "low_confidence_candidate_rows": 203,
   "failures": {}
 }

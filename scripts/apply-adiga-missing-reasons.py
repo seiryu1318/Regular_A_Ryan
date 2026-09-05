@@ -30,6 +30,11 @@ def source_pair(row: dict) -> tuple[str, str] | None:
     return (code.group(1), source_year.group(1)) if code and source_year else None
 
 
+def missing_percentile(row: dict, field: str) -> bool:
+    value = row.get(field)
+    return not isinstance(value, (int, float)) or not 0 <= value <= 100
+
+
 def table_label(table) -> str:
     node = table.getprevious()
     while node is not None:
@@ -80,30 +85,37 @@ def main() -> None:
         row.pop("missingReason", None)
         pair = source_pair(row)
         reason = ""
-        if pair and all(row.get(field) is None for field in ("p50", "p70", "cv50", "cv70")):
+        has_missing_result = (
+            missing_percentile(row, "p50")
+            or missing_percentile(row, "p70")
+            or row.get("cv50") is None
+            or row.get("cv70") is None
+        )
+        if pair and has_missing_result:
             candidates = reasons_by_pair.get(pair, {}).get((admission_group(row.get("g") or row.get("a", "")), clean(row.get("d", ""))), [])
             local_exam = clean(row.get("exam") or "")
             if "일반" in local_exam:
                 candidates = [candidate for candidate in candidates if "일반" in clean(candidate["exam"])]
             unique_reasons = sorted({candidate["reason"] for candidate in candidates})
             if len(unique_reasons) == 1:
-                reason = unique_reasons[0]
+                reason = f"대학어디가 미제출 사유: {unique_reasons[0]}"
 
         if not reason:
             publisher = "대학어디가" if pair else "대학 입학처 공개 자료"
             missing: list[str] = []
-            metric = str(row.get("metric") or "")
-            cut_label = "백분위" if "백분위" in metric else "표준점수" if "표준점수" in metric else "성적"
-            if row.get("p50") is None:
-                missing.append(f"{cut_label} 50%")
-            if row.get("p70") is None:
-                missing.append(f"{cut_label} 70%")
+            if missing_percentile(row, "p50"):
+                missing.append("백분위 50%")
+            if missing_percentile(row, "p70"):
+                missing.append("백분위 70%")
             if row.get("cv50") is None:
                 missing.append("환산점수 50%")
             if row.get("cv70") is None:
                 missing.append("환산점수 70%")
             if missing:
-                reason = f"{publisher}에 {', '.join(missing)} 미공개"
+                if pair:
+                    reason = f"대학어디가 미공개, 미제출 사유 별도 기재 없음: {', '.join(missing)}"
+                else:
+                    reason = f"{publisher} 미공개: {', '.join(missing)}"
 
         if not reason:
             continue

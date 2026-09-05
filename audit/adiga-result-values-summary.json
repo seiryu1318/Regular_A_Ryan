@@ -1,0 +1,11 @@
+{
+  "official_pairs_read": 514,
+  "rows_completed": 3,
+  "unmatched_rows_with_missing_values": 1771,
+  "fields_completed": {
+    "cv50": 3,
+    "cv70": 0,
+    "p50": 0,
+    "p70": 2
+  }
+}

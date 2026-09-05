@@ -1,9 +1,9 @@
 {
-  "profiles": 185,
-  "adiga_profiles": 179,
-  "official_admission_exceptions": 6,
-  "unique_adiga_pages": 179,
+  "profiles": 203,
+  "adiga_profiles": 195,
+  "official_admission_exceptions": 8,
+  "unique_adiga_pages": 194,
   "download_failures": 0,
-  "evidence_warnings_checked_against_official_admissions": 133,
+  "evidence_warnings_checked_against_official_admissions": 135,
   "needs_review": 0
 }

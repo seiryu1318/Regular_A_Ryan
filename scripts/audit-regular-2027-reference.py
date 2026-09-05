@@ -18,6 +18,8 @@ REQUIRED_LABELS = {
     "한국침례신대", "KAIST", "영산선학대", "호남신대", "GIST", "KENTECH",
 }
 SCIENCE_INSTITUTES = {"DGIST", "UNIST", "KAIST", "KENTECH"}
+TRACK_CATEGORIES = {"인문", "자연", "예체능", "의약학"}
+RAW_TRACK_LABELS = {"인", "자", "경", "공", "의", "약", "한의", "간호", "A", "B", "C", "일반", "자전"}
 
 
 def value(row: list, index: int) -> str:
@@ -80,6 +82,19 @@ for index, row in enumerate(rows, 2):
         issues.append(f"{index}행 프로젝트 미연결: {label}")
         continue
     profile, source = linked
+    track_label = str(source.get("trackLabel") or "").strip()
+    track_code = str(source.get("trackCode") or "").strip()
+    track_categories = source.get("trackCategories") or []
+    if not track_label or track_label in RAW_TRACK_LABELS:
+        issues.append(f"{index}행 {label} 계열 약칭 잔존: {track_label}")
+    if not isinstance(track_categories, list) or not track_categories or any(category not in TRACK_CATEGORIES for category in track_categories):
+        issues.append(f"{index}행 {label} 계열 분류 오류: {track_categories}")
+    if track_code == "인" and track_categories != ["인문"]:
+        issues.append(f"{index}행 {label} 인문계열 분류 오류: {track_categories}")
+    if track_code == "자" and track_categories != ["자연"]:
+        issues.append(f"{index}행 {label} 자연계열 분류 오류: {track_categories}")
+    if track_code == "간호" and track_categories != ["자연"]:
+        issues.append(f"{index}행 {label} 간호학과 분류 오류: {track_categories}")
     expected_fields = {
         "region": value(row, 0),
         "indicator": indicator,
