@@ -1,0 +1,14 @@
+{
+  "pairs": 515,
+  "pages_failed": 0,
+  "pairs_with_rules": 419,
+  "parsed_rules": 2282,
+  "valid_rules": 1599,
+  "score_rows": 15337,
+  "matched_rows": 4426,
+  "unmatched_rows": 10911,
+  "ambiguous_rows": 791,
+  "quarantined_rows": 173,
+  "rows_without_adiga_code": 0,
+  "failures": []
+}

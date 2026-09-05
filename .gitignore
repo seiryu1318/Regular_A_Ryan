@@ -33,6 +33,7 @@ yarn-error.log*
 .vercel
 next-env.d.ts
 /dist/
+/build/
 /.wrangler/
 /outputs/
 /work/
@@ -40,6 +41,7 @@ next-env.d.ts
 /tmp/
 /audit/adiga-results/
 /audit/adiga-2027-methods/
+/audit/adiga-historical-methods/
 /audit/preview-8767.err.log
 /audit/preview-8767.out.log
 /tsconfig.tsbuildinfo

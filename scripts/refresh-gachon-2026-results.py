@@ -39,11 +39,11 @@ TRACK_OVERRIDES = {
     "의예과": "의약학",
     "한의예과": "의약학",
     "약학과": "의약학",
-    "간호학과": "의약학",
-    "물리치료학과": "의약학",
-    "방사선학과": "의약학",
-    "응급구조학과": "의약학",
-    "치위생학과": "의약학",
+    "간호학과": "자연",
+    "물리치료학과": "자연",
+    "방사선학과": "자연",
+    "응급구조학과": "자연",
+    "치위생학과": "자연",
     "연기예술학과(연출)": "예체능",
     "운동재활학과": "예체능",
 }
@@ -59,7 +59,9 @@ def infer_track(department: str, existing_tracks: dict[str, str]) -> str:
     known = existing_tracks.get(clean_name(department))
     if known:
         return known
-    if re.search(r"의예|한의예|약학|간호|치위생|방사선|물리치료|응급구조", department):
+    if re.search(r"간호|치위생|방사선|물리치료|응급구조|임상병리|작업치료", department):
+        return "자연"
+    if re.search(r"의예|한의예|치의예|약학|수의", department):
         return "의약학"
     if re.search(r"연기|음악|미술|디자인|체육|운동재활", department):
         return "예체능"

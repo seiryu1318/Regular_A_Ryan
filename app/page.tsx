@@ -140,10 +140,20 @@ type ScoreRow = {
   sb: boolean | null;
   exam?: string;
   missingReason?: string | null;
+  yearMethod?: {
+    year: number;
+    target: string;
+    labels: {
+      korean: string;
+      math: string;
+      english: string;
+      inquiry: string;
+    };
+    source: string;
+  };
 };
-type CutMetric = '백분위' | '성적';
+type CutMetric = '백분위' | '표준점수' | '등급' | '성적';
 type ScoreView = ScoreRow & {
-  ruleMatches: MethodView[];
   displayGroup: string;
   cutMetric: CutMetric;
 };
@@ -352,6 +362,8 @@ export default function Home() {
   const [scoreGroups, setScoreGroups] = useState<string[]>([]);
   const [scorePercentileMin, setScorePercentileMin] = useState('');
   const [scorePercentileMax, setScorePercentileMax] = useState('');
+  const [scoreStandardMin, setScoreStandardMin] = useState('');
+  const [scoreStandardMax, setScoreStandardMax] = useState('');
   const [scoreConvertedMin, setScoreConvertedMin] = useState('');
   const [scoreConvertedMax, setScoreConvertedMax] = useState('');
   const [scoreSort, setScoreSort] = useState<SortState>({ key: 'y', direction: 'desc' });
@@ -458,30 +470,19 @@ export default function Home() {
   }, [profileViews, regularScores]);
   const methodDisplayViews = useMemo<MethodView[]>(() => splitMethodsByDepartment(methodViews, regularScores), [methodViews, regularScores]);
   const scoreViews = useMemo<ScoreView[]>(() => {
-    const methodsByUniversity = new Map<string, MethodView[]>();
-    methodViews.forEach((method) => {
-      const list = methodsByUniversity.get(method.u) ?? [];
-      list.push(method);
-      methodsByUniversity.set(method.u, list);
-    });
     const historicalGroups = historicalAdmissionGroups(regularScores);
     return regularScores.map((score) => {
-      const ruleMatches = scoreMethodsForRow(
-        score,
-        methodsByUniversity.get(score.u)
-          ?? methodsByUniversity.get(SCORE_PROFILE_ALIASES[score.u] ?? '')
-          ?? [],
-      );
       const fallbackGroup = historicalGroups.get(scoreGroupKey(score)) ?? (score.g ? `${score.g.replace(/군$/, '')}군` : '군외');
+      const yearMethod = score.yearMethod?.year === score.y ? score.yearMethod : undefined;
       return {
         ...score,
+        yearMethod,
         t: scoreTrackCategory(score),
-        ruleMatches,
         displayGroup: fallbackGroup,
         cutMetric: scoreCutMetric(score),
       };
     });
-  }, [methodViews, regularScores]);
+  }, [regularScores]);
   const regularChanges = useMemo(() => regularAdmissionChanges(data?.changes ?? []), [data]);
 
   const changeUniversities = useMemo(() => unique(regularChanges.map((row) => row.u)), [regularChanges]);
@@ -558,22 +559,26 @@ export default function Home() {
   const filteredScores = useMemo(() => {
     const query = normalize(scoreQuery);
     const percentileRange = numericRange(scorePercentileMin, scorePercentileMax);
+    const standardRange = numericRange(scoreStandardMin, scoreStandardMax);
     const convertedRange = numericRange(scoreConvertedMin, scoreConvertedMax);
     const hasPercentileRange = percentileRange.minimum !== null || percentileRange.maximum !== null;
+    const hasStandardRange = standardRange.minimum !== null || standardRange.maximum !== null;
     const hasConvertedRange = convertedRange.minimum !== null || convertedRange.maximum !== null;
     const hasDepartmentMatch = Boolean(query && scoreViews.some((row) => (
       normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.d}`).includes(query)
     )));
     const filtered = scoreViews.filter((row) => {
       const departmentIdentity = normalize(`${displayRegion(row.r, row.u)} ${row.u} ${row.d}`);
-      const fullSearchText = normalize(`${departmentIdentity} ${row.a} ${row.exam ?? ''} ${row.t} ${row.ruleMatches.map((rule) => scoreMethodLabel(rule, row)).join(' ')}`);
+      const fullSearchText = normalize(`${departmentIdentity} ${row.a} ${row.exam ?? ''} ${row.t} ${row.yearMethod?.target ?? ''} ${Object.values(row.yearMethod?.labels ?? {}).join(' ')}`);
       const matchesQuery = !query || (hasDepartmentMatch ? departmentIdentity.includes(query) : fullSearchText.includes(query));
       const representativePercentile = row.p50 ?? row.p70;
       const representativeConverted = row.cv50 ?? row.cv70;
       const matchesPercentileRange = !hasPercentileRange || (row.cutMetric === '백분위' && inNumericRange(representativePercentile, percentileRange));
+      const matchesStandardRange = !hasStandardRange || (row.cutMetric === '표준점수' && inNumericRange(representativePercentile, standardRange));
       const matchesConvertedRange = !hasConvertedRange || inNumericRange(representativeConverted, convertedRange);
       return matchesQuery
         && matchesPercentileRange
+        && matchesStandardRange
         && matchesConvertedRange
         && (scoreRegion === '전체' || displayRegion(row.r, row.u) === scoreRegion)
         && (scoreUniversity === '전체' || row.u === scoreUniversity)
@@ -599,12 +604,12 @@ export default function Home() {
       p70: (row) => row.cutMetric === '백분위' ? row.p70 : null,
       exam: (row) => row.exam ?? row.a,
       sb: (row) => scoreStudentRecord(row),
-      koreanRatio: (row) => row.ruleMatches[0]?.ratios.korean,
-      mathRatio: (row) => row.ruleMatches[0]?.ratios.math,
-      englishRatio: (row) => row.ruleMatches[0]?.ratios.english,
-      inquiryRatio: (row) => row.ruleMatches[0]?.ratios.inquiry,
+      koreanRatio: (row) => historicalRatioNumber(row.yearMethod, 'korean'),
+      mathRatio: (row) => historicalRatioNumber(row.yearMethod, 'math'),
+      englishRatio: (row) => historicalRatioNumber(row.yearMethod, 'english'),
+      inquiryRatio: (row) => historicalRatioNumber(row.yearMethod, 'inquiry'),
     });
-  }, [scoreConvertedMax, scoreConvertedMin, scoreGroups, scorePercentileMax, scorePercentileMin, scoreQuery, scoreRegion, scoreSort, scoreTrack, scoreUniversity, scoreViews, scoreYear]);
+  }, [scoreConvertedMax, scoreConvertedMin, scoreGroups, scorePercentileMax, scorePercentileMin, scoreQuery, scoreRegion, scoreSort, scoreStandardMax, scoreStandardMin, scoreTrack, scoreUniversity, scoreViews, scoreYear]);
 
   const visibleScores = filteredScores.slice(0, initialListSize * scoreListBatch);
   const scheduleItems = data?.overview.schedule ?? [];
@@ -644,6 +649,8 @@ export default function Home() {
       setScoreGroups([]);
       setScorePercentileMin('');
       setScorePercentileMax('');
+      setScoreStandardMin('');
+      setScoreStandardMax('');
       setScoreConvertedMin('');
       setScoreConvertedMax('');
       setScoreSort({ key: 'y', direction: 'desc' });
@@ -663,8 +670,8 @@ export default function Home() {
     } else if (tab === 'results') {
       downloadCsv(
         '정시_3개년_입시결과.csv',
-        ['연도', '지역', '대학', '모집군', '모집전형', '모집단위', '계열', '백분위 50%', '백분위 70%', '모집인원', '경쟁률', '실질경쟁률', '충원인원', '환산점수 50%', '환산점수 70%', '환산만점', '2027 반영방법', '국어 반영비율', '수학 반영비율', '영어 반영비율', '탐구 반영비율'],
-        filteredScores.flatMap((row) => scoreRulesForDisplay(row).map((rule) => [row.y, displayRegion(row.r, row.u), row.u, row.displayGroup, row.exam ?? '', row.d, row.t, row.cutMetric === '백분위' ? row.p50 : '', row.cutMetric === '백분위' ? row.p70 : '', row.n, row.c, row.x, row.add, row.cv50, row.cv70, row.max, rule ? scoreMethodLabel(rule, row) : '', rule ? displayRatioForRow(rule, 'korean') : '', rule ? displayRatioForRow(rule, 'math') : '', rule ? displayRatioForRow(rule, 'english') : '', rule ? displayRatioForRow(rule, 'inquiry') : ''])),
+        ['연도', '지역', '대학', '모집군', '모집전형', '모집단위', '계열', '성적 지표', '50% 성적', '70% 성적', '모집인원', '경쟁률', '실질경쟁률', '충원인원', '환산점수 50%', '환산점수 70%', '환산만점', '해당 학년도 적용 범위', '국어 반영비율', '수학 반영비율', '영어 반영비율', '탐구 반영비율'],
+        filteredScores.map((row) => [row.y, displayRegion(row.r, row.u), row.u, row.displayGroup, row.exam ?? '', row.d, row.t, row.cutMetric, row.p50, row.p70, row.n, row.c, row.x, row.add, row.cv50, row.cv70, row.max, row.yearMethod?.target ?? '', historicalRatioLabel(row.yearMethod, 'korean'), historicalRatioLabel(row.yearMethod, 'math'), historicalRatioLabel(row.yearMethod, 'english'), historicalRatioLabel(row.yearMethod, 'inquiry')]),
       );
     }
   }
@@ -702,10 +709,10 @@ export default function Home() {
 
         <Tabs value={tab} onValueChange={setTab} className="workspace">
           <TabsList variant="line" className="tabs-list">
-            <TabsTrigger value="changes">정시 변화</TabsTrigger>
-            <TabsTrigger value="rules">반영방법</TabsTrigger>
-            <TabsTrigger value="results">3개년 입시결과</TabsTrigger>
             <TabsTrigger value="sources">일정</TabsTrigger>
+            <TabsTrigger value="changes">2027 변동사항</TabsTrigger>
+            <TabsTrigger value="rules">2027 반영방법</TabsTrigger>
+            <TabsTrigger value="results">3개년 입시결과</TabsTrigger>
           </TabsList>
 
           <TabsContent value="changes" className="tab-stack">
@@ -840,6 +847,7 @@ export default function Home() {
               <FilterSelect label="계열" value={scoreTrack} onChange={(value) => { setScoreTrack(value); setScoreListBatch(1); }} options={scoreTracks} />
               <GroupCheckboxFilter values={scoreGroups} onChange={(values) => { setScoreGroups(values); setScoreListBatch(1); }} />
               <RangeFilter label="백분위 범위" unit="%" minimum={scorePercentileMin} maximum={scorePercentileMax} onMinimumChange={(value) => { setScorePercentileMin(value); setScoreListBatch(1); }} onMaximumChange={(value) => { setScorePercentileMax(value); setScoreListBatch(1); }} max={100} />
+              <RangeFilter label="표준점수 범위" unit="점" minimum={scoreStandardMin} maximum={scoreStandardMax} onMinimumChange={(value) => { setScoreStandardMin(value); setScoreListBatch(1); }} onMaximumChange={(value) => { setScoreStandardMax(value); setScoreListBatch(1); }} />
               <RangeFilter label="환산점수 범위" unit="점" minimum={scoreConvertedMin} maximum={scoreConvertedMax} onMinimumChange={(value) => { setScoreConvertedMin(value); setScoreListBatch(1); }} onMaximumChange={(value) => { setScoreConvertedMax(value); setScoreListBatch(1); }} />
             </FilterPanel>
 
@@ -847,120 +855,52 @@ export default function Home() {
               <div className="section-head">
                 <div><h2>2024학년도부터 2026학년도 정시 입시결과</h2></div>
               </div>
-              <Table className="data-table results-table results-table-wide">
+              <Table className="data-table results-table-compact">
                 <TableHeader><TableRow>
-                  <SortableHead label="연도" column="y" sort={scoreSort} onSort={setScoreSort} align="right" />
+                  <SortableHead label="학년도" column="y" sort={scoreSort} onSort={setScoreSort} />
                   <SortableHead label="지역" column="r" sort={scoreSort} onSort={setScoreSort} />
                   <SortableHead label="대학" column="u" sort={scoreSort} onSort={setScoreSort} />
                   <SortableHead label="모집군" column="g" sort={scoreSort} onSort={setScoreSort} />
                   <SortableHead label="모집단위" column="d" sort={scoreSort} onSort={setScoreSort} />
                   <SortableHead label="계열" column="t" sort={scoreSort} onSort={setScoreSort} />
-                  <SortableHead label="백분위 50%" column="p50" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="백분위 70%" column="p70" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="모집인원" column="n" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="경쟁률" column="c" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="실질경쟁률" column="x" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="충원인원" column="add" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="환산점수 50%" column="cv50" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="환산점수 70%" column="cv70" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="환산만점" column="max" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="국어 반영" column="koreanRatio" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="수학 반영" column="mathRatio" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="영어 반영" column="englishRatio" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  <SortableHead label="탐구 반영" column="inquiryRatio" sort={scoreSort} onSort={setScoreSort} align="right" />
                 </TableRow></TableHeader>
                 <TableBody>{visibleScores.map((row) => <Fragment key={row.id}>
-                  <TableRow className={`score-result-row ${expandedScoreRows.has(row.id) ? 'is-expanded' : ''}`}>
+                  <TableRow className={`result-primary ${expandedScoreRows.has(row.id) ? 'is-expanded' : ''}`}>
                     <TableCell className="year-cell">{row.y}</TableCell>
                     <TableCell className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
                     <TableCell><UniversityScoreCell row={row} expanded={expandedScoreRows.has(row.id)} onToggle={() => toggleScoreDetails(row.id)} onOpen={() => setSelectedScore(row)} /></TableCell>
                     <TableCell className="group-cell"><AdmissionGroupLights group={row.displayGroup} /></TableCell>
                     <TableCell className="department-cell" title={`${row.d} ${conciseExamName(row)}`}><strong>{row.d}</strong><small>{conciseExamName(row)}</small></TableCell>
                     <TableCell className="score-track-cell">{row.t || '—'}</TableCell>
-                    <PercentileCutCell value={row.cutMetric === '백분위' ? row.p50 : null} />
-                    <PercentileCutCell value={row.cutMetric === '백분위' ? row.p70 : null} />
-                    <NumberCell value={row.n} />
-                    <NumberCell value={row.c} suffix=":1" fixedDecimals />
-                    <NumberCell value={row.x} suffix=":1" fixedDecimals />
-                    <NumberCell value={row.add} />
-                    <NumberCell value={row.cv50} suffix="점" grouping={false} fixedDecimals />
-                    <NumberCell value={row.cv70} suffix="점" grouping={false} fixedDecimals />
-                    <NumberCell value={row.max} suffix="점" grouping={false} fixedDecimals />
-                    <TableCell colSpan={4} className="score-rule-heading">2027학년도 수능 반영비율</TableCell>
                   </TableRow>
-                  {expandedScoreRows.has(row.id) && row.missingReason && <TableRow className="score-missing-row"><TableCell colSpan={19}><strong>미공개 사유</strong><span>{row.missingReason}</span></TableCell></TableRow>}
-                  {expandedScoreRows.has(row.id) && scoreRulesForDisplay(row).map((rule, index) => <TableRow className="score-rule-row" key={`${row.id}-rule-${index}`}>
-                    <TableCell colSpan={15} className="score-rule-name">{row.exam && <span className="historical-exam">{row.y} {row.exam}</span>}{rule ? scoreMethodLabel(rule, row) : '2027학년도 반영방법 미연결'}</TableCell>
-                    {rule ? <>
-                      <RatioCell row={rule} domain="korean" />
-                      <RatioCell row={rule} domain="math" />
-                      <RatioCell row={rule} domain="english" />
-                      <RatioCell row={rule} domain="inquiry" />
-                    </> : <><TableCell>—</TableCell><TableCell>—</TableCell><TableCell>—</TableCell><TableCell>—</TableCell></>}
-                  </TableRow>)}
-                </Fragment>)}</TableBody>
-              </Table>
-              <Table className="data-table results-table-pivot">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead rowSpan={2}><button className="sort-button" onClick={() => setScoreSort({ key: 'y', direction: scoreSort.key === 'y' && scoreSort.direction === 'asc' ? 'desc' : 'asc' })}>학년도<ArrowUpDown aria-hidden="true" /></button></TableHead>
-                    <TableHead rowSpan={2}><button className="sort-button" onClick={() => setScoreSort({ key: 'r', direction: scoreSort.key === 'r' && scoreSort.direction === 'asc' ? 'desc' : 'asc' })}>지역<ArrowUpDown aria-hidden="true" /></button></TableHead>
-                    <TableHead rowSpan={2}><button className="sort-button" onClick={() => setScoreSort({ key: 'u', direction: scoreSort.key === 'u' && scoreSort.direction === 'asc' ? 'desc' : 'asc' })}>대학<ArrowUpDown aria-hidden="true" /></button></TableHead>
-                    <TableHead rowSpan={2}><button className="sort-button" onClick={() => setScoreSort({ key: 'g', direction: scoreSort.key === 'g' && scoreSort.direction === 'asc' ? 'desc' : 'asc' })}>모집군<ArrowUpDown aria-hidden="true" /></button></TableHead>
-                    <TableHead rowSpan={2}><button className="sort-button" onClick={() => setScoreSort({ key: 'd', direction: scoreSort.key === 'd' && scoreSort.direction === 'asc' ? 'desc' : 'asc' })}>모집단위<ArrowUpDown aria-hidden="true" /></button></TableHead>
-                    <TableHead rowSpan={2}><button className="sort-button" onClick={() => setScoreSort({ key: 't', direction: scoreSort.key === 't' && scoreSort.direction === 'asc' ? 'desc' : 'asc' })}>계열<ArrowUpDown aria-hidden="true" /></button></TableHead>
-                    <SortableHead label="백분위 50%" column="p50" sort={scoreSort} onSort={setScoreSort} align="right" />
-                    <SortableHead label="백분위 70%" column="p70" sort={scoreSort} onSort={setScoreSort} align="right" />
-                  </TableRow>
-                  <TableRow className="pivot-converted-head">
-                    <TableHead className="number-head converted-head-label">환산점수 50%</TableHead>
-                    <TableHead className="number-head converted-head-label">환산점수 70%</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>{visibleScores.map((row) => <Fragment key={`pivot-${row.id}`}>
-                  <TableRow className={`pivot-result-main ${expandedScoreRows.has(row.id) ? 'is-expanded' : ''}`}>
-                    <TableCell rowSpan={2} className="year-cell">{row.y}</TableCell>
-                    <TableCell rowSpan={2} className="muted-cell">{displayRegion(row.r, row.u)}</TableCell>
-                    <TableCell rowSpan={2}><UniversityScoreCell row={row} expanded={expandedScoreRows.has(row.id)} onToggle={() => toggleScoreDetails(row.id)} onOpen={() => setSelectedScore(row)} /></TableCell>
-                    <TableCell rowSpan={2} className="group-cell"><AdmissionGroupLights group={row.displayGroup} /></TableCell>
-                    <TableCell rowSpan={2} className="department-cell" title={`${row.d} ${conciseExamName(row)}`}><strong>{row.d}</strong><small>{conciseExamName(row)}</small></TableCell>
-                    <TableCell rowSpan={2} className="score-track-cell">{row.t || '—'}</TableCell>
-                    <PercentileCutCell value={row.cutMetric === '백분위' ? row.p50 : null} />
-                    <PercentileCutCell value={row.cutMetric === '백분위' ? row.p70 : null} />
-                  </TableRow>
-                  <TableRow className="pivot-result-converted">
-                    <NumberCell value={row.cv50} suffix="점" grouping={false} fixedDecimals />
-                    <NumberCell value={row.cv70} suffix="점" grouping={false} fixedDecimals />
-                  </TableRow>
-                  {expandedScoreRows.has(row.id) && <TableRow className="pivot-result-stats"><TableCell colSpan={8}>
-                    <div className="pivot-stat-grid">
+                  <TableRow className="result-summary"><TableCell colSpan={6}>
+                    <div className="result-summary-grid">
+                      {row.cutMetric === '백분위'
+                        ? <CompactSortValue label={scoreCutLabel(row, 50)} column="p50" value={scoreCutValue(row, row.p50)} sort={scoreSort} onSort={setScoreSort} />
+                        : <CompactStaticValue label={scoreCutLabel(row, 50)} value={scoreCutValue(row, row.p50)} />}
+                      {row.cutMetric === '백분위'
+                        ? <CompactSortValue label={scoreCutLabel(row, 70)} column="p70" value={scoreCutValue(row, row.p70)} sort={scoreSort} onSort={setScoreSort} />
+                        : <CompactStaticValue label={scoreCutLabel(row, 70)} value={scoreCutValue(row, row.p70)} />}
                       <CompactSortValue label="모집인원" column="n" value={compactNumber(row.n)} sort={scoreSort} onSort={setScoreSort} />
                       <CompactSortValue label="경쟁률" column="c" value={compactFixedNumber(row.c, ':1')} sort={scoreSort} onSort={setScoreSort} />
                       <CompactSortValue label="실질경쟁률" column="x" value={compactFixedNumber(row.x, ':1')} sort={scoreSort} onSort={setScoreSort} />
                       <CompactSortValue label="충원인원" column="add" value={compactNumber(row.add)} sort={scoreSort} onSort={setScoreSort} />
-                      <CompactSortValue label="전형" column="exam" value={row.exam ?? row.a} sort={scoreSort} onSort={setScoreSort} />
-                      <CompactSortValue label="환산만점" column="max" value={compactFixedNumber(row.max, '점')} sort={scoreSort} onSort={setScoreSort} />
+                      <CompactStaticValue label="환산 50%" value={compactFixedNumber(row.cv50, '점')} />
+                      <CompactStaticValue label="환산 70%" value={compactFixedNumber(row.cv70, '점')} />
+                      <CompactStaticValue label="환산만점" value={compactFixedNumber(row.max, '점')} />
                       <CompactSortValue label="학생부" column="sb" value={scoreStudentRecord(row)} sort={scoreSort} onSort={setScoreSort} />
+                      <HistoricalRatioValue label={`${row.y} 국어`} column="koreanRatio" method={row.yearMethod} domain="korean" sort={scoreSort} onSort={setScoreSort} />
+                      <HistoricalRatioValue label={`${row.y} 수학`} column="mathRatio" method={row.yearMethod} domain="math" sort={scoreSort} onSort={setScoreSort} />
+                      <HistoricalRatioValue label={`${row.y} 영어`} column="englishRatio" method={row.yearMethod} domain="english" sort={scoreSort} onSort={setScoreSort} />
+                      <HistoricalRatioValue label={`${row.y} 탐구`} column="inquiryRatio" method={row.yearMethod} domain="inquiry" sort={scoreSort} onSort={setScoreSort} />
                     </div>
-                  </TableCell></TableRow>}
-                  {expandedScoreRows.has(row.id) && row.missingReason && <TableRow className="score-missing-row"><TableCell colSpan={8}><strong>미공개 사유</strong><span>{row.missingReason}</span></TableCell></TableRow>}
-                  {expandedScoreRows.has(row.id) && <TableRow className="pivot-result-rules"><TableCell colSpan={8}>
-                    <div className="pivot-rule-stack">
-                      {scoreRulesForDisplay(row).map((rule, index) => <div className="pivot-rule-card" key={`pivot-${row.id}-rule-${index}`}>
-                        <div className="pivot-rule">
-                          <strong>{row.exam && <span className="historical-exam">{row.y} {row.exam}</span>}{rule ? scoreMethodLabel(rule, row) : '2027학년도 반영방법 미연결'}</strong>
-                          <CompactRatio label="국어" column="koreanRatio" rule={rule} domain="korean" sort={scoreSort} onSort={setScoreSort} />
-                          <CompactRatio label="수학" column="mathRatio" rule={rule} domain="math" sort={scoreSort} onSort={setScoreSort} />
-                          <CompactRatio label="영어" column="englishRatio" rule={rule} domain="english" sort={scoreSort} onSort={setScoreSort} />
-                          <CompactRatio label="탐구" column="inquiryRatio" rule={rule} domain="inquiry" sort={scoreSort} onSort={setScoreSort} />
-                        </div>
-                        {rule && <div className="pivot-method-meta">
-                          <span><small>반영영역</small><strong>{reflectedDomains(rule)}</strong></span>
-                          <span><small>영어 반영 방법</small><strong>{rule.englishMethod}</strong></span>
-                          <span><small>활용지표</small><strong>{rule.metrics.join(', ') || '—'}</strong></span>
-                          <span><small>학생부</small><strong>{recordLabel(rule)}</strong></span>
-                        </div>}
-                      </div>)}
+                  </TableCell></TableRow>
+                  {expandedScoreRows.has(row.id) && <TableRow className="result-detail-row"><TableCell colSpan={6}>
+                    <div className="result-detail-lines">
+                      <p><strong>전형</strong><span>{row.exam ?? row.a}</span></p>
+                      <p><strong>적용 범위</strong><span>{row.yearMethod?.target ?? '—'}</span></p>
+                      {row.missingReason && <p><strong>미공개 사유</strong><span>{row.missingReason}</span></p>}
+                      {row.yearMethod?.source && <a href={row.yearMethod.source} target="_blank" rel="noreferrer">{row.y}학년도 전형기준 <ExternalLink /></a>}
                     </div>
                   </TableCell></TableRow>}
                 </Fragment>)}</TableBody>
@@ -1001,10 +941,10 @@ export default function Home() {
               <DetailNumber label="환산점수 50%" value={selectedScore.cv50} suffix="점" grouping={false} fixedDecimals />
               <DetailNumber label="환산점수 70%" value={selectedScore.cv70} suffix="점" grouping={false} fixedDecimals />
               <DetailNumber label="환산점수 만점" value={selectedScore.max} suffix="점" grouping={false} fixedDecimals />
-              <DetailNumber label="백분위 50%" value={selectedScore.cutMetric === '백분위' ? selectedScore.p50 : null} suffix="%" grouping={false} fixedDecimals />
-              <DetailNumber label="백분위 70%" value={selectedScore.cutMetric === '백분위' ? selectedScore.p70 : null} suffix="%" grouping={false} fixedDecimals />
+              <DetailNumber label={scoreCutLabel(selectedScore, 50)} value={selectedScore.p50} suffix={scoreCutSuffix(selectedScore.cutMetric)} grouping={false} fixedDecimals />
+              <DetailNumber label={scoreCutLabel(selectedScore, 70)} value={selectedScore.p70} suffix={scoreCutSuffix(selectedScore.cutMetric)} grouping={false} fixedDecimals />
             </div>
-            <DetailBlock title="2027학년도 수능 반영방법" text={scoreRulesForDisplay(selectedScore).map((rule) => rule ? scoreMethodLabel(rule, selectedScore) : '반영방법 미연결').join(' / ')} />
+            <DetailBlock title={`${selectedScore.y}학년도 영역별 반영비율`} text={historicalMethodText(selectedScore.yearMethod)} />
             {selectedScore.missingReason && <DetailBlock title="미공개 사유" text={selectedScore.missingReason} />}
             <div className="dialog-links">
               {selectedScore.admission && <a href={selectedScore.admission} target="_blank" rel="noreferrer">입학처 <ExternalLink /></a>}
@@ -1099,20 +1039,18 @@ function CompactSortValue({ label, column, value, sort, onSort }: { label: strin
   </button>;
 }
 
-function CompactRatio({ label, column, rule, domain, sort, onSort }: { label: string; column: string; rule: MethodView | null; domain: DomainKey; sort: SortState; onSort: (sort: SortState) => void }) {
-  const value = rule ? displayRatioForRow(rule, domain) : '';
-  const display = typeof value === 'number' ? `${formatFixedNumber(value)}%` : value || '—';
-  const weight = rule
-    ? rule.weights[domain] === null
-      ? rule.weightLabels?.[domain] ?? '—'
-      : `${rule.weights[domain].toFixed(2)}배`
-    : '—';
-  const tone = rule ? ratioTone(rule.ratios, domain) : '';
+function CompactStaticValue({ label, value }: { label: string; value: string }) {
+  return <div className="compact-static-value"><span>{label}</span><strong>{value}</strong></div>;
+}
+
+function HistoricalRatioValue({ label, column, method, domain, sort, onSort }: { label: string; column: string; method?: ScoreRow['yearMethod']; domain: DomainKey; sort: SortState; onSort: (sort: SortState) => void }) {
+  const display = historicalRatioLabel(method, domain);
+  const tone = historicalRatioTone(method, domain);
   const active = sort.key === column;
   const nextDirection: SortDirection = active && sort.direction === 'asc' ? 'desc' : 'asc';
   const Icon = !active ? ArrowUpDown : sort.direction === 'asc' ? ArrowUp : ArrowDown;
-  return <button type="button" className={`compact-ratio ${tone} ${active ? 'is-active' : ''}`} onClick={() => onSort({ key: column, direction: nextDirection })}>
-    <span>{label}<Icon aria-hidden="true" /></span><strong>{display}</strong><small>{weight}</small>
+  return <button type="button" title={`${label} ${display}`} className={`historical-ratio-value ${tone} ${active ? 'is-active' : ''}`} onClick={() => onSort({ key: column, direction: nextDirection })}>
+    <span>{label}<Icon aria-hidden="true" /></span><strong>{display}</strong>
   </button>;
 }
 
@@ -1188,29 +1126,6 @@ function startColumnResize(event: React.PointerEvent<HTMLButtonElement>, width: 
   };
   window.addEventListener('pointermove', move);
   window.addEventListener('pointerup', stop, { once: true });
-}
-
-function NumberCell({ value, suffix = '', className = '', grouping = true, fixedDecimals = false }: { value: number | null | undefined; suffix?: string; className?: string; grouping?: boolean; fixedDecimals?: boolean }) {
-  const formatted = value === null || value === undefined
-    ? '—'
-    : fixedDecimals
-      ? formatFixedNumber(value, grouping)
-      : grouping ? formatNumber(value) : formatPlainNumber(value);
-  return <TableCell className={`number-cell ${className}`}>{formatted === '—' ? formatted : `${formatted}${suffix}`}</TableCell>;
-}
-
-function PercentileCutCell({ value }: { value: number | null }) {
-  return <TableCell className="number-cell score-cut-cell">
-    {value === null ? <span className="unpublished-value">미공개</span> : <strong>{formatFixedNumber(value, false)}%</strong>}
-  </TableCell>;
-}
-
-function RatioCell({ row, domain }: { row: MethodView; domain: DomainKey }) {
-  const value = row.ratios[domain];
-  const label = row.ratioLabels?.[domain];
-  if (label) return <TableCell className="dynamic-ratio-cell">{label}</TableCell>;
-  if (value !== null) return <NumberCell value={value} suffix="%" className={ratioTone(row.ratios, domain)} />;
-  return <TableCell className={label ? 'dynamic-ratio-cell' : 'number-cell muted-cell'}>{label ?? '—'}</TableCell>;
 }
 
 function UniversityMethodCell({ row, expanded, onToggle, onOpen }: { row: MethodView; expanded: boolean; onToggle: () => void; onOpen: () => void }) {
@@ -3312,8 +3227,30 @@ function summarizeRange(values: (number | null)[], emptyLabel = '—', unit = ''
 function scoreCutMetric(score: ScoreRow): CutMetric {
   const values = [score.p50, score.p70].filter((value): value is number => value !== null);
   if (!values.length) return '성적';
-  if (values.every((value) => value >= 0 && value <= 100)) return '백분위';
+  const metric = normalize(score.metric ?? '');
+  const hasPercentile = metric.includes('백분위');
+  const hasStandard = metric.includes('표준점수');
+  if (/등급/.test(metric) && !hasPercentile && !hasStandard) return '등급';
+  if (hasStandard && !hasPercentile) return '표준점수';
+  if (hasPercentile && values.every((value) => value >= 0 && value <= 100)) return '백분위';
+  if (hasStandard && values.some((value) => value > 100)) return '표준점수';
+  if (!metric && values.every((value) => value >= 12 && value <= 100)) return '백분위';
   return '성적';
+}
+
+function scoreCutLabel(score: Pick<ScoreView, 'cutMetric'>, percentile: 50 | 70) {
+  return `${score.cutMetric === '성적' ? '공개 성적' : score.cutMetric} ${percentile}%`;
+}
+
+function scoreCutSuffix(metric: CutMetric) {
+  if (metric === '백분위') return '%';
+  if (metric === '등급') return '등급';
+  if (metric === '표준점수') return '점';
+  return '';
+}
+
+function scoreCutValue(score: Pick<ScoreView, 'cutMetric'>, value: number | null) {
+  return compactFixedNumber(value, scoreCutSuffix(score.cutMetric));
 }
 
 function scoreGroupKey(score: Pick<ScoreRow, 'u' | 'y' | 'd'>) {
@@ -3330,43 +3267,6 @@ function historicalAdmissionGroups(scores: ScoreRow[]) {
     groupSets.set(key, groups);
   });
   return new Map([...groupSets].map(([key, groups]) => [key, combinedAdmissionGroup([...groups])]));
-}
-
-function scoreMethodsForRow(score: ScoreRow, methods: MethodView[]) {
-  if (!methods.length) return [];
-  const targetGroup = score.g ? `${score.g.replace(/군$/, '')}군` : '';
-  const groupMatches = targetGroup ? methods.filter((method) => atomicAdmissionGroups(method.admissionGroup).includes(targetGroup)) : methods;
-  const candidates = groupMatches.length ? groupMatches : methods;
-  const examMatches = candidates.filter((method) => historicalExamMatches(score, method));
-  const examCandidates = examMatches.length ? examMatches : candidates;
-  const trackMatches = examCandidates.filter((method) => scoreMethodRank(score, method) > 0);
-  const bestRank = trackMatches.length ? Math.max(...trackMatches.map((method) => scoreMethodRank(score, method))) : 0;
-  const pool = bestRank > 0
-    ? trackMatches.filter((method) => scoreMethodRank(score, method) === bestRank)
-    : examCandidates;
-  const ranked = [...pool].sort((left, right) => {
-    const leftGroup = targetGroup && atomicAdmissionGroups(left.admissionGroup).includes(targetGroup) ? 1 : 0;
-    const rightGroup = targetGroup && atomicAdmissionGroups(right.admissionGroup).includes(targetGroup) ? 1 : 0;
-    return rightGroup - leftGroup
-      || scoreMethodRank(score, right) - scoreMethodRank(score, left)
-      || left.examName.localeCompare(right.examName, 'ko');
-  });
-  const uniqueRows = new Map<string, MethodView>();
-  ranked.forEach((method) => {
-    const key = JSON.stringify([
-      method.admissionGroup,
-      method.examName,
-      method.trackName,
-      method.englishMethod,
-      method.ratios.korean,
-      method.ratios.math,
-      method.ratios.english,
-      method.ratios.inquiry,
-      method.ratioLabels,
-    ]);
-    if (!uniqueRows.has(key)) uniqueRows.set(key, method);
-  });
-  return [...uniqueRows.values()].slice(0, 1);
 }
 
 function historicalExamMatches(score: ScoreRow, method: MethodView) {
@@ -3442,33 +3342,56 @@ function scoreTrackRank(scoreTrack: string, methodTrack: string) {
   return 0;
 }
 
-function scoreRulesForDisplay(score: ScoreView): (MethodView | null)[] {
-  return score.ruleMatches.length ? score.ruleMatches.slice(0, 3) : [null];
-}
-
 function scoreStudentRecord(score: ScoreView) {
-  const rule = score.ruleMatches[0];
-  if (rule) return recordLabel(rule);
   if (score.sb === true) return '반영';
   if (score.sb === false) return '미반영';
   return '미기재';
 }
 
-function reflectedDomains(rule: MethodView) {
-  const labels: [DomainKey, string][] = [
-    ['korean', '국어'],
-    ['math', '수학'],
-    ['english', '영어'],
-    ['inquiry', '탐구'],
-  ];
-  const domains = labels
-    .filter(([domain]) => rule.ratios[domain] !== null || Boolean(rule.ratioLabels?.[domain]))
-    .map(([, label]) => label);
-  return domains.join(' / ') || '—';
+function historicalMethodIsUsable(method?: ScoreRow['yearMethod']) {
+  if (!method) return false;
+  return Object.values(method.labels).every((label) => (
+    [...String(label).matchAll(/(\d+(?:\.\d+)?)\s*%/g)].every((match) => Number(match[1]) <= 100)
+  ));
 }
 
-function scoreMethodLabel(rule: MethodView, _score: Pick<ScoreView, 'displayGroup'>) {
-  return `${rule.examName}, ${rule.trackName}, 영어 ${rule.englishMethod}`;
+function historicalRatioLabel(method: ScoreRow['yearMethod'] | undefined, domain: DomainKey) {
+  if (!historicalMethodIsUsable(method)) return '—';
+  const value = method?.labels[domain]?.trim() ?? '';
+  if (!value || value === '—') return '—';
+  return value
+    .replace(/^(\d+(?:\.\d+)?)\s*(\([^)]*\))$/, '$1% $2')
+    .replace(/\s+([,)])/g, '$1')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s{2,}/g, ' ');
+}
+
+function historicalRatioNumber(method: ScoreRow['yearMethod'] | undefined, domain: DomainKey) {
+  const label = historicalRatioLabel(method, domain);
+  if (label.startsWith('(') || label.includes('/')) return null;
+  const match = label.match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : null;
+}
+
+function historicalRatioTone(method: ScoreRow['yearMethod'] | undefined, domain: DomainKey) {
+  if (!historicalMethodIsUsable(method)) return '';
+  const entries = (['korean', 'math', 'english', 'inquiry'] as DomainKey[])
+    .map((key) => [key, historicalRatioNumber(method, key)] as const)
+    .filter((entry): entry is readonly [DomainKey, number] => entry[1] !== null);
+  const values = entries.map(([, value]) => value);
+  if (new Set(values).size < 2) return '';
+  const current = historicalRatioNumber(method, domain);
+  if (current === null) return '';
+  if (current === Math.max(...values)) return 'ratio-high';
+  if (current === Math.min(...values)) return 'ratio-low';
+  return '';
+}
+
+function historicalMethodText(method?: ScoreRow['yearMethod']) {
+  if (!historicalMethodIsUsable(method)) return '—';
+  const labels: [DomainKey, string][] = [['korean', '국어'], ['math', '수학'], ['english', '영어'], ['inquiry', '탐구']];
+  const ratios = labels.map(([domain, label]) => `${label} ${historicalRatioLabel(method, domain)}`).join(' / ');
+  return method?.target ? `${method.target} / ${ratios}` : ratios;
 }
 
 function highestRatioDomains(ratios: WeightSnapshot) {

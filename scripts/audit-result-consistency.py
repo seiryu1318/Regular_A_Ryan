@@ -32,7 +32,7 @@ def main() -> None:
         if count > 1:
             issues.append({"id": row_id, "type": "중복 ID", "value": count})
 
-    allowed_tracks = {"인문", "자연", "의약학", "예체능", "통합"}
+    allowed_tracks = {"인문", "자연", "의약학", "예체능"}
     allowed_groups = {"가", "나", "다"}
     for row in rows:
         for field in ("n", "c", "x", "add", "cv50", "cv70", "max", "p50", "p70"):
