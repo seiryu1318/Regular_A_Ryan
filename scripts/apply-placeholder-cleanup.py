@@ -36,6 +36,19 @@ def main() -> None:
     for row in payload["scores"]:
         original = dict(row)
 
+        # p50/p70 are percentile columns in the 대입정보포털 result table.
+        # Values above 100 in portal-linked legacy rows are shifted or
+        # non-percentile cells, not standard scores. Keep only an explicitly
+        # identified standard-score result published by a university itself.
+        source = str(original.get("source") or "").lower()
+        metric = str(original.get("metric") or "")
+        explicit_official_standard = "표준점수" in metric and "adiga.kr" not in source
+        if not explicit_official_standard:
+            for field in ("p50", "p70"):
+                value = original.get(field)
+                if isinstance(value, (int, float)) and not isinstance(value, bool) and value > 100:
+                    add_change(changes, row, field, "백분위 항목의 범위 100을 초과한 원자료 값")
+
         # Some university submissions use 9999 as a missing-value marker.
         for field in ("c", "x", "cv50", "cv70", "p50", "p70"):
             if original.get(field) == 9999:

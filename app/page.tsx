@@ -3228,13 +3228,9 @@ function scoreCutMetric(score: ScoreRow): CutMetric {
   const values = [score.p50, score.p70].filter((value): value is number => value !== null);
   if (!values.length) return '성적';
   const metric = normalize(score.metric ?? '');
-  const hasPercentile = metric.includes('백분위');
-  const hasStandard = metric.includes('표준점수');
-  if (/등급/.test(metric) && !hasPercentile && !hasStandard) return '등급';
-  if (hasStandard && !hasPercentile) return '표준점수';
-  if (hasPercentile && values.every((value) => value >= 0 && value <= 100)) return '백분위';
-  if (hasStandard && values.some((value) => value > 100)) return '표준점수';
-  if (!metric && values.every((value) => value >= 12 && value <= 100)) return '백분위';
+  const source = normalize(score.source ?? '').toLowerCase();
+  if (values.every((value) => value >= 0 && value <= 100)) return '백분위';
+  if (metric.includes('표준점수') && !source.includes('adiga.kr')) return '표준점수';
   return '성적';
 }
 

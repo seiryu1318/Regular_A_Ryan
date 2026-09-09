@@ -25,6 +25,8 @@ run('audit-regular-2027-reference.py');
 run('audit-adiga-2027-methods.py', { ADIGA_2027_REFRESH: '1' });
 run('audit-official-results.py', { ADIGA_REFRESH: '1' });
 run('apply-adiga-result-values.py');
+run('apply-placeholder-cleanup.py');
+run('deduplicate-score-rows.py');
 run('audit-official-results.py');
 run('apply-verified-conversion-maxima.py');
 run('apply-adiga-missing-reasons.py');

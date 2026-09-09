@@ -1308,3 +1308,84 @@ html, body { overflow-x: clip; }
   .method-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .method-summary-metrics { grid-column: 1 / -1; }
 }
+
+/* 모든 비교 표의 제목과 값을 같은 중심축에 맞춘다. */
+.data-table :is(th, td) {
+  text-align: center;
+  vertical-align: middle;
+}
+.data-table .wrap-cell {
+  vertical-align: middle !important;
+}
+.data-table .sort-button {
+  justify-content: center !important;
+  text-align: center !important;
+}
+.data-table :is(.university-method-cell, .metric-list, .admission-group-lights) {
+  justify-content: center;
+  margin-inline: auto;
+}
+.data-table :is(.year-cell, .muted-cell, .exam-cell, .track-cell, .score-track-cell, .selection-cell, .department-cell, .method-department-cell) {
+  text-align: center !important;
+}
+.result-primary .department-cell {
+  display: grid;
+  justify-items: center;
+}
+.result-summary-grid :is(.compact-sort-value, .compact-static-value, .historical-ratio-value) {
+  place-items: center;
+  text-align: center !important;
+}
+.result-summary-grid :is(.compact-sort-value, .compact-static-value, .historical-ratio-value) > :is(span, strong) {
+  width: 100%;
+  justify-content: center;
+  text-align: center !important;
+}
+.result-detail-lines,
+.method-detail-lines,
+.method-detail-lines p {
+  justify-content: center;
+  text-align: center;
+}
+.changes-table .change-category-cell span {
+  place-items: center !important;
+  text-align: center;
+}
+.change-content p {
+  text-align: center;
+}
+.schedule-head,
+.section-head {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.schedule-list > div > :is(b, strong, span) {
+  text-align: center;
+}
+.result-detail-lines {
+  justify-items: center;
+}
+.result-detail-lines > :is(p, a),
+.method-detail-lines > p {
+  justify-content: center;
+  text-align: center;
+}
+.fact-heading {
+  justify-content: center;
+}
+.fact > strong {
+  text-align: center !important;
+}
+.fact > small {
+  padding-left: 0;
+  text-align: center;
+}
+.method-analysis > :is(strong, span) {
+  text-align: center;
+}
+@media (max-width: 640px) {
+  .section-head {
+    align-items: center;
+  }
+}

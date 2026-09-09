@@ -16,6 +16,11 @@ SPECIAL_ADMISSION = re.compile(
     r"정원외|서해5도|고른기회|계약학과|기독교전형|군사학과전형|국방.*전형|"
     r"사이버국방|항공시스템공학.*특별|자율전공\s*특별"
 )
+RECORD_KEY_FIELDS = (
+    "u", "y", "a", "g", "d", "t", "n", "c", "x", "add", "cv50", "cv70",
+    "max", "p50", "p70", "ko", "ma", "inq", "en", "r", "source", "admission",
+    "metric", "sb", "exam",
+)
 
 
 def numeric(value) -> bool:
@@ -26,11 +31,21 @@ def main() -> None:
     payload = json.loads(DATA_PATH.read_text(encoding="utf-8"))
     rows = payload["scores"]
     issues: list[dict] = []
+    result_metric_labels: Counter[str] = Counter()
 
     ids = [int(row["id"]) for row in rows]
     for row_id, count in Counter(ids).items():
         if count > 1:
             issues.append({"id": row_id, "type": "중복 ID", "value": count})
+
+    record_keys: dict[tuple, int] = {}
+    for row in rows:
+        key = tuple(json.dumps(row.get(field), ensure_ascii=False, sort_keys=True) for field in RECORD_KEY_FIELDS)
+        first_id = record_keys.get(key)
+        if first_id is None:
+            record_keys[key] = row["id"]
+        else:
+            issues.append({"id": row["id"], "type": "중복 입시결과", "first_id": first_id})
 
     allowed_tracks = {"인문", "자연", "의약학", "예체능"}
     allowed_groups = {"가", "나", "다"}
@@ -62,7 +77,19 @@ def main() -> None:
                 # 대학별 가산점을 더한 환산점수는 명목상 만점을 소폭 넘을 수 있다.
                 if numeric(value) and value > maximum * 1.051:
                     issues.append({"id": row["id"], "type": "환산만점 초과", "field": field, "value": value, "maximum": maximum})
-        if "백분위" in str(row.get("metric") or ""):
+        source = str(row.get("source") or "").lower()
+        metric = str(row.get("metric") or "")
+        explicit_official_standard = "표준점수" in metric and "adiga.kr" not in source
+        cut_values = [row.get(field) for field in ("p50", "p70") if numeric(row.get(field))]
+        if not cut_values:
+            result_metric_labels["미공개"] += 1
+        elif all(0 <= value <= 100 for value in cut_values):
+            result_metric_labels["백분위"] += 1
+        elif explicit_official_standard:
+            result_metric_labels["표준점수"] += 1
+        else:
+            result_metric_labels["검토"] += 1
+        if not explicit_official_standard:
             for field in ("p50", "p70"):
                 value = row.get(field)
                 if numeric(value) and value > 100:
@@ -73,6 +100,7 @@ def main() -> None:
         "unique_ids": len(set(ids)),
         "issues": len(issues),
         "by_type": dict(Counter(item["type"] for item in issues)),
+        "result_metric_labels": dict(result_metric_labels),
     }
     SUMMARY_PATH.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     DETAIL_PATH.write_text(json.dumps(issues, ensure_ascii=False, indent=2), encoding="utf-8")

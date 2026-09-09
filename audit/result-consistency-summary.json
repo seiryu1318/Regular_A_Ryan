@@ -1,6 +1,11 @@
 {
-  "rows": 15337,
-  "unique_ids": 15337,
+  "rows": 15335,
+  "unique_ids": 15335,
   "issues": 0,
-  "by_type": {}
+  "by_type": {},
+  "result_metric_labels": {
+    "백분위": 13321,
+    "미공개": 2002,
+    "표준점수": 12
+  }
 }

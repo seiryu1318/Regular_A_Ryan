@@ -2,7 +2,7 @@
   "tabs": {
     "정시 변화": 28,
     "반영방법": 410,
-    "3개년 입시결과": 15337,
+    "3개년 입시결과": 15335,
     "일정": 5
   },
   "missingPublishedValues": {
@@ -11,7 +11,7 @@
   },
   "officialCrosscheck": {
     "adigaPairs": 514,
-    "adigaMatchedRows": 13094,
+    "adigaMatchedRows": 13092,
     "adigaMismatchedRows": 0,
     "reference2027Rows": 410,
     "adiga2027Profiles": 195,

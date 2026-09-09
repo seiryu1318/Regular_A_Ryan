@@ -1,0 +1,20 @@
+[
+  {
+    "removed_id": 16457,
+    "kept_id": 16456,
+    "university": "제주대",
+    "year": 2025,
+    "department": "경제학과",
+    "exam": "수능(일반학생 전형)",
+    "source": "https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000027&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10"
+  },
+  {
+    "removed_id": 16509,
+    "kept_id": 16508,
+    "university": "제주대",
+    "year": 2025,
+    "department": "토목공학과",
+    "exam": "수능(일반학생 전형)",
+    "source": "https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000027&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10"
+  }
+]
