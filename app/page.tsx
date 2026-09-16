@@ -839,7 +839,7 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="results" className="tab-stack">
-            <FilterPanel wide>
+            <FilterPanel wide className="results-filter-panel">
               <SearchField value={scoreQuery} onChange={(value) => { setScoreQuery(value); setScoreListBatch(1); }} placeholder="대학, 모집단위, 전형명 검색" />
               <FilterSelect label="연도" value={scoreYear} onChange={(value) => { setScoreYear(value); setScoreListBatch(1); }} options={['2026', '2025', '2024']} />
               <FilterSelect label="지역" value={scoreRegion} onChange={(value) => { setScoreRegion(value); setScoreListBatch(1); }} options={scoreRegions} />
@@ -1054,8 +1054,8 @@ function HistoricalRatioValue({ label, column, method, domain, sort, onSort }: {
   </button>;
 }
 
-function FilterPanel({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
-  return <section className={`filter-panel ${wide ? 'filter-panel-wide' : ''}`}>{children}</section>;
+function FilterPanel({ children, wide = false, className = '' }: { children: React.ReactNode; wide?: boolean; className?: string }) {
+  return <section className={`filter-panel ${wide ? 'filter-panel-wide' : ''} ${className}`.trim()}>{children}</section>;
 }
 
 function SearchField({ value, onChange, placeholder }: { value: string; onChange: (value: string) => void; placeholder: string }) {
