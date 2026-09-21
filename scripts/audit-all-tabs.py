@@ -28,7 +28,16 @@ def score_aliases(source: str) -> dict[str, str]:
     match = re.search(r"const SCORE_PROFILE_ALIASES:.*?= \{(.*?)\};", source, re.S)
     if not match:
         return {}
-    return dict(re.findall(r"'([^']+)'\s*:\s*'([^']+)'", match.group(1)))
+    aliases: dict[str, str] = {}
+    for quoted_key, bare_key, value in re.findall(
+        r"^\s*(?:'([^']+)'|([^':][^:]*?))\s*:\s*'([^']+)'\s*,?\s*$",
+        match.group(1),
+        re.M,
+    ):
+        key = (quoted_key or bare_key).strip()
+        if key:
+            aliases[key] = value
+    return aliases
 
 
 def main() -> None:

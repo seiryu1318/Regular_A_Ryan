@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-09-21T15:21:01.662Z",
+  "stage": "pre-mitigation",
+  "baseVersion": "ver.12",
+  "candidateVersion": "ver.13",
+  "status": "AUDIT_BLOCKED",
+  "releaseReady": false,
+  "gitCommit": "e7953a32a9d7854ff24d3376366ebb21a7b2398a",
+  "hashes": {
+    "admissionsDataSha256": "61D9BCAB79AAF2A5C6855B00C54CCE37C177C8B04AB12BACEF3AF7D7E50BFDA8",
+    "indexHtmlSha256": "0ADF793F4146B2E8209E652CFC2822EBAD466DC5A53E5565AB9ED7733574AA59",
+    "releaseTsSha256": "8588ACDE4DBC068FC7141C86BDD8057FC362D25F2C4633C2FA685318B8ED063D",
+    "auditManifestSha256": "B4F1027B6F6F098F3B8D0A834A55037FC65AE931D1B689369C1C053C03E8E71A",
+    "auditReportSha256": "9D9A9FA305CBE26114E20B42D1CC7B01553B7AAFC90B07D4DB8D878E98537AD5"
+  },
+  "nextGate": "격리 적용 후 공식자료 1:1 재감사와 전체 탭 검증",
+  "supersededBy": "release-ver13-verification.json"
+}

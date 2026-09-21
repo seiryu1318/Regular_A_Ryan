@@ -1,0 +1,88 @@
+{
+  "release": "ver.13",
+  "preparedAt": "2026-09-22T00:21:01.6620000+09:00",
+  "status": "RELEASE_READY_WITH_QUARANTINE",
+  "releaseReady": true,
+  "evidenceRelationship": {
+    "preMitigationStatus": "AUDIT_BLOCKED",
+    "preMitigationArtifacts": [
+      "release-ver13-audit-manifest.json",
+      "release-ver13-audit-report.md",
+      "release-ver13-candidate.json"
+    ],
+    "postMitigationStatus": "RELEASE_READY_WITH_QUARANTINE",
+    "postMitigationArtifact": "release-ver13-verification.json",
+    "meaning": "사전 감사에서 확인한 미검증 행을 화면 격리한 뒤 전체 공식자료 재검증과 PC·모바일 재빌드를 통과함"
+  },
+  "source": {
+    "rows": 15335,
+    "sha256": "61d9bcab79aaf2a5c6855b00c54cce37c177c8b04ab12bacef3af7d7e50bfda8",
+    "mutatedByReleaseMitigation": false
+  },
+  "quarantine": {
+    "fullRows": 2326,
+    "scoreFieldsOnly": 164,
+    "methodDisplayIncludingContext": 10930,
+    "inferredMaximumLabels": 2729
+  },
+  "officialCrosscheck": {
+    "adiga2027Profiles": 195,
+    "adiga2027Pages": 194,
+    "adiga2027DownloadFailures": 0,
+    "officialResultPairs": 514,
+    "officialResultDownloads": 514,
+    "officialResultDownloadFailures": 0,
+    "officialResultMatchedRows": 13066,
+    "officialResultNumericMismatches": 0,
+    "educationOfficeSources": 3,
+    "allTabIssuesAfterAliasParserFix": 0
+  },
+  "sharedLedgerCrosscheck": {
+    "sourceRows": 82683,
+    "sourceScope": {
+      "studentRecord": 49877,
+      "holistic": 32254,
+      "essay": 552,
+      "regularOrExam": 0
+    },
+    "reliableSameAdmissionOverlap": 0,
+    "numericComparisons": 0,
+    "directConflicts": 0,
+    "decision": "수시 자료이므로 정시 수치의 검증 또는 반박 근거로 사용하지 않음"
+  },
+  "checks": {
+    "quarantineVerifier": "pass",
+    "typescript": "pass",
+    "lint": "pass",
+    "productionBuild": "pass",
+    "diffCheck": "pass",
+    "pcPivot1080x1920": {
+      "status": "pass",
+      "horizontalOverflow": false,
+      "initialMethods": 10,
+      "weightToggleRetainsExpandedBatch": true,
+      "nursingSearchUnexpectedDepartment": false
+    },
+    "mobileIos390x844": {
+      "status": "pass",
+      "horizontalOverflow": false,
+      "inputFontPixels": 16,
+      "initialMethods": 5,
+      "nursingSearchUnexpectedDepartment": false
+    },
+    "mobileAndroid412x915": {
+      "status": "pass",
+      "horizontalOverflow": false
+    },
+    "darkMode": {
+      "status": "pass",
+      "horizontalOverflow": false
+    }
+  },
+  "artifacts": {
+    "auditManifestSha256": "b4f1027b6f6f098f3b8d0a834a55037fc65ae931d1b689369c1c053c03e8e71a",
+    "auditReportSha256": "9d9a9fa305cbe26114e20b42d1cc7b01553b7aafc90b07d4db8d878e98537ad5",
+    "pcHtmlSha256": "0adf793f4146b2e8209e652cfc2822ebad466dc5a53e5565ab9ed7733574aa59",
+    "mobileHtmlSha256": "567908477790e6bef00a371602b3b75c44e33d1bc46f1db6791bf9f3ad4987d9"
+  }
+}
