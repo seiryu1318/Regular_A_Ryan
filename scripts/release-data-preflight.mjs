@@ -6,8 +6,8 @@ import { join } from 'node:path';
 const root = process.cwd();
 const bundledPython = join(homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', 'python.exe');
 
-function run(script, extraEnv = {}) {
-  const result = spawnSync(bundledPython, [join(root, 'scripts', script)], {
+function run(script, extraEnv = {}, args = []) {
+  const result = spawnSync(bundledPython, [join(root, 'scripts', script), ...args], {
     cwd: root,
     env: { ...process.env, ...extraEnv },
     encoding: 'utf8',
@@ -35,6 +35,8 @@ run('sync-historical-methods.py', { ADIGA_HISTORICAL_REFRESH: '1' });
 run('audit-historical-methods.py');
 run('audit-result-consistency.py');
 run('audit-education-office-sources.py');
+run('sync-gyeonggi-2027-sources.py', {}, ['--skip-official-text']);
+run('audit-gyeonggi-2027-sources.py');
 run('audit-all-tabs.py');
 
 const consistency = readAudit('result-consistency-summary.json');
@@ -44,6 +46,7 @@ const methods2027 = readAudit('adiga-2027-methods-summary.json');
 const education = readAudit('education-office-sources.json');
 const allTabs = readAudit('all-tabs-summary.json');
 const historicalMethods = readAudit('historical-methods-audit.json');
+const gyeonggi2027 = readAudit('gyeonggi-2027-integration-summary.json');
 
 const failures = [];
 if (consistency.issues !== 0) failures.push(`입시결과 이상값 ${consistency.issues}건`);
@@ -54,6 +57,7 @@ if (methods2027.download_failures !== 0 || methods2027.needs_review !== 0) failu
 if (education.sourceFailures.length !== 0) failures.push(`시도교육청 자료 확인 실패 ${education.sourceFailures.length}건`);
 if (allTabs.issues !== 0) failures.push(`전체 탭 내용 검사 ${allTabs.issues}건`);
 if (historicalMethods.issues !== 0) failures.push(`해당 학년도 반영비율 검사 ${historicalMethods.issues}건`);
+if (gyeonggi2027.issues !== 0) failures.push(`2027 모집단위 보완자료 검사 ${gyeonggi2027.issues}건`);
 
 if (failures.length) {
   console.error(`출고 전 데이터 검증 실패: ${failures.join(', ')}`);

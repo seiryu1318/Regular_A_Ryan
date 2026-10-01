@@ -1348,11 +1348,27 @@ select {
   text-align: center;
 }
 .method-department-cell {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
   overflow: hidden;
   color: #f0faff;
   font-weight: 900;
   line-height: 1.4;
+  text-align: center;
   text-overflow: ellipsis;
+}
+.method-department-cell > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.method-department-cell > small {
+  color: #8edcf7;
+  font-size: 11px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 .english-method-cell {
   color: #ffd2a8;

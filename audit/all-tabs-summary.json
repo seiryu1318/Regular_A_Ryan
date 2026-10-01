@@ -17,6 +17,14 @@
     "adiga2027Profiles": 195,
     "educationOfficeSources": 3
   },
+  "methodCoverage2027": {
+    "aggregateFormulaRows": 410,
+    "detailedUnitRows": 4130,
+    "confirmedDetailedUnitRows": 3894,
+    "quarantinedDetailedUnitRows": 236,
+    "confirmedRate": 94.29,
+    "sourceRawRows": 4200
+  },
   "admissionGroupLights": {
     "multiGroupDepartments": 8,
     "allThreeGroupDepartments": 0

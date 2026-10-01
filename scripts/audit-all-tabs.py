@@ -95,6 +95,72 @@ def main() -> None:
         if (not isinstance(row.get("metrics"), list) or not row.get("metrics")) and not no_regular_selection and not no_exam_metric:
             issue(issues, "반영방법", "missing-metric", name)
 
+    # 반영방법 탭의 대학별 기준식과 모집단위 상세 행은 서로 다른 단위로 집계한다.
+    units_2027 = data.get("units2027", [])
+    source_supplement_2027 = data.get("sourceSupplement2027", {})
+    if not isinstance(units_2027, list):
+        issue(issues, "반영방법", "invalid-unit-rows-2027", "units2027이 배열이 아님")
+        units_2027 = []
+    if not isinstance(source_supplement_2027, dict):
+        issue(issues, "반영방법", "invalid-unit-source-2027", "sourceSupplement2027이 객체가 아님")
+        source_supplement_2027 = {}
+
+    confirmed_units_2027 = 0
+    quarantined_units_2027 = 0
+    unit_ids_2027: list[int] = []
+    for row in units_2027:
+        if not isinstance(row, dict):
+            issue(issues, "반영방법", "invalid-unit-row-2027", repr(row))
+            continue
+        unit_id = row.get("id")
+        if not isinstance(unit_id, int):
+            issue(issues, "반영방법", "invalid-unit-id-2027", repr(unit_id))
+        else:
+            unit_ids_2027.append(unit_id)
+        display_confirmed = row.get("displayConfirmed")
+        if not isinstance(display_confirmed, bool):
+            issue(issues, "반영방법", "invalid-unit-status-2027", f"ID {row.get('id')}: {display_confirmed}")
+            continue
+        if display_confirmed:
+            confirmed_units_2027 += 1
+            if not (row.get("officialNameConfirmed") is True or row.get("historicalNameConfirmed") is True):
+                issue(issues, "반영방법", "unverified-visible-unit-2027", f"ID {row.get('id')}")
+        else:
+            quarantined_units_2027 += 1
+
+    if len(unit_ids_2027) != len(set(unit_ids_2027)):
+        issue(issues, "반영방법", "duplicate-unit-id-2027", f"{len(unit_ids_2027) - len(set(unit_ids_2027))}건")
+    if confirmed_units_2027 + quarantined_units_2027 != len(units_2027):
+        issue(
+            issues,
+            "반영방법",
+            "unit-status-coverage-2027",
+            f"{confirmed_units_2027}+{quarantined_units_2027}!={len(units_2027)}",
+        )
+    logical_rows_2027 = source_supplement_2027.get("logicalRows")
+    raw_rows_2027 = source_supplement_2027.get("rawRows")
+    if logical_rows_2027 != len(units_2027):
+        issue(issues, "반영방법", "unit-count-mismatch-2027", f"{logical_rows_2027}!={len(units_2027)}")
+    if not isinstance(raw_rows_2027, int) or raw_rows_2027 < len(units_2027):
+        issue(issues, "반영방법", "invalid-unit-raw-count-2027", f"{raw_rows_2027}<{len(units_2027)}")
+    summary = data.get("summary", {})
+    if not isinstance(summary, dict):
+        issue(issues, "반영방법", "invalid-summary-2027", "summary가 객체가 아님")
+        summary = {}
+    if summary.get("unitRows2027") != len(units_2027):
+        issue(issues, "반영방법", "summary-unit-count-mismatch-2027", f"{summary.get('unitRows2027')}!={len(units_2027)}")
+    if summary.get("unitRows2027Confirmed") != confirmed_units_2027:
+        issue(
+            issues,
+            "반영방법",
+            "summary-confirmed-count-mismatch-2027",
+            f"{summary.get('unitRows2027Confirmed')}!={confirmed_units_2027}",
+        )
+    for field in ("unitSourceSha256", "directorySourceSha256"):
+        value = str(source_supplement_2027.get(field, ""))
+        if not re.fullmatch(r"[0-9a-f]{64}", value):
+            issue(issues, "반영방법", "invalid-unit-source-hash-2027", field)
+
     # 3개년 입시결과 탭: 전 행의 식별자, 범위, 단위, 반영방법 연결을 검사한다.
     scores = data.get("scores", [])
     ids = [row.get("id") for row in scores]
@@ -217,6 +283,14 @@ def main() -> None:
             "reference2027Rows": reference_2027.get("project_reference_rows"),
             "adiga2027Profiles": methods_2027.get("adiga_profiles"),
             "educationOfficeSources": len(education.get("sources", [])),
+        },
+        "methodCoverage2027": {
+            "aggregateFormulaRows": reference_2027.get("project_reference_rows") or len(profiles),
+            "detailedUnitRows": len(units_2027),
+            "confirmedDetailedUnitRows": confirmed_units_2027,
+            "quarantinedDetailedUnitRows": quarantined_units_2027,
+            "confirmedRate": round(confirmed_units_2027 / len(units_2027) * 100, 2) if units_2027 else 0,
+            "sourceRawRows": raw_rows_2027,
         },
         "admissionGroupLights": {
             "multiGroupDepartments": multi_group_departments,

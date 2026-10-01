@@ -1,0 +1,19 @@
+{
+  "rawRows": 4200,
+  "logicalRows": 4130,
+  "confirmedRows": 3894,
+  "quarantinedRows": 236,
+  "officialNameConfirmed": 3536,
+  "historicalNameConfirmed": 3572,
+  "stageRowsMerged": 67,
+  "linkedProfiles": 202,
+  "linkedDirectoryEntries": 204,
+  "ignoredUnsafeFields": {
+    "studentRecordColumnsIgnored": 4200,
+    "ratioRowsIgnored": 3798,
+    "historyRequiredOnlyIgnored": 1304,
+    "stageDuplicatesMerged": 67
+  },
+  "issues": 0,
+  "details": []
+}

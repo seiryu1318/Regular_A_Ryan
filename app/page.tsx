@@ -104,6 +104,42 @@ type Reference2027Row = {
   sourceRow: number;
 };
 
+type SourceLink2027 = {
+  label: string;
+  prospectusUrl2027?: string;
+  adiga2027Url?: string;
+  admissionUrl?: string;
+};
+
+type Unit2027 = {
+  id: number;
+  u: string;
+  sourceUniversity: string;
+  r: string;
+  examName: string;
+  admissionGroup: string;
+  sourceTrack: string;
+  trackCategory: string;
+  trackCategories?: string[];
+  detailedTrack: string;
+  department: string;
+  quota: number | null;
+  campus: string;
+  stages: string[];
+  examDomains: string;
+  inquiryCount: number | null;
+  mathChoices: string;
+  inquiryTypes: string;
+  minimum: string;
+  specialNote: string;
+  sourceRows: number[];
+  historicalNameConfirmed: boolean;
+  officialNameConfirmed: boolean;
+  displayConfirmed: boolean;
+  sourceFile: string;
+  sourceSha256: string;
+};
+
 type Profile = {
   id: number;
   u: string;
@@ -126,6 +162,10 @@ type Profile = {
   reference2027?: Reference2027Row;
   reference2027Rows?: Reference2027Row[];
   referenceSupplementOnly?: boolean;
+  sourceLinks2027?: SourceLink2027[];
+  prospectusUrl2027?: string;
+  adiga2027Url?: string;
+  sourceDirectoryDate?: string;
 };
 
 type ScoreRow = {
@@ -189,6 +229,7 @@ type AdmissionsData = {
   studentRecord: StudentRecordRow[];
   scores: ScoreRow[];
   sources: SourceRow[];
+  units2027?: Unit2027[];
 };
 
 type RatioSnapshot = {
@@ -232,7 +273,9 @@ type MethodView = ProfileView & {
   result2026Rows?: ScoreRow[];
   departmentName?: string;
   departmentTrack?: TrackCategory;
+  departmentTrackCategories?: TrackCategory[];
   referenceLegacyMethods?: MethodView[];
+  unit2027?: Unit2027;
 };
 type FormulaRow = {
   formulaId: number;
@@ -547,8 +590,13 @@ export default function Home() {
     return attach2026ResultSummaries(methods, regularScores);
   }, [profileViews, regularScores]);
   const methodDisplayViews = useMemo<MethodView[]>(
-    () => splitMethodsByDepartment(methodViews, regularScores),
-    [methodViews, regularScores],
+    () =>
+      splitMethodsByDepartment(
+        methodViews,
+        regularScores,
+        data?.units2027 ?? [],
+      ),
+    [data, methodViews, regularScores],
   );
   const scoreViews = useMemo<ScoreView[]>(() => {
     const historicalGroups = historicalAdmissionGroups(regularScores);
@@ -684,8 +732,9 @@ export default function Home() {
         `${displayRegion(row.r, row.u)} ${row.u} ${row.departmentName ?? ''}`,
       );
       const reference = row.reference2027;
+      const unit = row.unit2027;
       const fullSearchText = normalize(
-        `${departmentIdentity} ${reference?.label ?? ''} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${reference?.calculusGeometryBonus ?? ''} ${reference?.socialBonus ?? ''} ${reference?.scienceBonus ?? ''} ${row.englishMethod} ${row.ratio} ${row.metric}`,
+        `${departmentIdentity} ${reference?.label ?? ''} ${row.formal} ${row.admissionGroup} ${row.examName} ${row.trackName} ${methodTrackCategories(row).join(' ')} ${row.selectionDetail} ${row.bonusDetail} ${reference?.calculusGeometryBonus ?? ''} ${reference?.socialBonus ?? ''} ${reference?.scienceBonus ?? ''} ${row.englishMethod} ${row.ratio} ${row.metric} ${unit?.detailedTrack ?? ''} ${unit?.campus ?? ''} ${unit?.examDomains ?? ''} ${unit?.mathChoices ?? ''} ${unit?.inquiryTypes ?? ''} ${unit?.minimum ?? ''}`,
       );
       const matchesQuery =
         !query ||
@@ -937,6 +986,10 @@ export default function Home() {
           '모집전형',
           '계열',
           '모집단위',
+          '2027 모집인원',
+          '선발방식',
+          '수능 반영영역',
+          '탐구 반영수',
           '사탐런 유리',
           '미기 가산',
           '사탐 가산',
@@ -974,6 +1027,10 @@ export default function Home() {
           row.examName,
           methodTrackCategories(row).join(', '),
           row.departmentName ?? row.trackName,
+          row.unit2027?.quota ?? '',
+          row.unit2027?.stages.join(', ') ?? '',
+          row.unit2027?.examDomains ?? '',
+          row.unit2027?.inquiryCount ?? '',
           row.reference2027?.socialStudyAdvantage ? '유리' : '',
           row.reference2027?.calculusGeometryBonus ?? '',
           row.reference2027?.socialBonus ?? '',
@@ -1563,7 +1620,11 @@ export default function Home() {
                           className="method-department-cell"
                           title={row.departmentName ?? row.trackName}
                         >
-                          {row.departmentName ?? row.trackName}
+                          <span>{row.departmentName ?? row.trackName}</span>
+                          {row.unit2027?.quota !== null &&
+                            row.unit2027?.quota !== undefined && (
+                              <small>{row.unit2027.quota}명</small>
+                            )}
                         </TableCell>
                       </TableRow>
                       <MethodSummaryRow
@@ -1966,9 +2027,15 @@ export default function Home() {
       {selectedProfile && (
         <DetailModal
           title={selectedProfile.formal}
-          description={`${selectedProfile.r} | ${selectedProfile.admissionGroup} | ${selectedProfile.examName} | ${selectedProfile.reference2027?.label ?? selectedProfile.trackName}`}
+          description={`${selectedProfile.r} | ${selectedProfile.admissionGroup} | ${selectedProfile.examName} | ${selectedProfile.departmentName ?? selectedProfile.reference2027?.label ?? selectedProfile.trackName}`}
           onClose={() => setSelectedProfile(null)}
         >
+          {selectedProfile.unit2027 && (
+            <DetailBlock
+              title="모집단위"
+              text={`${selectedProfile.unit2027.department}${selectedProfile.unit2027.quota === null ? '' : ` ${selectedProfile.unit2027.quota}명`} | ${selectedProfile.unit2027.stages.join(', ') || '일괄합산'}`}
+            />
+          )}
           <DetailBlock
             title="전형요소"
             text={selectedProfile.selectionDetail}
@@ -1998,6 +2065,35 @@ export default function Home() {
             }
           />
           <div className="dialog-links">
+            {selectedProfile.sourceLinks2027?.flatMap((entry, index) => {
+              const suffix =
+                selectedProfile.sourceLinks2027 &&
+                selectedProfile.sourceLinks2027.length > 1
+                  ? ` ${entry.label}`
+                  : '';
+              return [
+                entry.prospectusUrl2027 ? (
+                  <a
+                    key={`prospectus-${index}`}
+                    href={entry.prospectusUrl2027}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    2027 정시 모집요강{suffix} <ExternalLink />
+                  </a>
+                ) : null,
+                entry.adiga2027Url ? (
+                  <a
+                    key={`adiga-${index}`}
+                    href={entry.adiga2027Url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    대학어디가 2027{suffix} <ExternalLink />
+                  </a>
+                ) : null,
+              ];
+            })}
             {selectedProfile.officialSourcePath && (
               <a
                 href={localFileHref(selectedProfile.officialSourcePath)}
@@ -2800,6 +2896,38 @@ function MethodDetailRow({
       <TableRow className="method-detail-row">
         <TableCell colSpan={colSpan}>
           <div className="method-detail-lines">
+            {row.unit2027 && (
+              <>
+                <p>
+                  <strong>모집인원</strong>
+                  <span>
+                    {row.unit2027.quota === null
+                      ? '—'
+                      : `${row.unit2027.quota}명`}
+                  </span>
+                  <strong>선발방식</strong>
+                  <span>{row.unit2027.stages.join(', ') || '—'}</span>
+                  {row.unit2027.campus && (
+                    <>
+                      <strong>캠퍼스</strong>
+                      <span>{row.unit2027.campus}</span>
+                    </>
+                  )}
+                </p>
+                <p>
+                  <strong>반영영역</strong>
+                  <span>{row.unit2027.examDomains || '—'}</span>
+                  <strong>탐구</strong>
+                  <span>
+                    {row.unit2027.inquiryCount === null
+                      ? row.unit2027.inquiryTypes || '—'
+                      : `${row.unit2027.inquiryCount}과목${row.unit2027.inquiryTypes ? `, ${row.unit2027.inquiryTypes}` : ''}`}
+                  </span>
+                  <strong>수학 선택</strong>
+                  <span>{row.unit2027.mathChoices || '—'}</span>
+                </p>
+              </>
+            )}
             <p>
               <strong>
                 <Search aria-hidden="true" />
@@ -2881,6 +3009,38 @@ function MethodDetailRow({
     <TableRow className="method-detail-row">
       <TableCell colSpan={colSpan}>
         <div className="method-detail-lines">
+          {row.unit2027 && (
+            <>
+              <p>
+                <strong>모집인원</strong>
+                <span>
+                  {row.unit2027.quota === null
+                    ? '—'
+                    : `${row.unit2027.quota}명`}
+                </span>
+                <strong>선발방식</strong>
+                <span>{row.unit2027.stages.join(', ') || '—'}</span>
+                {row.unit2027.campus && (
+                  <>
+                    <strong>캠퍼스</strong>
+                    <span>{row.unit2027.campus}</span>
+                  </>
+                )}
+              </p>
+              <p>
+                <strong>반영영역</strong>
+                <span>{row.unit2027.examDomains || '—'}</span>
+                <strong>탐구</strong>
+                <span>
+                  {row.unit2027.inquiryCount === null
+                    ? row.unit2027.inquiryTypes || '—'
+                    : `${row.unit2027.inquiryCount}과목${row.unit2027.inquiryTypes ? `, ${row.unit2027.inquiryTypes}` : ''}`}
+                </span>
+                <strong>수학 선택</strong>
+                <span>{row.unit2027.mathChoices || '—'}</span>
+              </p>
+            </>
+          )}
           <p>
             <strong>
               <Search aria-hidden="true" />
@@ -3096,8 +3256,16 @@ function scoreTrackCategory(
 }
 
 function methodTrackCategories(
-  row: Pick<MethodView, 'trackName' | 'departmentTrack' | 'reference2027'>,
+  row: Pick<
+    MethodView,
+    | 'trackName'
+    | 'departmentTrack'
+    | 'departmentTrackCategories'
+    | 'reference2027'
+  >,
 ): TrackCategory[] {
+  if (row.departmentTrackCategories?.length)
+    return row.departmentTrackCategories;
   if (row.departmentTrack) return [row.departmentTrack];
   if (row.reference2027?.trackCategories.length) {
     return row.reference2027.trackCategories.filter(
@@ -8894,7 +9062,221 @@ function attach2026ResultSummaries(methods: MethodView[], scores: ScoreRow[]) {
   });
 }
 
-function splitMethodsByDepartment(methods: MethodView[], scores: ScoreRow[]) {
+function splitMethodsByDepartment(
+  methods: MethodView[],
+  scores: ScoreRow[],
+  units: Unit2027[],
+) {
+  const confirmedUnits = units.filter((unit) => unit.displayConfirmed);
+  if (!confirmedUnits.length)
+    return splitMethodsByHistoricalDepartment(methods, scores);
+
+  const methodsByUniversity = new Map<string, MethodView[]>();
+  methods.forEach((method) => {
+    const rows = methodsByUniversity.get(method.u) ?? [];
+    rows.push(method);
+    methodsByUniversity.set(method.u, rows);
+  });
+  const scoresByUniversity = new Map<string, ScoreRow[]>();
+  scores.forEach((score) => {
+    const university = SCORE_PROFILE_ALIASES[score.u] ?? score.u;
+    const rows = scoresByUniversity.get(university) ?? [];
+    rows.push(score);
+    scoresByUniversity.set(university, rows);
+  });
+
+  const usedMethodIds = new Set<string>();
+  const unitRows = confirmedUnits.flatMap((unit) => {
+    const universityMethods = methodsByUniversity.get(unit.u) ?? [];
+    if (!universityMethods.length) return [];
+    const compatibleMethods = universityMethods.filter((method) =>
+      unitMethodIsCompatible(unit, method),
+    );
+    if (!compatibleMethods.length) return [];
+    const ranked = compatibleMethods
+      .map((method, index) => ({
+        method,
+        index,
+        rank: unitMethodRank(unit, method),
+      }))
+      .sort(
+        (left, right) =>
+          right.rank - left.rank ||
+          methodTrackCategories(left.method).length -
+            methodTrackCategories(right.method).length ||
+          left.index - right.index,
+      );
+    const topRank = ranked[0]?.rank;
+    const topCandidates = ranked.filter((entry) => entry.rank === topRank);
+    if (
+      topCandidates.length > 1 &&
+      new Set(
+        topCandidates.map((entry) => unitMethodSignature(entry.method)),
+      ).size > 1
+    )
+      return [];
+    const method = ranked[0]?.method;
+    if (!method) return [];
+    usedMethodIds.add(method.rowId);
+
+    const exactResults = (scoresByUniversity.get(unit.u) ?? []).filter(
+      (score) =>
+        score.y === 2026 &&
+        normalize(score.d) === normalize(unit.department) &&
+        (!score.g ||
+          atomicAdmissionGroups(unit.admissionGroup).includes(
+            `${score.g.replace(/군$/, '')}군`,
+          )),
+    );
+    const maxima = unique(
+      exactResults.map((score) =>
+        score.max === null ? '' : String(score.max),
+      ),
+    )
+      .map(Number)
+      .filter(Number.isFinite);
+    const conversionMax =
+      maxima.length === 1 ? maxima[0] : method.conversionMax;
+    const conversionMaxInferred =
+      maxima.length === 1
+        ? exactResults.some(
+            (score) =>
+              score.max === conversionMax && isInferredMaximum(score),
+          )
+        : method.conversionMaxInferred;
+    return [
+      {
+        ...method,
+        rowId: `${method.rowId}-unit-2027-${unit.id}`,
+        admissionGroup: unit.admissionGroup,
+        examName: unit.examName || method.examName,
+        departmentName: unit.department,
+        departmentTrackCategories: (
+          unit.trackCategories ?? [unit.trackCategory]
+        ).filter((category): category is TrackCategory =>
+          TRACK_CATEGORIES.includes(category as TrackCategory),
+        ),
+        selectionDetail:
+          unit.stages.length > 0
+            ? `${unit.admissionGroup} ${unit.stages.join(', ')}`
+            : method.selectionDetail,
+        unit2027: unit,
+        conversionMax,
+        conversionMaxInferred,
+        result2026Rows: exactResults,
+        result2026: summarizeMethodResults(
+          exactResults,
+          conversionMax,
+          conversionMaxInferred,
+        ),
+      },
+    ];
+  });
+
+  const coveredUniversities = new Set(confirmedUnits.map((unit) => unit.u));
+  const fallbackMethods = methods.filter(
+    (method) =>
+      !coveredUniversities.has(method.u) || !usedMethodIds.has(method.rowId),
+  );
+  return [
+    ...unitRows,
+    ...splitMethodsByHistoricalDepartment(fallbackMethods, scores),
+  ];
+}
+
+function unitMethodIsCompatible(unit: Unit2027, method: MethodView) {
+  const groupMatches = atomicAdmissionGroups(method.admissionGroup).includes(
+    unit.admissionGroup,
+  );
+  if (!groupMatches) return false;
+  const methodCategories = methodTrackCategories(method);
+  return unitFormulaCategories(unit).some((category) =>
+    methodCategories.includes(category),
+  );
+}
+
+function unitMethodRank(unit: Unit2027, method: MethodView) {
+  const groups = atomicAdmissionGroups(method.admissionGroup);
+  const groupRank = groups.includes(unit.admissionGroup) ? 60 : -40;
+  const categories = methodTrackCategories(method);
+  const formulaCategories = unitFormulaCategories(unit);
+  const categoryRank = formulaCategories.some((category) =>
+    categories.includes(category),
+  )
+    ? 35
+    : -60;
+  const unitExam = normalizeExamName(unit.examName);
+  const methodExam = normalizeExamName(method.examName);
+  const unitNumber = examTypeNumber(unit.examName);
+  const methodNumber = examTypeNumber(method.examName);
+  let examRank = 0;
+  if (unitExam && unitExam === methodExam) examRank = 50;
+  else if (unitNumber && methodNumber && unitNumber !== methodNumber)
+    examRank = -50;
+  else if (
+    unitExam &&
+    methodExam &&
+    (unitExam.includes(methodExam) || methodExam.includes(unitExam))
+  )
+    examRank = 24;
+  else if (/일반/.test(unitExam) && /일반/.test(methodExam)) examRank = 8;
+
+  const trackRank =
+    ((unit.trackCategories?.length ?? 1) > 1
+      ? 0
+      : scoreMethodRank(
+          { u: unit.u, d: unit.department, t: unit.sourceTrack },
+          method,
+        ) * 8) +
+    (unit.detailedTrack &&
+    normalize(method.trackName).includes(normalize(unit.detailedTrack))
+      ? 18
+      : 0);
+  return groupRank + categoryRank + examRank + trackRank;
+}
+
+function unitFormulaCategories(unit: Unit2027): TrackCategory[] {
+  if (unit.sourceTrack === '인문' || unit.sourceTrack === '자연')
+    return [unit.sourceTrack];
+  const categories = (unit.trackCategories ?? [unit.trackCategory]).filter(
+    (category): category is TrackCategory =>
+      TRACK_CATEGORIES.includes(category as TrackCategory),
+  );
+  return categories.length ? categories : ['인문'];
+}
+
+function unitMethodSignature(method: MethodView) {
+  return JSON.stringify({
+    ratios: method.ratios,
+    ratioLabels: method.ratioLabels,
+    weights: method.weights,
+    metrics: method.metrics,
+    englishMethod: method.englishMethod,
+    historyMethod: method.historyMethod,
+    selectionDetail: method.selectionDetail,
+    bonusDetail: method.bonusDetail,
+    studentRecord: method.reference2027?.studentRecord ?? '',
+  });
+}
+
+function normalizeExamName(value: string) {
+  return normalize(value)
+    .replaceAll('Ⅰ', '1')
+    .replaceAll('Ⅱ', '2')
+    .replaceAll('Ⅲ', '3')
+    .replace(/수능|위주|성적|우수자|학생/g, '')
+    .replace(/[()[\]{}·,._-]/g, '');
+}
+
+function examTypeNumber(value: string) {
+  const match = normalizeExamName(value).match(/[1-4]/);
+  return match?.[0] ?? '';
+}
+
+function splitMethodsByHistoricalDepartment(
+  methods: MethodView[],
+  scores: ScoreRow[],
+) {
   const latestRowsByUniversity = new Map<string, ScoreRow[]>();
   const scoreGroups = new Map<string, ScoreRow[]>();
   scores.forEach((score) => {
@@ -9235,7 +9617,10 @@ function generalExamVariant(value: string) {
   return 1;
 }
 
-function scoreMethodRank(score: ScoreRow, method: MethodView) {
+function scoreMethodRank(
+  score: Pick<ScoreRow, 'u' | 'd' | 't'>,
+  method: MethodView,
+) {
   const department = normalize(score.d);
   const referenceNote = normalize(method.reference2027?.note ?? '');
   const target = normalize(

@@ -1,0 +1,76 @@
+{
+  "pc": {
+    "title": "라이언의 2027 정시모집",
+    "width": 1416,
+    "scrollWidth": 1401,
+    "nav": [
+      "일정",
+      "2027 변동사항",
+      "2027 반영방법",
+      "3개년 입시결과"
+    ],
+    "mobileLink": "https://seiryu1318.github.io/Regular_A_RyanM/",
+    "portalLink": "https://seiryu1318.github.io/admission_Ryan/",
+    "headerAligns": [
+      "center",
+      "center",
+      "center",
+      "center",
+      "center",
+      "center",
+      "center"
+    ]
+  },
+  "mobile": {
+    "title": "라이언의 2027 정시모집",
+    "width": 390,
+    "scrollWidth": 390,
+    "pcLink": "https://seiryu1318.github.io/Regular_A_Ryan/",
+    "portalLink": "https://seiryu1318.github.io/admission_Ryan/",
+    "searchFontSizes": [
+      16
+    ]
+  },
+  "initialPcRows": 10,
+  "initialMobileRows": 5,
+  "nursing": {
+    "rows": 10,
+    "departments": [
+      "간호학과",
+      "간호학과",
+      "간호학과",
+      "간호학과",
+      "간호학과",
+      "간호학과",
+      "간호학과",
+      "간호학과",
+      "간호학과",
+      "간호학과"
+    ]
+  },
+  "mobileNursingRows": 5,
+  "centralMedicine": {
+    "rows": 1,
+    "text": [
+      "주요서울\t\n중앙대\n\t\n가\n나\n다\n\t수능(일반전형)\t의약학\t\n의학부\n42명",
+      "국어\n30%\n수학\n35%\n영어\n—\n탐구2\n35%\n탐구1\n—\n영어 방식\n—\n한국사\n가점\n2026 백분위 50/70\n—\n2026 환산점수 50/70\n—\n2026 환산만점(추론)\n1000.00점\n활용지표\n표+변\n학생부\n—"
+    ]
+  },
+  "flexibleTracks": [
+    "자연",
+    "자연",
+    "인문, 자연",
+    "자연",
+    "자연",
+    "자연",
+    "인문",
+    "인문, 자연",
+    "자연",
+    "인문"
+  ],
+  "screenshots": {
+    "pc": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-pc.png",
+    "mobile": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-mobile.png"
+  },
+  "issues": []
+}

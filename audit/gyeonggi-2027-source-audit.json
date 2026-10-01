@@ -1,0 +1,948 @@
+{
+  "htmlSource": "C:\\Users\\User\\iCloudDrive\\02. 진학 및 상담자료\\01. 진학자료\\01. 연도별 진학자료\\07. 2026년\\01. 전형방법\\03. 모집요강\\05. 정시모집\\02. 관련 자료\\2027 정시 모집정보 검색기(영덕고-김형진).html",
+  "htmlSha256": "80021081837c45501d3d2687970446e5adc9bfe6a5a3925bec6dcf106f015ca4",
+  "pdfSource": "C:\\Users\\User\\iCloudDrive\\02. 진학 및 상담자료\\01. 진학자료\\01. 연도별 진학자료\\07. 2026년\\01. 전형방법\\03. 모집요강\\05. 정시모집\\02. 관련 자료\\2027 정시전형 모집요강(경기도교육청 진학지도리더교사 콘텐츠팀).pdf",
+  "pdfSha256": "cfeca78e1f03afa55ad89364746d024e89499f895adc4c2b650d3df7623a7d33",
+  "rawHtmlRows": 4200,
+  "logicalUnitRows": 4130,
+  "universities": 177,
+  "excludedSpecialAdmissionRows": 3,
+  "historicalNameConfirmed": 3572,
+  "displayConfirmed": 3894,
+  "unconfirmed": 236,
+  "unconfirmedSample": [
+    {
+      "u": "감리교신학대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "신학부",
+      "sourceRows": [
+        90
+      ]
+    },
+    {
+      "u": "강원대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "인문대학자유공학과",
+      "sourceRows": [
+        185
+      ]
+    },
+    {
+      "u": "강원대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "인문사회자유전공학과",
+      "sourceRows": [
+        149
+      ]
+    },
+    {
+      "u": "강원대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "일본어학과",
+      "sourceRows": [
+        170
+      ]
+    },
+    {
+      "u": "경기대",
+      "examName": "일반학생1전형",
+      "admissionGroup": "가군",
+      "department": "사회과학대학(통합)",
+      "sourceRows": [
+        359
+      ]
+    },
+    {
+      "u": "경기대",
+      "examName": "일반학생1전형",
+      "admissionGroup": "가군",
+      "department": "창의공과대학(통합)",
+      "sourceRows": [
+        360
+      ]
+    },
+    {
+      "u": "경기대",
+      "examName": "일반학생1전형",
+      "admissionGroup": "나군",
+      "department": "소프트웨어경영대학(통합)",
+      "sourceRows": [
+        361
+      ]
+    },
+    {
+      "u": "경기대",
+      "examName": "일반학생1전형",
+      "admissionGroup": "나군",
+      "department": "융합과학대학(통합)",
+      "sourceRows": [
+        363
+      ]
+    },
+    {
+      "u": "경기대",
+      "examName": "일반학생1전형",
+      "admissionGroup": "나군",
+      "department": "인문대학(통합)",
+      "sourceRows": [
+        362
+      ]
+    },
+    {
+      "u": "경북대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "컴퓨터학부-인공지능컴퓨팅",
+      "sourceRows": [
+        469
+      ]
+    },
+    {
+      "u": "경북대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "컴퓨터학부-플랫폼소프트웨어/데이터과학",
+      "sourceRows": [
+        470
+      ]
+    },
+    {
+      "u": "경북대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "컴퓨터학부-글로벌소프트웨어융합",
+      "sourceRows": [
+        526
+      ]
+    },
+    {
+      "u": "경성대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "호텔관광외식경영학부-외식서비스경영학",
+      "sourceRows": [
+        641
+      ]
+    },
+    {
+      "u": "경성대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "호텔관광외식경영학부-호텔관광경영학",
+      "sourceRows": [
+        642
+      ]
+    },
+    {
+      "u": "경운대",
+      "examName": "일반전형2",
+      "admissionGroup": "가군",
+      "department": "미래산업학부(야)",
+      "sourceRows": [
+        663
+      ]
+    },
+    {
+      "u": "경운대",
+      "examName": "일반전형1",
+      "admissionGroup": "다군",
+      "department": "항공산업대학(항공서비스학과제외)",
+      "sourceRows": [
+        661
+      ]
+    },
+    {
+      "u": "경운대",
+      "examName": "일반전형2",
+      "admissionGroup": "다군",
+      "department": "첨단산업대학",
+      "sourceRows": [
+        666
+      ]
+    },
+    {
+      "u": "경운대",
+      "examName": "일반전형2",
+      "admissionGroup": "다군",
+      "department": "항공산업대학(항공서비스학과제외)",
+      "sourceRows": [
+        667
+      ]
+    },
+    {
+      "u": "경희대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "기계공학부 AI로봇공학전공",
+      "sourceRows": [
+        724
+      ]
+    },
+    {
+      "u": "공주대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "자율전공학부(인문사회과학대학)",
+      "sourceRows": [
+        1009
+      ]
+    },
+    {
+      "u": "공주대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "자율전공학부(자연과학대학)",
+      "sourceRows": [
+        1010
+      ]
+    },
+    {
+      "u": "광신대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "복지상담융합학부",
+      "sourceRows": [
+        1012
+      ]
+    },
+    {
+      "u": "광신대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "유아교육과",
+      "sourceRows": [
+        1013
+      ]
+    },
+    {
+      "u": "광신대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "한국어교육학과",
+      "sourceRows": [
+        1014
+      ]
+    },
+    {
+      "u": "국립군산대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "간호학부-간호학",
+      "sourceRows": [
+        1094
+      ]
+    },
+    {
+      "u": "국립군산대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "건축공학부-건축공학",
+      "sourceRows": [
+        1095
+      ]
+    },
+    {
+      "u": "국립군산대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "아동학부-아동가족학",
+      "sourceRows": [
+        1087
+      ]
+    },
+    {
+      "u": "국립한국해양대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "기계공학부-기계시스템공학",
+      "sourceRows": [
+        3849
+      ]
+    },
+    {
+      "u": "국립한국해양대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "기계공학부-냉동공조공학",
+      "sourceRows": [
+        3850
+      ]
+    },
+    {
+      "u": "국립한국해양대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "인공지능공학부-컴퓨터공학",
+      "sourceRows": [
+        3853
+      ]
+    },
+    {
+      "u": "국립한국해양대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "전자전기정보공학부-나노반도체공학",
+      "sourceRows": [
+        3854
+      ]
+    },
+    {
+      "u": "국립한국해양대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "전자전기정보공학부-전기전자공학",
+      "sourceRows": [
+        3856
+      ]
+    },
+    {
+      "u": "국립한국해양대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "해양과학융합학부-해양생물공학/수산바이오공학",
+      "sourceRows": [
+        3860
+      ]
+    },
+    {
+      "u": "국민대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "AI빅데이터융합경영학과(인문)",
+      "sourceRows": [
+        1056
+      ]
+    },
+    {
+      "u": "단국대",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "건축학부-건축공학",
+      "sourceRows": [
+        1180
+      ]
+    },
+    {
+      "u": "단국대",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "고분자시스템공학부-파이버융합소재공학",
+      "sourceRows": [
+        1182
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "생명자원학부-녹지조경학",
+      "sourceRows": [
+        1223
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "생명자원학부-동물생명공학",
+      "sourceRows": [
+        1224
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "아시아중동학부-베트남학",
+      "sourceRows": [
+        1214
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "유럽중남미학부-독일학",
+      "sourceRows": [
+        1215
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "유럽중남미학부-러시아학",
+      "sourceRows": [
+        1216
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "유럽중남미학부-포르투갈브라질학",
+      "sourceRows": [
+        1218
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "유럽중남미학부-프랑스학",
+      "sourceRows": [
+        1219
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "의생명과학부-의생명시스템학",
+      "sourceRows": [
+        1230
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "생명자원학부-식량생명공학",
+      "sourceRows": [
+        1242
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "생명자원학부-환경원예학",
+      "sourceRows": [
+        1243
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "아시아중동학부-일본학",
+      "sourceRows": [
+        1237
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "아시아중동학부-중국학",
+      "sourceRows": [
+        1238
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "아시아중동학부-중동학",
+      "sourceRows": [
+        1239
+      ]
+    },
+    {
+      "u": "단국대(천안)",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "의생명과학부-미생물학",
+      "sourceRows": [
+        1247
+      ]
+    },
+    {
+      "u": "대전가톨릭대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "신학과",
+      "sourceRows": [
+        1287
+      ]
+    },
+    {
+      "u": "대진대",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "국제학부-국제지역학",
+      "sourceRows": [
+        1296
+      ]
+    },
+    {
+      "u": "대진대",
+      "examName": "일반학생전형",
+      "admissionGroup": "가군",
+      "department": "국제학부-중국학",
+      "sourceRows": [
+        1297
+      ]
+    },
+    {
+      "u": "대진대",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "AI융합학부-AI빅데이터",
+      "sourceRows": [
+        1313
+      ]
+    },
+    {
+      "u": "대진대",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "AI융합학부-스마트모빌리티",
+      "sourceRows": [
+        1314
+      ]
+    },
+    {
+      "u": "대진대",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "AI융합학부-컴퓨터공학",
+      "sourceRows": [
+        1315
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "가군",
+      "department": "글로컬혁신공학부-소방방재",
+      "sourceRows": [
+        1393
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "가군",
+      "department": "글로컬혁신공학부-안전보건",
+      "sourceRows": [
+        1394
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "가군",
+      "department": "글로컬혁신공학부-자동차소재부품공학",
+      "sourceRows": [
+        1395
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "가군",
+      "department": "불교학부-불교문화콘텐츠",
+      "sourceRows": [
+        1387
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "가군",
+      "department": "불교학부-불교학",
+      "sourceRows": [
+        1388
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "다군",
+      "department": "조경정원디자인학부",
+      "sourceRows": [
+        1417
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "다군",
+      "department": "한의예과(유형1)",
+      "sourceRows": [
+        1418
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "다군",
+      "department": "한의예과(유형2)",
+      "sourceRows": [
+        1406
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "다군",
+      "department": "호텔관광외식경영학부-조리외식경영학",
+      "sourceRows": [
+        1409
+      ]
+    },
+    {
+      "u": "동국대(WISE)",
+      "examName": "수능전형",
+      "admissionGroup": "다군",
+      "department": "호텔관광외식경영학부-호텔관광경영학",
+      "sourceRows": [
+        1410
+      ]
+    },
+    {
+      "u": "동덕여대",
+      "examName": "수능우수자전형",
+      "admissionGroup": "가군",
+      "department": "문화지식융합학부-데이터사이언스",
+      "sourceRows": [
+        1421
+      ]
+    },
+    {
+      "u": "동덕여대",
+      "examName": "수능우수자전형",
+      "admissionGroup": "가군",
+      "department": "앙트러프러너리얼리더십학부-앙트러프러너십",
+      "sourceRows": [
+        1420
+      ]
+    },
+    {
+      "u": "동명대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "반려동물대학(반려동물보건학과제외)",
+      "sourceRows": [
+        1431
+      ]
+    },
+    {
+      "u": "동서대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "계열1-방송영상/광고홍보",
+      "sourceRows": [
+        1437
+      ]
+    },
+    {
+      "u": "동아대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "환경에너지공학부-환경안전",
+      "sourceRows": [
+        1494
+      ]
+    },
+    {
+      "u": "동아대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "역사문화학부-고고미술사학",
+      "sourceRows": [
+        1497
+      ]
+    },
+    {
+      "u": "동아대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "역사문화학부-사학",
+      "sourceRows": [
+        1498
+      ]
+    },
+    {
+      "u": "동아대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "정치사회학부-사회학",
+      "sourceRows": [
+        1499
+      ]
+    },
+    {
+      "u": "동아대",
+      "examName": "일반전형",
+      "admissionGroup": "다군",
+      "department": "환경에너지공학부-미래에너지공학",
+      "sourceRows": [
+        1508
+      ]
+    },
+    {
+      "u": "동양대",
+      "examName": "수능전형",
+      "admissionGroup": "다군",
+      "department": "보건의료행정학과",
+      "sourceRows": [
+        1515
+      ]
+    },
+    {
+      "u": "동의대",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "한의예과(미적분/기하)",
+      "sourceRows": [
+        1523
+      ]
+    },
+    {
+      "u": "동의대",
+      "examName": "일반학생전형",
+      "admissionGroup": "나군",
+      "department": "한의예과(확률과통계)",
+      "sourceRows": [
+        1519
+      ]
+    },
+    {
+      "u": "부산대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "디자인학과-디자인앤테크놀로지",
+      "sourceRows": [
+        1716
+      ]
+    },
+    {
+      "u": "부산대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "전기전자공학부-반도체공학",
+      "sourceRows": [
+        1733
+      ]
+    },
+    {
+      "u": "부산대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "전기전자공학부-전기공학",
+      "sourceRows": [
+        1734
+      ]
+    },
+    {
+      "u": "부산대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "정보컴퓨터공학부-인공지능",
+      "sourceRows": [
+        1735
+      ]
+    },
+    {
+      "u": "부산대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "정보컴퓨터공학부-컴퓨터공학",
+      "sourceRows": [
+        1736
+      ]
+    },
+    {
+      "u": "부산대",
+      "examName": "일반전형",
+      "admissionGroup": "나군",
+      "department": "전기전자공학부-전자공학",
+      "sourceRows": [
+        1771
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "SW융합학부-게임",
+      "sourceRows": [
+        1819
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "SW융합학부-한일문화콘텐츠",
+      "sourceRows": [
+        1804
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "생명화학공학부-화공신소재",
+      "sourceRows": [
+        1823
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "생명화학공학부-화학에너지공학",
+      "sourceRows": [
+        1824
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "외식의류학부-식품영양학",
+      "sourceRows": [
+        1826
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "외식의류학부-의류학",
+      "sourceRows": [
+        1827
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "인문콘텐츠학부-문헌정보학",
+      "sourceRows": [
+        1813
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "인문콘텐츠학부-역사콘텐츠",
+      "sourceRows": [
+        1814
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "인문콘텐츠학부-지적재산권",
+      "sourceRows": [
+        1815
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "자유전공(IT계열)",
+      "sourceRows": [
+        1828
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "자유전공(경영경제계열)",
+      "sourceRows": [
+        1816
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "자유전공(인문사회계열)",
+      "sourceRows": [
+        1817
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "지능데이터융합학부(휴먼지능정보공학 제외)",
+      "sourceRows": [
+        1830
+      ]
+    },
+    {
+      "u": "상명대",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "지능데이터융합학부-휴먼지능정보공학",
+      "sourceRows": [
+        1831
+      ]
+    },
+    {
+      "u": "상명대(천안)",
+      "examName": "수능전형",
+      "admissionGroup": "나군",
+      "department": "글로벌지역학부(한국언어문화전공 제외)",
+      "sourceRows": [
+        1833
+      ]
+    },
+    {
+      "u": "서울과기대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "경영학과-글로벌테크노경영(인문)",
+      "sourceRows": [
+        1886
+      ]
+    }
+  ],
+  "verification": {
+    "reusedOfficialNameAudit": true,
+    "officialProfilesChecked": 168,
+    "officialProfilesSkipped": [],
+    "officialExtractionErrors": {},
+    "officialNameConfirmed": 3536
+  },
+  "directoryLabels": 214,
+  "directoryProfilesMatched": 202,
+  "directoryLabelsUnmatched": [
+    "경찰대학",
+    "공군사관학교",
+    "광주가톨릭대학교",
+    "국군간호사관학교",
+    "대전신학대학교",
+    "육군사관학교",
+    "태재대학교",
+    "한국외국어대(글로벌)",
+    "한일장신대학교",
+    "해군사관학교"
+  ],
+  "directoryConflicts": [],
+  "directoryLinks": {
+    "prospectusUrl2027": 199,
+    "adiga2027Url": 201,
+    "admissionUrl": 214
+  },
+  "ignoredUnsafeFields": {
+    "studentRecordColumnsIgnored": 4200,
+    "ratioRowsIgnored": 3798,
+    "historyRequiredOnlyIgnored": 1304,
+    "stageDuplicatesMerged": 67
+  }
+}
