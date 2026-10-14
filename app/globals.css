@@ -4475,17 +4475,6 @@ body {
   border-top: 1px solid var(--border);
   background: color-mix(in srgb, var(--muted) 68%, transparent);
 }
-.forecast-source-note {
-  margin: 0;
-  padding: 7px 10px;
-  border-top: 1px solid var(--border);
-  color: var(--muted-foreground);
-  background: color-mix(in srgb, var(--muted) 46%, transparent);
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.45;
-  text-align: center;
-}
 .method-secondary-grid .method-summary-metrics {
   grid-column: auto;
 }
@@ -4560,4 +4549,160 @@ html.mobile-build .result-summary-grid,
 html.mobile-build .method-secondary-grid,
 html.mobile-build .result-secondary-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* 넓은 화면에서도 읽는 폭을 일정하게 유지한다. */
+html:not(.mobile-build) .site-shell {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding: 10px 16px 16px !important;
+}
+html:not(.mobile-build) .masthead {
+  gap: 5px;
+  padding: 8px 12px;
+}
+html:not(.mobile-build) .brand-lockup {
+  gap: 10px;
+}
+html:not(.mobile-build) .brand-logo {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+}
+html:not(.mobile-build) .masthead h1 {
+  font-size: clamp(24px, 2vw, 31px);
+}
+html:not(.mobile-build) .release-version {
+  font-size: 14px;
+}
+html:not(.mobile-build) .header-actions {
+  gap: 6px;
+}
+html:not(.mobile-build) .masthead .toolbar-button,
+html:not(.mobile-build) .header-tools-menu > summary {
+  min-height: 36px;
+  height: 36px;
+  padding-inline: 11px;
+  font-size: 12px;
+}
+html:not(.mobile-build) .tabs-list {
+  height: 46px;
+  gap: 22px;
+}
+html:not(.mobile-build) .tabs-list [data-slot='tabs-trigger'] {
+  font-size: 16px;
+}
+html:not(.mobile-build) .tab-stack {
+  gap: 10px;
+  padding-top: 8px;
+}
+html:not(.mobile-build) .filter-panel {
+  gap: 8px;
+  padding: 11px 12px;
+}
+html:not(.mobile-build) .analysis-disclosure > summary,
+html:not(.mobile-build) .change-summary-disclosure > summary {
+  min-height: 40px;
+}
+html:not(.mobile-build) .section-head {
+  min-height: 56px;
+  padding: 11px 15px;
+}
+html:not(.mobile-build) .section-head h2 {
+  font-size: 20px;
+}
+html:not(.mobile-build) .ratio-table .method-row td,
+html:not(.mobile-build) .result-primary td {
+  min-height: 44px;
+  padding-block: 6px;
+}
+html:not(.mobile-build)
+  .method-summary-grid
+  :is(.method-summary-value, .method-summary-metrics),
+html:not(.mobile-build)
+  .result-summary-grid
+  :is(.compact-sort-value, .compact-static-value, .historical-ratio-value) {
+  min-height: 42px;
+  padding-block: 5px;
+}
+
+@media (min-width: 960px) {
+  html:not(.mobile-build) .results-filter-panel {
+    grid-template-columns: minmax(250px, 1.7fr) repeat(4, minmax(110px, 1fr));
+  }
+  html:not(.mobile-build) .results-filter-panel .filter-more-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  html:not(.mobile-build)
+    .results-filter-panel
+    .filter-more-grid
+    > .range-filter {
+    grid-column: auto;
+  }
+  html:not(.mobile-build) .masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+  html:not(.mobile-build) .brand-lockup,
+  html:not(.mobile-build) .brand-title {
+    justify-content: flex-start;
+  }
+  html:not(.mobile-build) .header-actions {
+    width: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 1061px) {
+  html:not(.mobile-build) .method-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 1060px) {
+  .results-filter-panel .filter-more-grid > .group-checkbox-filter,
+  .results-filter-panel .filter-more-grid > .range-filter {
+    grid-column: 1 / -1;
+  }
+}
+
+html.mobile-build .masthead {
+  gap: 8px;
+  padding: 10px;
+}
+html.mobile-build .brand-logo {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+}
+html.mobile-build .masthead h1 {
+  font-size: clamp(19px, 5.7vw, 22px);
+}
+html.mobile-build .header-actions .toolbar-button,
+html.mobile-build .header-tools-menu > summary {
+  min-height: 36px;
+  height: 36px;
+}
+html.mobile-build .tabs-list {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  height: 44px;
+  min-height: 44px;
+}
+html.mobile-build .tabs-list [data-slot='tabs-trigger'] {
+  height: 44px;
+  padding-inline: 2px;
+  font-size: clamp(10px, 3vw, 12px);
+  line-height: 1.15;
+  white-space: normal;
+}
+html.mobile-build .tab-stack {
+  gap: 9px;
+  padding-top: 7px;
+}
+html.mobile-build .filter-panel {
+  padding: 10px;
 }

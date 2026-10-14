@@ -11,9 +11,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "public" / "admissions-data.json"
 APP_PATH = ROOT / "app" / "page.tsx"
 REPORT_PATH = ROOT / "audit" / "all-tabs-summary.json"
-IPSIHOGU_EXPECTED_ROWS = 5339
-IPSIHOGU_EXPECTED_UNIVERSITIES = 167
-IPSIHOGU_EXPECTED_SHA256 = "7232fbedf71512706f6edf26cc9a950c14c4bf9a8f8554deac31bb7ad681f244"
 
 
 def issue(issues: list[dict], tab: str, code: str, detail: str) -> None:
@@ -164,190 +161,14 @@ def main() -> None:
         if not re.fullmatch(r"[0-9a-f]{64}", value):
             issue(issues, "반영방법", "invalid-unit-source-hash-2027", field)
 
-    # 2027 예상 백분위컷: 민간 예측치를 공식 입결과 분리하고, 유일하게 확정된
-    # 백분위 반영 모집단위에 대해서만 화면 노출을 허용한다.
-    cutoffs_2027_meta = data.get("cutoffs2027Meta", {})
-    cutoffs_2027 = data.get("cutoffs2027", [])
-    if not isinstance(cutoffs_2027_meta, dict):
-        issue(issues, "반영방법", "invalid-cutoff-meta-2027", "cutoffs2027Meta가 객체가 아님")
-        cutoffs_2027_meta = {}
-    if not isinstance(cutoffs_2027, list):
-        issue(issues, "반영방법", "invalid-cutoff-rows-2027", "cutoffs2027이 배열이 아님")
-        cutoffs_2027 = []
-
-    if cutoffs_2027_meta.get("rawRows") != IPSIHOGU_EXPECTED_ROWS:
-        issue(
-            issues,
-            "반영방법",
-            "cutoff-source-row-count-2027",
-            f"{cutoffs_2027_meta.get('rawRows')}!={IPSIHOGU_EXPECTED_ROWS}",
-        )
-    if cutoffs_2027_meta.get("sourceUniversities") != IPSIHOGU_EXPECTED_UNIVERSITIES:
-        issue(
-            issues,
-            "반영방법",
-            "cutoff-source-university-count-2027",
-            f"{cutoffs_2027_meta.get('sourceUniversities')}!={IPSIHOGU_EXPECTED_UNIVERSITIES}",
-        )
-    if cutoffs_2027_meta.get("rawSha256") != IPSIHOGU_EXPECTED_SHA256:
-        issue(
-            issues,
-            "반영방법",
-            "cutoff-source-hash-2027",
-            str(cutoffs_2027_meta.get("rawSha256")),
-        )
-    matched_cutoffs_2027 = cutoffs_2027_meta.get("matchedRows")
-    quarantined_cutoffs_2027 = cutoffs_2027_meta.get("quarantinedRows")
-    if matched_cutoffs_2027 != len(cutoffs_2027):
-        issue(
-            issues,
-            "반영방법",
-            "cutoff-published-count-2027",
-            f"{matched_cutoffs_2027}!={len(cutoffs_2027)}",
-        )
-    if cutoffs_2027_meta.get("publishedRows") != len(cutoffs_2027):
-        issue(
-            issues,
-            "반영방법",
-            "cutoff-meta-published-count-2027",
-            f"{cutoffs_2027_meta.get('publishedRows')}!={len(cutoffs_2027)}",
-        )
-    if (
-        not isinstance(matched_cutoffs_2027, int)
-        or not isinstance(quarantined_cutoffs_2027, int)
-        or matched_cutoffs_2027 + quarantined_cutoffs_2027 != IPSIHOGU_EXPECTED_ROWS
-    ):
-        issue(
-            issues,
-            "반영방법",
-            "cutoff-status-coverage-2027",
-            f"{matched_cutoffs_2027}+{quarantined_cutoffs_2027}!={IPSIHOGU_EXPECTED_ROWS}",
-        )
-    if cutoffs_2027_meta.get("uiEligibleMatchStatus") != "matched":
-        issue(
-            issues,
-            "반영방법",
-            "cutoff-ui-status-2027",
-            str(cutoffs_2027_meta.get("uiEligibleMatchStatus")),
-        )
-
-    unit_by_id_2027 = {
-        row.get("id"): row
-        for row in units_2027
-        if isinstance(row, dict) and isinstance(row.get("id"), int)
-    }
-    cutoff_source_ids: list[str] = []
-    cutoff_unit_ids: list[int] = []
-    for row in cutoffs_2027:
-        if not isinstance(row, dict):
-            issue(issues, "반영방법", "invalid-cutoff-row-2027", repr(row))
-            continue
-        source_id = str(row.get("sourceRecordId", "")).strip()
-        if not source_id:
-            issue(issues, "반영방법", "blank-cutoff-source-id-2027", repr(row.get("sourceRowNumber")))
-        else:
-            cutoff_source_ids.append(source_id)
-        if row.get("matchStatus") != "matched":
+    for field in ("cutoffs2027", "cutoffs2027Meta"):
+        if field in data:
             issue(
                 issues,
                 "반영방법",
-                "ineligible-cutoff-published-2027",
-                source_id or repr(row.get("sourceRowNumber")),
+                "removed-forecast-cutoff-present-2027",
+                field,
             )
-        if row.get("sourceScale") != "백/백":
-            issue(
-                issues,
-                "반영방법",
-                "non-percentile-cutoff-published-2027",
-                f"{source_id}: {row.get('sourceScale')}",
-            )
-        if row.get("quarantineReasons") not in ([], None):
-            issue(
-                issues,
-                "반영방법",
-                "quarantined-cutoff-published-2027",
-                f"{source_id}: {row.get('quarantineReasons')}",
-            )
-        if row.get("candidateCount") != 1:
-            issue(
-                issues,
-                "반영방법",
-                "ambiguous-cutoff-published-2027",
-                f"{source_id}: {row.get('candidateCount')}",
-            )
-        for field in ("forecastPercentile", "cutoffScore100"):
-            value = row.get(field)
-            if not isinstance(value, (int, float)) or not 0 <= value <= 100:
-                issue(
-                    issues,
-                    "반영방법",
-                    "invalid-cutoff-value-2027",
-                    f"{source_id} {field}: {value}",
-                )
-        for field in ("forecastPercentileExcludingEnglish", "cutoffScore100ExcludingEnglish"):
-            value = row.get(field)
-            if value is not None and (not isinstance(value, (int, float)) or not 0 <= value <= 100):
-                issue(
-                    issues,
-                    "반영방법",
-                    "invalid-cutoff-value-2027",
-                    f"{source_id} {field}: {value}",
-                )
-        if row.get("forecastPercentile") != row.get("cutoffScore100"):
-            issue(
-                issues,
-                "반영방법",
-                "cutoff-derived-value-mismatch-2027",
-                source_id,
-            )
-        if row.get("forecastPercentileExcludingEnglish") != row.get("cutoffScore100ExcludingEnglish"):
-            issue(
-                issues,
-                "반영방법",
-                "cutoff-derived-value-mismatch-2027",
-                f"{source_id} 영어 제외",
-            )
-        unit_id = row.get("matchedUnitId")
-        target = unit_by_id_2027.get(unit_id)
-        if not isinstance(unit_id, int) or target is None:
-            issue(issues, "반영방법", "missing-cutoff-unit-2027", f"{source_id}: {unit_id}")
-            continue
-        cutoff_unit_ids.append(unit_id)
-        if target.get("displayConfirmed") is not True:
-            issue(issues, "반영방법", "unconfirmed-cutoff-unit-2027", f"{source_id}: {unit_id}")
-        if row.get("matchedAdmissionGroup") != target.get("admissionGroup"):
-            issue(
-                issues,
-                "반영방법",
-                "cutoff-unit-group-mismatch-2027",
-                f"{source_id}: {row.get('matchedAdmissionGroup')}!={target.get('admissionGroup')}",
-            )
-        if str(row.get("u", "")).strip() != str(target.get("u", "")).strip():
-            issue(
-                issues,
-                "반영방법",
-                "cutoff-unit-university-mismatch-2027",
-                f"{source_id}: {row.get('u')}!={target.get('u')}",
-            )
-        # 예상컷 행은 역사적 공식 백분위·환산점수 필드를 겸용하지 않는다.
-        for field in ("p50", "p70", "cv50", "cv70", "max"):
-            if field in row:
-                issue(issues, "반영방법", "official-result-field-in-cutoff-2027", f"{source_id}: {field}")
-
-    if len(cutoff_source_ids) != len(set(cutoff_source_ids)):
-        issue(
-            issues,
-            "반영방법",
-            "duplicate-cutoff-source-id-2027",
-            f"{len(cutoff_source_ids) - len(set(cutoff_source_ids))}건",
-        )
-    if len(cutoff_unit_ids) != len(set(cutoff_unit_ids)):
-        issue(
-            issues,
-            "반영방법",
-            "duplicate-cutoff-unit-id-2027",
-            f"{len(cutoff_unit_ids) - len(set(cutoff_unit_ids))}건",
-        )
 
     # 3개년 입시결과 탭: 전 행의 식별자, 범위, 단위, 반영방법 연결을 검사한다.
     scores = data.get("scores", [])
@@ -479,29 +300,6 @@ def main() -> None:
             "quarantinedDetailedUnitRows": quarantined_units_2027,
             "confirmedRate": round(confirmed_units_2027 / len(units_2027) * 100, 2) if units_2027 else 0,
             "sourceRawRows": raw_rows_2027,
-        },
-        "forecastCutoffCoverage2027": {
-            "sourceRawRows": cutoffs_2027_meta.get("rawRows"),
-            "sourceUniversities": cutoffs_2027_meta.get("sourceUniversities"),
-            "sourceSha256": cutoffs_2027_meta.get("rawSha256"),
-            "matchedRows": matched_cutoffs_2027,
-            "publishedRows": len(cutoffs_2027),
-            "quarantinedRows": quarantined_cutoffs_2027,
-            "eligibleUnitRows": len(set(cutoff_unit_ids)),
-            "invalidEligibleRows": sum(
-                1
-                for detail in issues
-                if detail.get("code")
-                in {
-                    "ineligible-cutoff-published-2027",
-                    "non-percentile-cutoff-published-2027",
-                    "quarantined-cutoff-published-2027",
-                    "ambiguous-cutoff-published-2027",
-                    "invalid-cutoff-value-2027",
-                    "missing-cutoff-unit-2027",
-                    "unconfirmed-cutoff-unit-2027",
-                }
-            ),
         },
         "admissionGroupLights": {
             "multiGroupDepartments": multi_group_departments,

@@ -25,16 +25,6 @@
     "confirmedRate": 94.29,
     "sourceRawRows": 4200
   },
-  "forecastCutoffCoverage2027": {
-    "sourceRawRows": 5339,
-    "sourceUniversities": 167,
-    "sourceSha256": "7232fbedf71512706f6edf26cc9a950c14c4bf9a8f8554deac31bb7ad681f244",
-    "matchedRows": 1256,
-    "publishedRows": 1256,
-    "quarantinedRows": 4083,
-    "eligibleUnitRows": 1256,
-    "invalidEligibleRows": 0
-  },
   "admissionGroupLights": {
     "multiGroupDepartments": 8,
     "allThreeGroupDepartments": 0

@@ -216,35 +216,6 @@ type ScoreView = ScoreRow & {
 };
 
 type StudentRecordRow = { u: string; method: string; type: string };
-type Cutoff2027 = {
-  sourceRecordId: string;
-  sourceKind: string;
-  cutoffBasis: string;
-  sourceUniversity: string;
-  u: string;
-  department: string;
-  sourceExamType: string;
-  sourceScale: string;
-  englishMethod: string;
-  englishNormalizationNote: string;
-  approximate: boolean;
-  cutoffScore100: number;
-  matchStatus: string;
-  matchedUnitId: number;
-  matchedAdmissionGroup: string;
-  forecastPercentile: number;
-  forecastPercentileBasis: string;
-};
-type Cutoffs2027Meta = {
-  sourcePageUrl: string;
-  rawUrl: string;
-  rawSha256: string;
-  retrievedAt: string;
-  rawRows: number;
-  sourceUniversities: number;
-  matchedRows: number;
-  quarantinedRows: number;
-};
 type SourceRow = {
   name: string;
   organization: string;
@@ -259,8 +230,6 @@ type AdmissionsData = {
   scores: ScoreRow[];
   sources: SourceRow[];
   units2027?: Unit2027[];
-  cutoffs2027?: Cutoff2027[];
-  cutoffs2027Meta?: Cutoffs2027Meta;
 };
 
 type RatioSnapshot = {
@@ -307,7 +276,6 @@ type MethodView = ProfileView & {
   departmentTrackCategories?: TrackCategory[];
   referenceLegacyMethods?: MethodView[];
   unit2027?: Unit2027;
-  forecast2027?: Cutoff2027;
 };
 type FormulaRow = {
   formulaId: number;
@@ -430,7 +398,6 @@ const PROFILE_SORTERS: Record<
   percentile2026: (row) => row.result2026?.percentile.sortValue,
   converted2026: (row) => row.result2026?.converted.sortValue,
   maximum2026: (row) => row.result2026?.maximum.sortValue,
-  forecast2027: (row) => row.forecast2027?.forecastPercentile,
   sb: (row) => recordLabel(row),
   selection: (row) => row.selectionDetail,
 };
@@ -477,8 +444,6 @@ export default function Home() {
   const [profileTopDomain, setProfileTopDomain] = useState('전체');
   const [profileMaximum, setProfileMaximum] = useState('전체');
   const [profileSocialAdvantage, setProfileSocialAdvantage] = useState('전체');
-  const [profileForecastMin, setProfileForecastMin] = useState('');
-  const [profileForecastMax, setProfileForecastMax] = useState('');
   const [profileSort, setProfileSort] = useState<SortState>({
     key: 'u',
     direction: 'asc',
@@ -624,21 +589,15 @@ export default function Home() {
     ).filter(isGeneralMethodRow);
     return attach2026ResultSummaries(methods, regularScores);
   }, [profileViews, regularScores]);
-  const methodDisplayViews = useMemo<MethodView[]>(() => {
-    const forecastByUnit = new Map(
-      (data?.cutoffs2027 ?? []).map((row) => [row.matchedUnitId, row]),
-    );
-    return splitMethodsByDepartment(
-      methodViews,
-      regularScores,
-      data?.units2027 ?? [],
-    ).map((row) => ({
-      ...row,
-      forecast2027: row.unit2027
-        ? forecastByUnit.get(row.unit2027.id)
-        : undefined,
-    }));
-  }, [data, methodViews, regularScores]);
+  const methodDisplayViews = useMemo<MethodView[]>(
+    () =>
+      splitMethodsByDepartment(
+        methodViews,
+        regularScores,
+        data?.units2027 ?? [],
+      ),
+    [data, methodViews, regularScores],
+  );
   const scoreViews = useMemo<ScoreView[]>(() => {
     const historicalGroups = historicalAdmissionGroups(regularScores);
     return regularScores.map((score) => {
@@ -760,9 +719,6 @@ export default function Home() {
 
   const matchingProfiles = useMemo(() => {
     const query = normalize(profileQuery);
-    const forecastRange = numericRange(profileForecastMin, profileForecastMax);
-    const hasForecastRange =
-      forecastRange.minimum !== null || forecastRange.maximum !== null;
     const hasDepartmentMatch = Boolean(
       query &&
       methodDisplayViews.some((row) =>
@@ -809,12 +765,7 @@ export default function Home() {
             ? row.conversionMax !== null
             : row.conversionMax === null)) &&
         (profileSocialAdvantage === '전체' ||
-          row.reference2027?.socialStudyAdvantage === true) &&
-        (!hasForecastRange ||
-          inNumericRange(
-            row.forecast2027?.forecastPercentile ?? null,
-            forecastRange,
-          ))
+          row.reference2027?.socialStudyAdvantage === true)
       );
     });
   }, [
@@ -822,8 +773,6 @@ export default function Home() {
     profileDomainCount,
     profileEnglish,
     profileExam,
-    profileForecastMax,
-    profileForecastMin,
     profileGroup,
     profileMaximum,
     profileMetric,
@@ -993,8 +942,6 @@ export default function Home() {
       setProfileTopDomain('전체');
       setProfileMaximum('전체');
       setProfileSocialAdvantage('전체');
-      setProfileForecastMin('');
-      setProfileForecastMax('');
       setProfileSort({ key: 'u', direction: 'asc' });
       setShowPractical(false);
       setProfileListBatch(1);
@@ -1069,8 +1016,6 @@ export default function Home() {
           '2026 백분위',
           '2026 환산점수',
           '2026 환산만점',
-          '2027 예상 백분위컷',
-          '2027 예상컷 출처',
           '전형요소',
           '전체 반영비율',
         ],
@@ -1112,8 +1057,6 @@ export default function Home() {
           row.result2026?.percentile.label ?? '',
           row.result2026?.converted.label ?? '',
           row.result2026?.maximum.label ?? '',
-          row.forecast2027?.forecastPercentile ?? '',
-          row.forecast2027 ? '입시호구 자체 예상' : '',
           row.selectionDetail,
           row.ratio,
         ]),
@@ -1569,22 +1512,6 @@ export default function Home() {
                     }}
                     options={['유리']}
                   />
-                  <RangeFilter
-                    label="2027 예상 백분위컷"
-                    unit="%"
-                    note="입시호구 예상"
-                    minimum={profileForecastMin}
-                    maximum={profileForecastMax}
-                    max={100}
-                    onMinimumChange={(value) => {
-                      setProfileForecastMin(value);
-                      setProfileListBatch(1);
-                    }}
-                    onMaximumChange={(value) => {
-                      setProfileForecastMax(value);
-                      setProfileListBatch(1);
-                    }}
-                  />
                 </div>
               </details>
             </FilterPanel>
@@ -1798,56 +1725,61 @@ export default function Home() {
                 }}
                 options={scoreTracks}
               />
-              <GroupCheckboxFilter
-                values={scoreGroups}
-                onChange={(values) => {
-                  setScoreGroups(values);
-                  setScoreListBatch(1);
-                }}
-              />
-              <RangeFilter
-                label="백분위 범위"
-                unit="%"
-                minimum={scorePercentileMin}
-                maximum={scorePercentileMax}
-                onMinimumChange={(value) => {
-                  setScorePercentileMin(value);
-                  setScoreListBatch(1);
-                }}
-                onMaximumChange={(value) => {
-                  setScorePercentileMax(value);
-                  setScoreListBatch(1);
-                }}
-                max={100}
-              />
-              <RangeFilter
-                label="표준점수 범위"
-                unit="점"
-                minimum={scoreStandardMin}
-                maximum={scoreStandardMax}
-                onMinimumChange={(value) => {
-                  setScoreStandardMin(value);
-                  setScoreListBatch(1);
-                }}
-                onMaximumChange={(value) => {
-                  setScoreStandardMax(value);
-                  setScoreListBatch(1);
-                }}
-              />
-              <RangeFilter
-                label="환산점수 범위"
-                unit="점"
-                minimum={scoreConvertedMin}
-                maximum={scoreConvertedMax}
-                onMinimumChange={(value) => {
-                  setScoreConvertedMin(value);
-                  setScoreListBatch(1);
-                }}
-                onMaximumChange={(value) => {
-                  setScoreConvertedMax(value);
-                  setScoreListBatch(1);
-                }}
-              />
+              <details className="filter-more">
+                <summary>상세 필터</summary>
+                <div className="filter-more-grid">
+                  <GroupCheckboxFilter
+                    values={scoreGroups}
+                    onChange={(values) => {
+                      setScoreGroups(values);
+                      setScoreListBatch(1);
+                    }}
+                  />
+                  <RangeFilter
+                    label="백분위 범위"
+                    unit="%"
+                    minimum={scorePercentileMin}
+                    maximum={scorePercentileMax}
+                    onMinimumChange={(value) => {
+                      setScorePercentileMin(value);
+                      setScoreListBatch(1);
+                    }}
+                    onMaximumChange={(value) => {
+                      setScorePercentileMax(value);
+                      setScoreListBatch(1);
+                    }}
+                    max={100}
+                  />
+                  <RangeFilter
+                    label="표준점수 범위"
+                    unit="점"
+                    minimum={scoreStandardMin}
+                    maximum={scoreStandardMax}
+                    onMinimumChange={(value) => {
+                      setScoreStandardMin(value);
+                      setScoreListBatch(1);
+                    }}
+                    onMaximumChange={(value) => {
+                      setScoreStandardMax(value);
+                      setScoreListBatch(1);
+                    }}
+                  />
+                  <RangeFilter
+                    label="환산점수 범위"
+                    unit="점"
+                    minimum={scoreConvertedMin}
+                    maximum={scoreConvertedMax}
+                    onMinimumChange={(value) => {
+                      setScoreConvertedMin(value);
+                      setScoreListBatch(1);
+                    }}
+                    onMaximumChange={(value) => {
+                      setScoreConvertedMax(value);
+                      setScoreListBatch(1);
+                    }}
+                  />
+                </div>
+              </details>
             </FilterPanel>
 
             <section className="data-panel">
@@ -2164,12 +2096,6 @@ export default function Home() {
                 : selectedProfile.bonusDetail
             }
           />
-          {selectedProfile.forecast2027 && (
-            <DetailBlock
-              title="2027 예상 백분위컷"
-              text={`${formatFixedNumber(selectedProfile.forecast2027.forecastPercentile, false)}% | 입시호구 자체 예상 | 2026 실측 기반, 추가합격 고려${selectedProfile.forecast2027.approximate ? ' | 영어 반영 근사' : ''}`}
-            />
-          )}
           <div className="dialog-links">
             {selectedProfile.sourceLinks2027?.flatMap((entry, index) => {
               const suffix =
@@ -2232,15 +2158,6 @@ export default function Home() {
                   ? '2027 정시 기준 시트'
                   : '대입정보포털 2027 수능위주전형'}{' '}
                 <ExternalLink />
-              </a>
-            )}
-            {selectedProfile.forecast2027 && (
-              <a
-                href="https://ipsihogu.com/2027-jungsi-calculator/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                2027 예상컷 산출 페이지 <ExternalLink />
               </a>
             )}
           </div>
@@ -2463,17 +2380,6 @@ function MethodSummaryRow({
           ) : (
             ratioItem('탐구', 'inquiry')
           )}
-          <MethodSummaryValue
-            label="2027 예상 백분위컷"
-            column="forecast2027"
-            value={
-              row.forecast2027
-                ? `${formatFixedNumber(row.forecast2027.forecastPercentile, false)}%`
-                : '—'
-            }
-            sort={sort}
-            onSort={onSort}
-          />
         </div>
       </TableCell>
     </TableRow>
@@ -3220,12 +3126,6 @@ function MethodSecondaryDetails({
           onSort={onSort}
         />
       </div>
-      {row.forecast2027 && (
-        <p className="forecast-source-note">
-          2027 예상컷은 입시호구 자체 예상치입니다. 2026 실측과 추가합격을
-          반영하며 확정 입결이 아닙니다.
-        </p>
-      )}
     </>
   );
 }

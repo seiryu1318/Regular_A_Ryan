@@ -223,6 +223,7 @@ try {
     advancedFiltersClosed: !document.querySelector('.filter-more')?.open,
     analysisClosed: !document.querySelector('.analysis-disclosure')?.open,
     toolsClosed: !document.querySelector('.header-tools-menu')?.open,
+    detailRows: document.querySelectorAll('.method-detail-row').length,
     maxSummaryCells: Math.max(0, ...[...document.querySelectorAll('.method-summary-grid')]
       .map((node) => node.children.length)),
   }))()`);
@@ -242,27 +243,41 @@ try {
   const flexibleTracks = await cdp.evaluate(
     `[...document.querySelectorAll('.method-row .track-cell')].map((node) => node.textContent.trim())`,
   );
-  await setSearch(
-    cdp,
-    '대학, 전형, 계열, 모집단위 검색',
-    '가톨릭꽃동네대 간호학과',
+  const pcForecastTermsInMethods = await cdp.evaluate(
+    `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
   );
-  const forecast = await cdp.evaluate(`(() => ({
-    rows: document.querySelectorAll('.method-row').length,
-    summary: document.querySelector('.method-summary-row')?.innerText ?? '',
-    sourceNoteBeforeExpand: document.querySelector('.forecast-source-note')?.innerText ?? '',
+  await clickText(cdp, '3개년 입시결과');
+  const initialPcScoreRows = await cdp.evaluate(
+    `document.querySelectorAll('.result-primary').length`,
+  );
+  const pcResults = await cdp.evaluate(`(() => ({
+    labels: [...document.querySelectorAll('.result-summary-grid')]
+      .flatMap((node) => [...node.children].map((child) => child.firstElementChild?.textContent?.trim() ?? '')),
+    detailRows: document.querySelectorAll('.result-detail-row').length,
+    filterClosed: !document.querySelector('.results-filter-panel .filter-more')?.open,
+    filterText: document.querySelector('.results-filter-panel .filter-more')?.textContent ?? '',
   }))()`);
-  const forecastExpanded = await cdp.evaluate(`(() => {
-    const button = document.querySelector('.method-row .expand-method-button');
-    if (!button) return false;
-    button.click();
-    return true;
-  })()`);
-  await wait(150);
-  const forecastSourceNote = await cdp.evaluate(
-    `document.querySelector('.forecast-source-note')?.innerText ?? ''`,
+  const pcForecastTermsInResults = await cdp.evaluate(
+    `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
   );
   await capture(cdp, screenshots.pc);
+
+  const responsivePc = [];
+  for (const width of [1200, 1024, 960, 768]) {
+    await cdp.send('Emulation.setDeviceMetricsOverride', {
+      width,
+      height: 900,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await wait(100);
+    responsivePc.push(
+      await cdp.evaluate(`(() => ({
+        width: innerWidth,
+        scrollWidth: Math.max(document.body.scrollWidth, document.documentElement.scrollWidth),
+      }))()`),
+    );
+  }
 
   await cdp.send('Emulation.setDeviceMetricsOverride', {
     width: 390,
@@ -295,19 +310,43 @@ try {
     advancedFiltersClosed: !document.querySelector('.filter-more')?.open,
     analysisClosed: !document.querySelector('.analysis-disclosure')?.open,
     toolsClosed: !document.querySelector('.header-tools-menu')?.open,
+    detailRows: document.querySelectorAll('.method-detail-row').length,
     maxSummaryCells: Math.max(0, ...[...document.querySelectorAll('.method-summary-grid')]
       .map((node) => node.children.length)),
   }))()`);
+  const mobileForecastTermsInMethods = await cdp.evaluate(
+    `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
+  );
+  await clickText(cdp, '3개년 입시결과');
+  const initialMobileScoreRows = await cdp.evaluate(
+    `document.querySelectorAll('.result-primary').length`,
+  );
+  const mobileResults = await cdp.evaluate(`(() => ({
+    labels: [...document.querySelectorAll('.result-summary-grid')]
+      .flatMap((node) => [...node.children].map((child) => child.firstElementChild?.textContent?.trim() ?? '')),
+    detailRows: document.querySelectorAll('.result-detail-row').length,
+    filterClosed: !document.querySelector('.results-filter-panel .filter-more')?.open,
+    filterText: document.querySelector('.results-filter-panel .filter-more')?.textContent ?? '',
+  }))()`);
+  const mobileForecastTermsInResults = await cdp.evaluate(
+    `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
+  );
   await capture(cdp, screenshots.mobile);
 
   const issues = [];
   if (pc.scrollWidth > pc.width + 1) issues.push('PC horizontal overflow');
+  if (responsivePc.some((view) => view.scrollWidth > view.width + 1))
+    issues.push('Responsive PC horizontal overflow');
   if (mobile.scrollWidth > mobile.width + 1)
     issues.push('Mobile horizontal overflow');
   if (initialPcRows < 1 || initialPcRows > 10)
     issues.push(`PC initial rows ${initialPcRows}`);
   if (initialMobileRows < 1 || initialMobileRows > 5)
     issues.push(`Mobile initial rows ${initialMobileRows}`);
+  if (initialPcScoreRows < 1 || initialPcScoreRows > 10)
+    issues.push(`PC initial result rows ${initialPcScoreRows}`);
+  if (initialMobileScoreRows < 1 || initialMobileScoreRows > 5)
+    issues.push(`Mobile initial result rows ${initialMobileScoreRows}`);
   if (
     !nursing.rows ||
     nursing.departments.some((name) => !name.includes('간호'))
@@ -326,18 +365,48 @@ try {
     !simplifiedMobile.toolsClosed
   )
     issues.push('Mobile secondary controls are open by default');
+  if (simplifiedPc.detailRows || pcResults.detailRows)
+    issues.push('PC row details are open by default');
+  if (simplifiedMobile.detailRows || mobileResults.detailRows)
+    issues.push('Mobile row details are open by default');
   if (simplifiedPc.maxSummaryCells > 6 || simplifiedMobile.maxSummaryCells > 6)
     issues.push('Method summary exposes more than 6 values');
+  const requiredResultLabels = [
+    '백분위 50%',
+    '백분위 70%',
+    '환산 50%',
+    '환산 70%',
+  ];
+  if (!requiredResultLabels.every((label) => pcResults.labels.includes(label)))
+    issues.push('PC historical result labels missing');
   if (
-    !forecast.rows ||
-    !forecast.summary.includes('2027 예상 백분위컷') ||
-    !forecast.summary.includes('63.83%')
+    !requiredResultLabels.every((label) => mobileResults.labels.includes(label))
   )
-    issues.push('Verified forecast cutoff missing');
-  if (!forecastExpanded || forecast.sourceNoteBeforeExpand)
-    issues.push('Forecast source detail is not collapsed');
-  if (!forecastSourceNote.includes('확정 입결이 아닙니다'))
-    issues.push('Forecast source detail missing');
+    issues.push('Mobile historical result labels missing');
+  const requiredResultFilters = [
+    '모집군',
+    '백분위 범위',
+    '표준점수 범위',
+    '환산점수 범위',
+  ];
+  if (
+    !pcResults.filterClosed ||
+    !requiredResultFilters.every((label) =>
+      pcResults.filterText.includes(label),
+    )
+  )
+    issues.push('PC historical result filters mismatch');
+  if (
+    !mobileResults.filterClosed ||
+    !requiredResultFilters.every((label) =>
+      mobileResults.filterText.includes(label),
+    )
+  )
+    issues.push('Mobile historical result filters mismatch');
+  if (pcForecastTermsInMethods || pcForecastTermsInResults)
+    issues.push('PC forecast cutoff text remains');
+  if (mobileForecastTermsInMethods || mobileForecastTermsInResults)
+    issues.push('Mobile forecast cutoff text remains');
   if (
     centralMedicine.rows &&
     !centralMedicine.text.join(' ').includes('의약학')
@@ -357,15 +426,18 @@ try {
 
   report = {
     pc,
+    responsivePc,
     mobile,
     initialPcRows,
     initialMobileRows,
+    initialPcScoreRows,
+    initialMobileScoreRows,
     nursing,
     mobileNursingRows,
     centralMedicine,
     flexibleTracks,
-    forecast,
-    forecastSourceNote,
+    pcResults,
+    mobileResults,
     simplifiedPc,
     simplifiedMobile,
     screenshots,
