@@ -1,6 +1,12 @@
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
-import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { extname, join, resolve } from 'node:path';
 
@@ -86,7 +92,9 @@ class Cdp {
       returnByValue: true,
     });
     if (result.exceptionDetails)
-      throw new Error(result.exceptionDetails.text ?? 'Runtime evaluation failed');
+      throw new Error(
+        result.exceptionDetails.text ?? 'Runtime evaluation failed',
+      );
     return result.result.value;
   }
 
@@ -155,7 +163,8 @@ const server = createServer((request, response) => {
       ? join(candidate, 'index.html')
       : candidate;
     response.writeHead(200, {
-      'Content-Type': mime[extname(path).toLowerCase()] ?? 'application/octet-stream',
+      'Content-Type':
+        mime[extname(path).toLowerCase()] ?? 'application/octet-stream',
     });
     response.end(readFileSync(path));
   } catch {
@@ -204,11 +213,19 @@ try {
     mobileLink: [...document.querySelectorAll('a')].find((node) => node.textContent.includes('모바일 버전'))?.href ?? '',
     portalLink: [...document.querySelectorAll('a')].find((node) => node.textContent.includes('라이언의 대입포털로 돌아가기'))?.href ?? '',
     headerAligns: [...document.querySelectorAll('thead th')].map((node) => getComputedStyle(node).textAlign),
+    changeSummaryClosed: !document.querySelector('.change-summary-disclosure')?.open,
   }))()`);
   await clickText(cdp, '2027 반영방법');
   const initialPcRows = await cdp.evaluate(
     `document.querySelectorAll('.method-row').length`,
   );
+  const simplifiedPc = await cdp.evaluate(`(() => ({
+    advancedFiltersClosed: !document.querySelector('.filter-more')?.open,
+    analysisClosed: !document.querySelector('.analysis-disclosure')?.open,
+    toolsClosed: !document.querySelector('.header-tools-menu')?.open,
+    maxSummaryCells: Math.max(0, ...[...document.querySelectorAll('.method-summary-grid')]
+      .map((node) => node.children.length)),
+  }))()`);
   await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', '간호학');
   const nursing = await cdp.evaluate(`(() => ({
     rows: document.querySelectorAll('.method-row').length,
@@ -224,6 +241,26 @@ try {
   await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', '자유전공학부');
   const flexibleTracks = await cdp.evaluate(
     `[...document.querySelectorAll('.method-row .track-cell')].map((node) => node.textContent.trim())`,
+  );
+  await setSearch(
+    cdp,
+    '대학, 전형, 계열, 모집단위 검색',
+    '가톨릭꽃동네대 간호학과',
+  );
+  const forecast = await cdp.evaluate(`(() => ({
+    rows: document.querySelectorAll('.method-row').length,
+    summary: document.querySelector('.method-summary-row')?.innerText ?? '',
+    sourceNoteBeforeExpand: document.querySelector('.forecast-source-note')?.innerText ?? '',
+  }))()`);
+  const forecastExpanded = await cdp.evaluate(`(() => {
+    const button = document.querySelector('.method-row .expand-method-button');
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  await wait(150);
+  const forecastSourceNote = await cdp.evaluate(
+    `document.querySelector('.forecast-source-note')?.innerText ?? ''`,
   );
   await capture(cdp, screenshots.pc);
 
@@ -244,6 +281,7 @@ try {
     portalLink: [...document.querySelectorAll('a')].find((node) => node.textContent.includes('라이언의 대입포털로 돌아가기'))?.href ?? '',
     searchFontSizes: [...document.querySelectorAll('input[type=search],input[placeholder]')]
       .map((node) => Number.parseFloat(getComputedStyle(node).fontSize)),
+    changeSummaryClosed: !document.querySelector('.change-summary-disclosure')?.open,
   }))()`);
   await clickText(cdp, '2027 반영방법');
   const initialMobileRows = await cdp.evaluate(
@@ -253,6 +291,13 @@ try {
   const mobileNursingRows = await cdp.evaluate(
     `document.querySelectorAll('.method-row').length`,
   );
+  const simplifiedMobile = await cdp.evaluate(`(() => ({
+    advancedFiltersClosed: !document.querySelector('.filter-more')?.open,
+    analysisClosed: !document.querySelector('.analysis-disclosure')?.open,
+    toolsClosed: !document.querySelector('.header-tools-menu')?.open,
+    maxSummaryCells: Math.max(0, ...[...document.querySelectorAll('.method-summary-grid')]
+      .map((node) => node.children.length)),
+  }))()`);
   await capture(cdp, screenshots.mobile);
 
   const issues = [];
@@ -263,10 +308,40 @@ try {
     issues.push(`PC initial rows ${initialPcRows}`);
   if (initialMobileRows < 1 || initialMobileRows > 5)
     issues.push(`Mobile initial rows ${initialMobileRows}`);
-  if (!nursing.rows || nursing.departments.some((name) => !name.includes('간호')))
+  if (
+    !nursing.rows ||
+    nursing.departments.some((name) => !name.includes('간호'))
+  )
     issues.push('Nursing search includes unrelated department');
   if (!mobileNursingRows) issues.push('Mobile nursing search empty');
-  if (centralMedicine.rows && !centralMedicine.text.join(' ').includes('의약학'))
+  if (
+    !simplifiedPc.advancedFiltersClosed ||
+    !simplifiedPc.analysisClosed ||
+    !simplifiedPc.toolsClosed
+  )
+    issues.push('PC secondary controls are open by default');
+  if (
+    !simplifiedMobile.advancedFiltersClosed ||
+    !simplifiedMobile.analysisClosed ||
+    !simplifiedMobile.toolsClosed
+  )
+    issues.push('Mobile secondary controls are open by default');
+  if (simplifiedPc.maxSummaryCells > 6 || simplifiedMobile.maxSummaryCells > 6)
+    issues.push('Method summary exposes more than 6 values');
+  if (
+    !forecast.rows ||
+    !forecast.summary.includes('2027 예상 백분위컷') ||
+    !forecast.summary.includes('63.83%')
+  )
+    issues.push('Verified forecast cutoff missing');
+  if (!forecastExpanded || forecast.sourceNoteBeforeExpand)
+    issues.push('Forecast source detail is not collapsed');
+  if (!forecastSourceNote.includes('확정 입결이 아닙니다'))
+    issues.push('Forecast source detail missing');
+  if (
+    centralMedicine.rows &&
+    !centralMedicine.text.join(' ').includes('의약학')
+  )
     issues.push('Central medicine track mismatch');
   if (mobile.searchFontSizes.some((size) => size < 16))
     issues.push('Mobile search font below 16px');
@@ -276,8 +351,9 @@ try {
     issues.push('PC mobile link mismatch');
   if (!mobile.pcLink.includes('Regular_A_Ryan'))
     issues.push('Mobile PC link mismatch');
-  if (!pc.portalLink || !mobile.portalLink)
-    issues.push('Portal link missing');
+  if (!pc.portalLink || !mobile.portalLink) issues.push('Portal link missing');
+  if (!pc.changeSummaryClosed || !mobile.changeSummaryClosed)
+    issues.push('Change summary is open by default');
 
   report = {
     pc,
@@ -288,6 +364,10 @@ try {
     mobileNursingRows,
     centralMedicine,
     flexibleTracks,
+    forecast,
+    forecastSourceNote,
+    simplifiedPc,
+    simplifiedMobile,
     screenshots,
     issues,
   };

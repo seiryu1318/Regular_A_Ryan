@@ -4335,3 +4335,229 @@ body {
     align-items: center;
   }
 }
+
+/* 기본 화면은 핵심 정보만 보여 주고 나머지는 필요한 순간에 연다. */
+.header-tools-menu,
+.filter-more,
+.analysis-disclosure,
+.change-summary-disclosure {
+  min-width: 0;
+}
+.header-tools-menu {
+  position: relative;
+  z-index: 30;
+}
+.header-tools-menu > summary,
+.filter-more > summary,
+.analysis-disclosure > summary,
+.change-summary-disclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--foreground);
+  background: var(--card);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+.header-tools-menu > summary::-webkit-details-marker,
+.filter-more > summary::-webkit-details-marker,
+.analysis-disclosure > summary::-webkit-details-marker,
+.change-summary-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.header-tools-menu > summary::after,
+.filter-more > summary::after,
+.analysis-disclosure > summary::after,
+.change-summary-disclosure > summary::after {
+  margin-left: 7px;
+  content: '⌄';
+  font-size: 12px;
+}
+.header-tools-menu[open] > summary::after,
+.filter-more[open] > summary::after,
+.analysis-disclosure[open] > summary::after,
+.change-summary-disclosure[open] > summary::after {
+  content: '⌃';
+}
+.header-tools-menu > summary:focus-visible,
+.filter-more > summary:focus-visible,
+.analysis-disclosure > summary:focus-visible,
+.change-summary-disclosure > summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ring) 35%, transparent);
+  outline-offset: 2px;
+}
+.header-tools-menu > div {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  width: 190px;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--card);
+  box-shadow: 0 12px 30px rgba(3, 20, 26, 0.2);
+}
+.header-tools-menu > div .toolbar-button {
+  width: 100%;
+}
+
+.rules-filter-panel {
+  grid-template-columns: minmax(280px, 1.8fr) repeat(4, minmax(128px, 1fr));
+}
+.filter-more {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.filter-more > summary {
+  min-height: 34px;
+}
+.filter-more-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+  padding-top: 10px;
+}
+.analysis-disclosure {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+}
+.change-summary-disclosure {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+}
+.change-summary-disclosure > summary {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  background: transparent;
+}
+.change-summary-content {
+  display: grid;
+  gap: 10px;
+  padding: 0 10px 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.analysis-disclosure > summary {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+}
+.analysis-disclosure .method-analysis {
+  border-width: 1px 0 0;
+  border-radius: 0;
+}
+
+.method-summary-grid,
+.result-summary-grid,
+.method-secondary-grid,
+.result-secondary-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.method-secondary-grid,
+.result-secondary-grid {
+  display: grid;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 68%, transparent);
+}
+.forecast-source-note {
+  margin: 0;
+  padding: 7px 10px;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--muted) 46%, transparent);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+  text-align: center;
+}
+.method-secondary-grid .method-summary-metrics {
+  grid-column: auto;
+}
+.method-secondary-grid :is(.method-summary-value, .method-summary-metrics),
+.result-secondary-grid
+  :is(.compact-sort-value, .compact-static-value, .historical-ratio-value) {
+  display: grid;
+  min-width: 0;
+  min-height: 46px;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  padding: 6px 8px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  text-align: center;
+}
+.result-secondary-grid
+  :is(.compact-sort-value, .compact-static-value, .historical-ratio-value)
+  > :is(span, strong) {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+@media (max-width: 1060px) {
+  .rules-filter-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rules-filter-panel > .search-field,
+  .rules-filter-panel > .filter-more {
+    grid-column: 1 / -1;
+  }
+  .filter-more-grid,
+  .method-summary-grid,
+  .result-summary-grid,
+  .method-secondary-grid,
+  .result-secondary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .method-summary-grid > :nth-child(2n),
+  .result-summary-grid > :nth-child(2n),
+  .method-secondary-grid > :nth-child(2n),
+  .result-secondary-grid > :nth-child(2n) {
+    border-right: 0;
+  }
+}
+
+html.mobile-build .header-tools-menu {
+  grid-row: 1;
+  grid-column: 2;
+  width: 100%;
+}
+html.mobile-build .header-tools-menu > summary {
+  width: 100%;
+  height: 42px;
+}
+html.mobile-build .header-tools-menu > div {
+  right: 0;
+  width: min(210px, calc(100vw - 24px));
+}
+html.mobile-build .header-actions .portal-button {
+  grid-row: 2;
+  grid-column: 1 / -1;
+}
+html.mobile-build .filter-more-grid,
+html.mobile-build .method-summary-grid,
+html.mobile-build .result-summary-grid,
+html.mobile-build .method-secondary-grid,
+html.mobile-build .result-secondary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}

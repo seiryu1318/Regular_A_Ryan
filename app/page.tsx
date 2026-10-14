@@ -216,6 +216,35 @@ type ScoreView = ScoreRow & {
 };
 
 type StudentRecordRow = { u: string; method: string; type: string };
+type Cutoff2027 = {
+  sourceRecordId: string;
+  sourceKind: string;
+  cutoffBasis: string;
+  sourceUniversity: string;
+  u: string;
+  department: string;
+  sourceExamType: string;
+  sourceScale: string;
+  englishMethod: string;
+  englishNormalizationNote: string;
+  approximate: boolean;
+  cutoffScore100: number;
+  matchStatus: string;
+  matchedUnitId: number;
+  matchedAdmissionGroup: string;
+  forecastPercentile: number;
+  forecastPercentileBasis: string;
+};
+type Cutoffs2027Meta = {
+  sourcePageUrl: string;
+  rawUrl: string;
+  rawSha256: string;
+  retrievedAt: string;
+  rawRows: number;
+  sourceUniversities: number;
+  matchedRows: number;
+  quarantinedRows: number;
+};
 type SourceRow = {
   name: string;
   organization: string;
@@ -230,6 +259,8 @@ type AdmissionsData = {
   scores: ScoreRow[];
   sources: SourceRow[];
   units2027?: Unit2027[];
+  cutoffs2027?: Cutoff2027[];
+  cutoffs2027Meta?: Cutoffs2027Meta;
 };
 
 type RatioSnapshot = {
@@ -276,6 +307,7 @@ type MethodView = ProfileView & {
   departmentTrackCategories?: TrackCategory[];
   referenceLegacyMethods?: MethodView[];
   unit2027?: Unit2027;
+  forecast2027?: Cutoff2027;
 };
 type FormulaRow = {
   formulaId: number;
@@ -398,6 +430,7 @@ const PROFILE_SORTERS: Record<
   percentile2026: (row) => row.result2026?.percentile.sortValue,
   converted2026: (row) => row.result2026?.converted.sortValue,
   maximum2026: (row) => row.result2026?.maximum.sortValue,
+  forecast2027: (row) => row.forecast2027?.forecastPercentile,
   sb: (row) => recordLabel(row),
   selection: (row) => row.selectionDetail,
 };
@@ -444,6 +477,8 @@ export default function Home() {
   const [profileTopDomain, setProfileTopDomain] = useState('전체');
   const [profileMaximum, setProfileMaximum] = useState('전체');
   const [profileSocialAdvantage, setProfileSocialAdvantage] = useState('전체');
+  const [profileForecastMin, setProfileForecastMin] = useState('');
+  const [profileForecastMax, setProfileForecastMax] = useState('');
   const [profileSort, setProfileSort] = useState<SortState>({
     key: 'u',
     direction: 'asc',
@@ -589,15 +624,21 @@ export default function Home() {
     ).filter(isGeneralMethodRow);
     return attach2026ResultSummaries(methods, regularScores);
   }, [profileViews, regularScores]);
-  const methodDisplayViews = useMemo<MethodView[]>(
-    () =>
-      splitMethodsByDepartment(
-        methodViews,
-        regularScores,
-        data?.units2027 ?? [],
-      ),
-    [data, methodViews, regularScores],
-  );
+  const methodDisplayViews = useMemo<MethodView[]>(() => {
+    const forecastByUnit = new Map(
+      (data?.cutoffs2027 ?? []).map((row) => [row.matchedUnitId, row]),
+    );
+    return splitMethodsByDepartment(
+      methodViews,
+      regularScores,
+      data?.units2027 ?? [],
+    ).map((row) => ({
+      ...row,
+      forecast2027: row.unit2027
+        ? forecastByUnit.get(row.unit2027.id)
+        : undefined,
+    }));
+  }, [data, methodViews, regularScores]);
   const scoreViews = useMemo<ScoreView[]>(() => {
     const historicalGroups = historicalAdmissionGroups(regularScores);
     return regularScores.map((score) => {
@@ -719,6 +760,9 @@ export default function Home() {
 
   const matchingProfiles = useMemo(() => {
     const query = normalize(profileQuery);
+    const forecastRange = numericRange(profileForecastMin, profileForecastMax);
+    const hasForecastRange =
+      forecastRange.minimum !== null || forecastRange.maximum !== null;
     const hasDepartmentMatch = Boolean(
       query &&
       methodDisplayViews.some((row) =>
@@ -765,7 +809,12 @@ export default function Home() {
             ? row.conversionMax !== null
             : row.conversionMax === null)) &&
         (profileSocialAdvantage === '전체' ||
-          row.reference2027?.socialStudyAdvantage === true)
+          row.reference2027?.socialStudyAdvantage === true) &&
+        (!hasForecastRange ||
+          inNumericRange(
+            row.forecast2027?.forecastPercentile ?? null,
+            forecastRange,
+          ))
       );
     });
   }, [
@@ -773,6 +822,8 @@ export default function Home() {
     profileDomainCount,
     profileEnglish,
     profileExam,
+    profileForecastMax,
+    profileForecastMin,
     profileGroup,
     profileMaximum,
     profileMetric,
@@ -942,6 +993,8 @@ export default function Home() {
       setProfileTopDomain('전체');
       setProfileMaximum('전체');
       setProfileSocialAdvantage('전체');
+      setProfileForecastMin('');
+      setProfileForecastMax('');
       setProfileSort({ key: 'u', direction: 'asc' });
       setShowPractical(false);
       setProfileListBatch(1);
@@ -1016,6 +1069,8 @@ export default function Home() {
           '2026 백분위',
           '2026 환산점수',
           '2026 환산만점',
+          '2027 예상 백분위컷',
+          '2027 예상컷 출처',
           '전형요소',
           '전체 반영비율',
         ],
@@ -1057,6 +1112,8 @@ export default function Home() {
           row.result2026?.percentile.label ?? '',
           row.result2026?.converted.label ?? '',
           row.result2026?.maximum.label ?? '',
+          row.forecast2027?.forecastPercentile ?? '',
+          row.forecast2027 ? '입시호구 자체 예상' : '',
           row.selectionDetail,
           row.ratio,
         ]),
@@ -1147,27 +1204,6 @@ export default function Home() {
               )}
               {mobileBuild ? 'PC 버전' : '모바일 버전'}
             </a>
-            <Button
-              variant="outline"
-              className="toolbar-button theme-button"
-              onClick={() =>
-                setThemeMode((current) =>
-                  current === 'light' ? 'dark' : 'light',
-                )
-              }
-              aria-label={
-                themeMode === 'light'
-                  ? '다크 모드로 전환'
-                  : '라이트 모드로 전환'
-              }
-            >
-              {themeMode === 'light' ? (
-                <Moon aria-hidden="true" />
-              ) : (
-                <Sun aria-hidden="true" />
-              )}
-              {themeMode === 'light' ? '다크' : '라이트'}
-            </Button>
             <a
               className="toolbar-button navigation-button portal-button"
               href={ADMISSION_PORTAL_URL}
@@ -1175,23 +1211,49 @@ export default function Home() {
               <House aria-hidden="true" />
               라이언의 대입포털로 돌아가기
             </a>
-            <Button
-              variant="outline"
-              className="toolbar-button"
-              onClick={resetFilters}
-            >
-              <RotateCcw />
-              필터 초기화
-            </Button>
-            {tab !== 'sources' && (
-              <Button
-                className="toolbar-button primary-button"
-                onClick={exportCurrent}
-              >
-                <Download />
-                현재 결과 저장
-              </Button>
-            )}
+            <details className="header-tools-menu">
+              <summary>도구</summary>
+              <div>
+                <Button
+                  variant="outline"
+                  className="toolbar-button theme-button"
+                  onClick={() =>
+                    setThemeMode((current) =>
+                      current === 'light' ? 'dark' : 'light',
+                    )
+                  }
+                  aria-label={
+                    themeMode === 'light'
+                      ? '다크 모드로 전환'
+                      : '라이트 모드로 전환'
+                  }
+                >
+                  {themeMode === 'light' ? (
+                    <Moon aria-hidden="true" />
+                  ) : (
+                    <Sun aria-hidden="true" />
+                  )}
+                  {themeMode === 'light' ? '다크' : '라이트'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="toolbar-button"
+                  onClick={resetFilters}
+                >
+                  <RotateCcw />
+                  필터 초기화
+                </Button>
+                {tab !== 'sources' && (
+                  <Button
+                    className="toolbar-button primary-button"
+                    onClick={exportCurrent}
+                  >
+                    <Download />
+                    현재 결과 저장
+                  </Button>
+                )}
+              </div>
+            </details>
           </div>
         </header>
 
@@ -1204,52 +1266,59 @@ export default function Home() {
           </TabsList>
 
           <TabsContent value="changes" className="tab-stack">
-            <section className="fact-grid">
-              <Fact
-                icon={<Landmark />}
-                value={formatNumber(data.overview.totalRegular)}
-                label="전국 정시 모집인원"
-                note={`전년보다 ${formatNumber(Math.abs(data.overview.change))}명 감소`}
-              />
-              <Fact
-                icon={<Sparkles />}
-                value={`${data.overview.examFocusedRate}%`}
-                label="수능위주 비율"
-                note={`${formatNumber(data.overview.examFocused)}명`}
-              />
-              <Fact
-                icon={<ArrowUp />}
-                value={formatNumber(data.overview.groups.나)}
-                label="나군 모집인원"
-                note="가, 나, 다군 중 가장 많음"
-              />
-              <Fact
-                icon={<ArrowDown />}
-                value={formatNumber(data.overview.groups.다)}
-                label="다군 모집인원"
-                note="가, 나, 다군 중 가장 적음"
-              />
-            </section>
+            <details className="change-summary-disclosure">
+              <summary>전국 모집 요약</summary>
+              <div className="change-summary-content">
+                <section className="fact-grid">
+                  <Fact
+                    icon={<Landmark />}
+                    value={formatNumber(data.overview.totalRegular)}
+                    label="전국 정시 모집인원"
+                    note={`전년보다 ${formatNumber(Math.abs(data.overview.change))}명 감소`}
+                  />
+                  <Fact
+                    icon={<Sparkles />}
+                    value={`${data.overview.examFocusedRate}%`}
+                    label="수능위주 비율"
+                    note={`${formatNumber(data.overview.examFocused)}명`}
+                  />
+                  <Fact
+                    icon={<ArrowUp />}
+                    value={formatNumber(data.overview.groups.나)}
+                    label="나군 모집인원"
+                    note="가, 나, 다군 중 가장 많음"
+                  />
+                  <Fact
+                    icon={<ArrowDown />}
+                    value={formatNumber(data.overview.groups.다)}
+                    label="다군 모집인원"
+                    note="가, 나, 다군 중 가장 적음"
+                  />
+                </section>
 
-            <section className="notice-grid">
-              <article>
-                <strong>감소 인원의 75%가 비수도권</strong>
-                <span>전국 감소 1,197명 중 비수도권이 903명 줄었습니다.</span>
-              </article>
-              <article>
-                <strong>학생부 반영 대학은 산식 확인</strong>
-                <span>
-                  교과 정량, 교과평가, 출결처럼 반영 방식이 서로 다릅니다.
-                </span>
-              </article>
-              <article>
-                <strong>모집군 변경은 지원 조합에 영향</strong>
-                <span>
-                  같은 대학 안에서도 모집단위별 가군, 나군, 다군 이동이
-                  있습니다.
-                </span>
-              </article>
-            </section>
+                <section className="notice-grid">
+                  <article>
+                    <strong>감소 인원의 75%가 비수도권</strong>
+                    <span>
+                      전국 감소 1,197명 중 비수도권이 903명 줄었습니다.
+                    </span>
+                  </article>
+                  <article>
+                    <strong>학생부 반영 대학은 산식 확인</strong>
+                    <span>
+                      교과 정량, 교과평가, 출결처럼 반영 방식이 서로 다릅니다.
+                    </span>
+                  </article>
+                  <article>
+                    <strong>모집군 변경은 지원 조합에 영향</strong>
+                    <span>
+                      같은 대학 안에서도 모집단위별 가군, 나군, 다군 이동이
+                      있습니다.
+                    </span>
+                  </article>
+                </section>
+              </div>
+            </details>
 
             <FilterPanel>
               <SearchField
@@ -1380,7 +1449,7 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="rules" className="tab-stack">
-            <FilterPanel wide>
+            <FilterPanel wide className="rules-filter-panel">
               <SearchField
                 value={profileQuery}
                 onChange={(value) => {
@@ -1417,15 +1486,6 @@ export default function Home() {
                 options={profileGroups}
               />
               <FilterSelect
-                label="모집전형"
-                value={profileExam}
-                onChange={(value) => {
-                  setProfileExam(value);
-                  setProfileListBatch(1);
-                }}
-                options={profileExams}
-              />
-              <FilterSelect
                 label="계열"
                 value={profileTrack}
                 onChange={(value) => {
@@ -1434,80 +1494,113 @@ export default function Home() {
                 }}
                 options={profileTracks}
               />
-              <FilterSelect
-                label="영어 방식"
-                value={profileEnglish}
-                onChange={(value) => {
-                  setProfileEnglish(value);
-                  setProfileListBatch(1);
-                }}
-                options={profileEnglishMethods}
-              />
-              <FilterSelect
-                label="활용지표"
-                value={profileMetric}
-                onChange={(value) => {
-                  setProfileMetric(value);
-                  setProfileListBatch(1);
-                }}
-                options={['표준점수', '변환표준점수', '백분위', '등급']}
-              />
-              <FilterSelect
-                label="학생부"
-                value={profileRecord}
-                onChange={(value) => {
-                  setProfileRecord(value);
-                  setProfileListBatch(1);
-                }}
-                options={['정성평가', '정량평가']}
-              />
-              <FilterSelect
-                label="반영영역 수"
-                value={profileDomainCount}
-                onChange={(value) => {
-                  setProfileDomainCount(value);
-                  setProfileListBatch(1);
-                }}
-                options={profileDomainCounts}
-              />
-              <FilterSelect
-                label="최고 반영영역"
-                value={profileTopDomain}
-                onChange={(value) => {
-                  setProfileTopDomain(value);
-                  setProfileListBatch(1);
-                }}
-                options={['국어', '수학', '영어', '탐구']}
-              />
-              <FilterSelect
-                label="2026 환산만점"
-                value={profileMaximum}
-                onChange={(value) => {
-                  setProfileMaximum(value);
-                  setProfileListBatch(1);
-                }}
-                options={['수치 있음', '수치 없음']}
-              />
-              <FilterSelect
-                label="사탐런"
-                value={profileSocialAdvantage}
-                onChange={(value) => {
-                  setProfileSocialAdvantage(value);
-                  setProfileListBatch(1);
-                }}
-                options={['유리']}
-              />
+              <details className="filter-more">
+                <summary>상세 필터</summary>
+                <div className="filter-more-grid">
+                  <FilterSelect
+                    label="모집전형"
+                    value={profileExam}
+                    onChange={(value) => {
+                      setProfileExam(value);
+                      setProfileListBatch(1);
+                    }}
+                    options={profileExams}
+                  />
+                  <FilterSelect
+                    label="영어 방식"
+                    value={profileEnglish}
+                    onChange={(value) => {
+                      setProfileEnglish(value);
+                      setProfileListBatch(1);
+                    }}
+                    options={profileEnglishMethods}
+                  />
+                  <FilterSelect
+                    label="활용지표"
+                    value={profileMetric}
+                    onChange={(value) => {
+                      setProfileMetric(value);
+                      setProfileListBatch(1);
+                    }}
+                    options={['표준점수', '변환표준점수', '백분위', '등급']}
+                  />
+                  <FilterSelect
+                    label="학생부"
+                    value={profileRecord}
+                    onChange={(value) => {
+                      setProfileRecord(value);
+                      setProfileListBatch(1);
+                    }}
+                    options={['정성평가', '정량평가']}
+                  />
+                  <FilterSelect
+                    label="반영영역 수"
+                    value={profileDomainCount}
+                    onChange={(value) => {
+                      setProfileDomainCount(value);
+                      setProfileListBatch(1);
+                    }}
+                    options={profileDomainCounts}
+                  />
+                  <FilterSelect
+                    label="최고 반영영역"
+                    value={profileTopDomain}
+                    onChange={(value) => {
+                      setProfileTopDomain(value);
+                      setProfileListBatch(1);
+                    }}
+                    options={['국어', '수학', '영어', '탐구']}
+                  />
+                  <FilterSelect
+                    label="2026 환산만점"
+                    value={profileMaximum}
+                    onChange={(value) => {
+                      setProfileMaximum(value);
+                      setProfileListBatch(1);
+                    }}
+                    options={['수치 있음', '수치 없음']}
+                  />
+                  <FilterSelect
+                    label="사탐런"
+                    value={profileSocialAdvantage}
+                    onChange={(value) => {
+                      setProfileSocialAdvantage(value);
+                      setProfileListBatch(1);
+                    }}
+                    options={['유리']}
+                  />
+                  <RangeFilter
+                    label="2027 예상 백분위컷"
+                    unit="%"
+                    note="입시호구 예상"
+                    minimum={profileForecastMin}
+                    maximum={profileForecastMax}
+                    max={100}
+                    onMinimumChange={(value) => {
+                      setProfileForecastMin(value);
+                      setProfileListBatch(1);
+                    }}
+                    onMaximumChange={(value) => {
+                      setProfileForecastMax(value);
+                      setProfileListBatch(1);
+                    }}
+                  />
+                </div>
+              </details>
             </FilterPanel>
 
-            <section className="method-analysis" aria-live="polite">
-              <strong>{profileAnalysis.title}</strong>
-              {profileAnalysis.items.map((item) => (
-                <span key={item.label}>
-                  <small>{item.label}</small>
-                  {item.value}
-                </span>
-              ))}
-            </section>
+            <details className="analysis-disclosure">
+              <summary>조건 분석</summary>
+              <section className="method-analysis" aria-live="polite">
+                <strong>{profileAnalysis.title}</strong>
+                {profileAnalysis.items.map((item) => (
+                  <span key={item.label}>
+                    <small>{item.label}</small>
+                    {item.value}
+                  </span>
+                ))}
+              </section>
+            </details>
 
             <section className="data-panel">
               <div className="section-head">
@@ -1634,7 +1727,12 @@ export default function Home() {
                         onSort={setProfileSort}
                       />
                       {expandedMethodRows.has(row.rowId) && (
-                        <MethodDetailRow row={row} colSpan={6} />
+                        <MethodDetailRow
+                          row={row}
+                          colSpan={6}
+                          sort={profileSort}
+                          onSort={setProfileSort}
+                        />
                       )}
                     </Fragment>
                   ))}
@@ -1876,20 +1974,6 @@ export default function Home() {
                               sort={scoreSort}
                               onSort={setScoreSort}
                             />
-                            <CompactSortValue
-                              label="실질경쟁률"
-                              column="x"
-                              value={compactFixedNumber(row.x, ':1')}
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
-                            <CompactSortValue
-                              label="충원인원"
-                              column="add"
-                              value={compactNumber(row.add)}
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
                             <CompactStaticValue
                               label="환산 50%"
                               value={compactFixedNumber(row.cv50, '점')}
@@ -1898,55 +1982,71 @@ export default function Home() {
                               label="환산 70%"
                               value={compactFixedNumber(row.cv70, '점')}
                             />
-                            <CompactStaticValue
-                              label={maximumLabel('환산만점', row)}
-                              value={compactFixedNumber(row.max, '점')}
-                            />
-                            <CompactSortValue
-                              label="학생부"
-                              column="sb"
-                              value={scoreStudentRecord(row)}
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
-                            <HistoricalRatioValue
-                              label={`${row.y} 국어`}
-                              column="koreanRatio"
-                              method={row.yearMethod}
-                              domain="korean"
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
-                            <HistoricalRatioValue
-                              label={`${row.y} 수학`}
-                              column="mathRatio"
-                              method={row.yearMethod}
-                              domain="math"
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
-                            <HistoricalRatioValue
-                              label={`${row.y} 영어`}
-                              column="englishRatio"
-                              method={row.yearMethod}
-                              domain="english"
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
-                            <HistoricalRatioValue
-                              label={`${row.y} 탐구`}
-                              column="inquiryRatio"
-                              method={row.yearMethod}
-                              domain="inquiry"
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
                           </div>
                         </TableCell>
                       </TableRow>
                       {expandedScoreRows.has(row.id) && (
                         <TableRow className="result-detail-row">
                           <TableCell colSpan={6}>
+                            <div className="result-secondary-grid">
+                              <CompactSortValue
+                                label="실질경쟁률"
+                                column="x"
+                                value={compactFixedNumber(row.x, ':1')}
+                                sort={scoreSort}
+                                onSort={setScoreSort}
+                              />
+                              <CompactSortValue
+                                label="충원인원"
+                                column="add"
+                                value={compactNumber(row.add)}
+                                sort={scoreSort}
+                                onSort={setScoreSort}
+                              />
+                              <CompactStaticValue
+                                label={maximumLabel('환산만점', row)}
+                                value={compactFixedNumber(row.max, '점')}
+                              />
+                              <CompactSortValue
+                                label="학생부"
+                                column="sb"
+                                value={scoreStudentRecord(row)}
+                                sort={scoreSort}
+                                onSort={setScoreSort}
+                              />
+                              <HistoricalRatioValue
+                                label={`${row.y} 국어`}
+                                column="koreanRatio"
+                                method={row.yearMethod}
+                                domain="korean"
+                                sort={scoreSort}
+                                onSort={setScoreSort}
+                              />
+                              <HistoricalRatioValue
+                                label={`${row.y} 수학`}
+                                column="mathRatio"
+                                method={row.yearMethod}
+                                domain="math"
+                                sort={scoreSort}
+                                onSort={setScoreSort}
+                              />
+                              <HistoricalRatioValue
+                                label={`${row.y} 영어`}
+                                column="englishRatio"
+                                method={row.yearMethod}
+                                domain="english"
+                                sort={scoreSort}
+                                onSort={setScoreSort}
+                              />
+                              <HistoricalRatioValue
+                                label={`${row.y} 탐구`}
+                                column="inquiryRatio"
+                                method={row.yearMethod}
+                                domain="inquiry"
+                                sort={scoreSort}
+                                onSort={setScoreSort}
+                              />
+                            </div>
                             <div className="result-detail-lines">
                               <p>
                                 <strong>전형</strong>
@@ -2064,6 +2164,12 @@ export default function Home() {
                 : selectedProfile.bonusDetail
             }
           />
+          {selectedProfile.forecast2027 && (
+            <DetailBlock
+              title="2027 예상 백분위컷"
+              text={`${formatFixedNumber(selectedProfile.forecast2027.forecastPercentile, false)}% | 입시호구 자체 예상 | 2026 실측 기반, 추가합격 고려${selectedProfile.forecast2027.approximate ? ' | 영어 반영 근사' : ''}`}
+            />
+          )}
           <div className="dialog-links">
             {selectedProfile.sourceLinks2027?.flatMap((entry, index) => {
               const suffix =
@@ -2126,6 +2232,15 @@ export default function Home() {
                   ? '2027 정시 기준 시트'
                   : '대입정보포털 2027 수능위주전형'}{' '}
                 <ExternalLink />
+              </a>
+            )}
+            {selectedProfile.forecast2027 && (
+              <a
+                href="https://ipsihogu.com/2027-jungsi-calculator/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                2027 예상컷 산출 페이지 <ExternalLink />
               </a>
             )}
           </div>
@@ -2349,58 +2464,13 @@ function MethodSummaryRow({
             ratioItem('탐구', 'inquiry')
           )}
           <MethodSummaryValue
-            label="영어 방식"
-            column="englishMethod"
-            value={row.englishMethod || '—'}
-            sort={sort}
-            onSort={onSort}
-          />
-          <MethodSummaryValue
-            label="한국사"
-            column="history"
-            value={row.ratios.history}
-            sort={sort}
-            onSort={onSort}
-          />
-          <MethodSummaryValue
-            label="2026 백분위 50/70"
-            column="percentile2026"
-            value={methodResultSummaryValue(row, 'percentile')}
-            sort={sort}
-            onSort={onSort}
-          />
-          <MethodSummaryValue
-            label="2026 환산점수 50/70"
-            column="converted2026"
-            value={methodResultSummaryValue(row, 'converted')}
-            sort={sort}
-            onSort={onSort}
-          />
-          <MethodSummaryValue
-            label={
-              row.conversionMaxInferred
-                ? '2026 환산만점(추론)'
-                : '2026 환산만점'
-            }
-            column="conversionMax"
+            label="2027 예상 백분위컷"
+            column="forecast2027"
             value={
-              row.conversionMax === null
-                ? '—'
-                : `${formatFixedNumber(row.conversionMax, false)}점`
+              row.forecast2027
+                ? `${formatFixedNumber(row.forecast2027.forecastPercentile, false)}%`
+                : '—'
             }
-            sort={sort}
-            onSort={onSort}
-          />
-          <div className="method-summary-metrics">
-            <span>활용지표</span>
-            <strong>
-              {row.reference2027?.indicator || row.metrics.join(', ') || '—'}
-            </strong>
-          </div>
-          <MethodSummaryValue
-            label="학생부"
-            column="sb"
-            value={recordLabel(row)}
             sort={sort}
             onSort={onSort}
           />
@@ -2622,6 +2692,7 @@ function FilterSelect({
 function RangeFilter({
   label,
   unit,
+  note = '50% 우선',
   minimum,
   maximum,
   onMinimumChange,
@@ -2630,6 +2701,7 @@ function RangeFilter({
 }: {
   label: string;
   unit: string;
+  note?: string;
   minimum: string;
   maximum: string;
   onMinimumChange: (value: string) => void;
@@ -2640,7 +2712,7 @@ function RangeFilter({
     <fieldset className="filter-field range-filter">
       <legend>
         {label}
-        <small>50% 우선</small>
+        <small>{note}</small>
       </legend>
       <div>
         <Input
@@ -2886,9 +2958,13 @@ function AdmissionGroupLights({ group }: { group: string }) {
 function MethodDetailRow({
   row,
   colSpan,
+  sort,
+  onSort,
 }: {
   row: MethodView;
   colSpan: number;
+  sort: SortState;
+  onSort: (sort: SortState) => void;
 }) {
   if (row.reference2027) {
     const reference = row.reference2027;
@@ -2983,6 +3059,7 @@ function MethodDetailRow({
               <span>{recordLabel(row)}</span>
             </p>
           </div>
+          <MethodSecondaryDetails row={row} sort={sort} onSort={onSort} />
         </TableCell>
       </TableRow>
     );
@@ -3070,8 +3147,86 @@ function MethodDetailRow({
             <span>{recordLabel(row)}</span>
           </p>
         </div>
+        <MethodSecondaryDetails row={row} sort={sort} onSort={onSort} />
       </TableCell>
     </TableRow>
+  );
+}
+
+function MethodSecondaryDetails({
+  row,
+  sort,
+  onSort,
+}: {
+  row: MethodView;
+  sort: SortState;
+  onSort: (sort: SortState) => void;
+}) {
+  return (
+    <>
+      <div className="method-secondary-grid">
+        <MethodSummaryValue
+          label="영어 방식"
+          column="englishMethod"
+          value={row.englishMethod || '—'}
+          sort={sort}
+          onSort={onSort}
+        />
+        <MethodSummaryValue
+          label="한국사"
+          column="history"
+          value={row.ratios.history}
+          sort={sort}
+          onSort={onSort}
+        />
+        <MethodSummaryValue
+          label="2026 백분위 50/70"
+          column="percentile2026"
+          value={methodResultSummaryValue(row, 'percentile')}
+          sort={sort}
+          onSort={onSort}
+        />
+        <MethodSummaryValue
+          label="2026 환산점수 50/70"
+          column="converted2026"
+          value={methodResultSummaryValue(row, 'converted')}
+          sort={sort}
+          onSort={onSort}
+        />
+        <MethodSummaryValue
+          label={
+            row.conversionMaxInferred ? '2026 환산만점(추론)' : '2026 환산만점'
+          }
+          column="conversionMax"
+          value={
+            row.conversionMax === null
+              ? '—'
+              : `${formatFixedNumber(row.conversionMax, false)}점`
+          }
+          sort={sort}
+          onSort={onSort}
+        />
+        <div className="method-summary-metrics">
+          <span>활용지표</span>
+          <strong>
+            {row.reference2027?.indicator || row.metrics.join(', ') || '—'}
+          </strong>
+        </div>
+        <MethodSummaryValue
+          label="학생부"
+          column="sb"
+          value={recordLabel(row)}
+          sort={sort}
+          onSort={onSort}
+        />
+      </div>
+      {row.forecast2027 && (
+        <p className="forecast-source-note">
+          2027 예상컷은 입시호구 자체 예상치입니다. 2026 실측과 추가합격을
+          반영하며 확정 입결이 아닙니다.
+        </p>
+      )}
+    </>
   );
 }
 
@@ -9110,9 +9265,8 @@ function splitMethodsByDepartment(
     const topCandidates = ranked.filter((entry) => entry.rank === topRank);
     if (
       topCandidates.length > 1 &&
-      new Set(
-        topCandidates.map((entry) => unitMethodSignature(entry.method)),
-      ).size > 1
+      new Set(topCandidates.map((entry) => unitMethodSignature(entry.method)))
+        .size > 1
     )
       return [];
     const method = ranked[0]?.method;
@@ -9140,8 +9294,7 @@ function splitMethodsByDepartment(
     const conversionMaxInferred =
       maxima.length === 1
         ? exactResults.some(
-            (score) =>
-              score.max === conversionMax && isInferredMaximum(score),
+            (score) => score.max === conversionMax && isInferredMaximum(score),
           )
         : method.conversionMaxInferred;
     return [

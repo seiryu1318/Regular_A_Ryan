@@ -19,7 +19,8 @@
       "center",
       "center",
       "center"
-    ]
+    ],
+    "changeSummaryClosed": true
   },
   "mobile": {
     "title": "라이언의 2027 정시모집",
@@ -29,7 +30,8 @@
     "portalLink": "https://seiryu1318.github.io/admission_Ryan/",
     "searchFontSizes": [
       16
-    ]
+    ],
+    "changeSummaryClosed": true
   },
   "initialPcRows": 10,
   "initialMobileRows": 5,
@@ -53,7 +55,7 @@
     "rows": 1,
     "text": [
       "주요서울\t\n중앙대\n\t\n가\n나\n다\n\t수능(일반전형)\t의약학\t\n의학부\n42명",
-      "국어\n30%\n수학\n35%\n영어\n—\n탐구2\n35%\n탐구1\n—\n영어 방식\n—\n한국사\n가점\n2026 백분위 50/70\n—\n2026 환산점수 50/70\n—\n2026 환산만점(추론)\n1000.00점\n활용지표\n표+변\n학생부\n—"
+      "국어\n30%\n수학\n35%\n영어\n—\n탐구2\n35%\n탐구1\n—\n2027 예상 백분위컷\n—"
     ]
   },
   "flexibleTracks": [
@@ -68,6 +70,24 @@
     "자연",
     "인문"
   ],
+  "forecast": {
+    "rows": 1,
+    "summary": "국어\n(30%)\n수학\n(30%)\n영어\n30%\n탐구2\n40%\n탐구1\n—\n2027 예상 백분위컷\n63.83%",
+    "sourceNoteBeforeExpand": ""
+  },
+  "forecastSourceNote": "2027 예상컷은 입시호구 자체 예상치입니다. 2026 실측과 추가합격을 반영하며 확정 입결이 아닙니다.",
+  "simplifiedPc": {
+    "advancedFiltersClosed": true,
+    "analysisClosed": true,
+    "toolsClosed": true,
+    "maxSummaryCells": 6
+  },
+  "simplifiedMobile": {
+    "advancedFiltersClosed": true,
+    "analysisClosed": true,
+    "toolsClosed": true,
+    "maxSummaryCells": 6
+  },
   "screenshots": {
     "pc": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-pc.png",
     "mobile": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-mobile.png"
