@@ -1123,7 +1123,16 @@ export default function Home() {
     <main className="min-h-screen">
       <div className="site-shell w-full px-3 py-3 sm:px-5 lg:px-6">
         <header className="masthead">
-          <div className="brand-lockup">
+          <a
+            className="brand-lockup brand-home-link"
+            href={mobileBuild ? MOBILE_SITE_URL : PC_SITE_URL}
+            data-home-control
+            aria-label="라이언의 2027 정시모집 홈으로 이동"
+            onClick={(event) => {
+              event.preventDefault();
+              setTab('changes');
+            }}
+          >
             <img
               className="brand-logo"
               src={ryanLogo as unknown as string}
@@ -1134,7 +1143,7 @@ export default function Home() {
               <h1>라이언의 2027 정시모집</h1>
               <span className="release-version">{RELEASE_VERSION}</span>
             </div>
-          </div>
+          </a>
           <div className="header-actions">
             <a
               className="toolbar-button navigation-button"

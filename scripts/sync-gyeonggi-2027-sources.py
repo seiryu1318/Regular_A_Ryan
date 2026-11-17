@@ -19,10 +19,10 @@ DATA_PATH = ROOT / "public" / "admissions-data.json"
 AUDIT_PATH = ROOT / "audit" / "gyeonggi-2027-source-audit.json"
 
 HTML_SOURCE = Path(
-    r"C:\Users\User\iCloudDrive\02. 진학 및 상담자료\01. 진학자료\01. 연도별 진학자료\07. 2026년\01. 전형방법\03. 모집요강\05. 정시모집\02. 관련 자료\2027 정시 모집정보 검색기(영덕고-김형진).html"
+    r"C:\Users\User\iCloudDrive\02. 진학 및 상담자료\01. 진학자료\01. 연도별 진학자료\08. 2026년\01. 전형방법\03. 모집요강\05. 정시모집\02. 관련 자료\2027 정시 모집정보 검색기(영덕고-김형진).html"
 )
 PDF_SOURCE = Path(
-    r"C:\Users\User\iCloudDrive\02. 진학 및 상담자료\01. 진학자료\01. 연도별 진학자료\07. 2026년\01. 전형방법\03. 모집요강\05. 정시모집\02. 관련 자료\2027 정시전형 모집요강(경기도교육청 진학지도리더교사 콘텐츠팀).pdf"
+    r"C:\Users\User\iCloudDrive\02. 진학 및 상담자료\01. 진학자료\01. 연도별 진학자료\08. 2026년\01. 전형방법\03. 모집요강\05. 정시모집\02. 관련 자료\2027 정시전형 모집요강(경기도교육청 진학지도리더교사 콘텐츠팀).pdf"
 )
 
 SOURCE_DATE = "2026-09-17"

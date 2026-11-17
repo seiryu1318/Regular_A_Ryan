@@ -143,6 +143,130 @@ async function setSearch(cdp, placeholder, value) {
   await wait(350);
 }
 
+async function auditBrandHomeNavigation(cdp, clickValue, enterValue) {
+  const placeholder = '대학, 모집단위, 전형명 검색';
+  const originalValue = await cdp.evaluate(`(() => {
+    const input = [...document.querySelectorAll('input')]
+      .find((node) => node.placeholder === ${JSON.stringify('대학, 모집단위, 전형명 검색')});
+    return input?.value ?? '';
+  })()`);
+  const control = await cdp.evaluate(`(() => {
+    const node = document.querySelector('[data-home-control]');
+    return {
+      tag: node?.tagName ?? '',
+      href: node?.href ?? '',
+      label: node?.getAttribute('aria-label') ?? '',
+      hasLogo: Boolean(node?.querySelector('.brand-logo')),
+      hasTitle: node?.textContent?.includes('라이언의 2027 정시모집') ?? false,
+    };
+  })()`);
+
+  await setSearch(cdp, placeholder, clickValue);
+  const clickBefore = await cdp.evaluate(`(() => {
+    window.__brandHomeAuditMarker = 'click-state-preserved';
+    return { url: location.href, marker: window.__brandHomeAuditMarker };
+  })()`);
+  const clicked = await cdp.evaluate(`(() => {
+    const node = document.querySelector('[data-home-control]');
+    if (!node) return false;
+    node.click();
+    return true;
+  })()`);
+  await wait(250);
+  const clickHome = await cdp.evaluate(`(() => ({
+    tab: document.querySelector('[role=tab][aria-selected=true]')?.textContent?.trim() ?? '',
+    url: location.href,
+    marker: window.__brandHomeAuditMarker ?? '',
+  }))()`);
+  await clickText(cdp, '3개년 입시결과');
+  const clickValueAfter = await cdp.evaluate(`(() => {
+    const input = [...document.querySelectorAll('input')]
+      .find((node) => node.placeholder === ${JSON.stringify('대학, 모집단위, 전형명 검색')});
+    return input?.value ?? '';
+  })()`);
+
+  await setSearch(cdp, placeholder, enterValue);
+  const enterBefore = await cdp.evaluate(`(() => {
+    const node = document.querySelector('[data-home-control]');
+    if (!node) return { focused: false, url: location.href, marker: '' };
+    window.__brandHomeAuditMarker = 'enter-state-preserved';
+    node.focus();
+    return {
+      focused: document.activeElement === node,
+      url: location.href,
+      marker: window.__brandHomeAuditMarker,
+    };
+  })()`);
+  await cdp.send('Input.dispatchKeyEvent', {
+    type: 'keyDown',
+    key: 'Enter',
+    code: 'Enter',
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await cdp.send('Input.dispatchKeyEvent', {
+    type: 'keyUp',
+    key: 'Enter',
+    code: 'Enter',
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await wait(250);
+  const enterHome = await cdp.evaluate(`(() => ({
+    tab: document.querySelector('[role=tab][aria-selected=true]')?.textContent?.trim() ?? '',
+    url: location.href,
+    marker: window.__brandHomeAuditMarker ?? '',
+  }))()`);
+  await clickText(cdp, '3개년 입시결과');
+  const enterValueAfter = await cdp.evaluate(`(() => {
+    const input = [...document.querySelectorAll('input')]
+      .find((node) => node.placeholder === ${JSON.stringify('대학, 모집단위, 전형명 검색')});
+    return input?.value ?? '';
+  })()`);
+  await setSearch(cdp, placeholder, originalValue);
+  const restoredValue = await cdp.evaluate(`(() => {
+    const input = [...document.querySelectorAll('input')]
+      .find((node) => node.placeholder === ${JSON.stringify('대학, 모집단위, 전형명 검색')});
+    return input?.value ?? '';
+  })()`);
+
+  return {
+    control,
+    clicked,
+    clickHomeTab: clickHome.tab,
+    clickStatePreserved: clickValueAfter === clickValue,
+    clickUrlUnchanged: clickHome.url === clickBefore.url,
+    clickMarkerPreserved: clickHome.marker === clickBefore.marker,
+    enterFocused: enterBefore.focused,
+    enterHomeTab: enterHome.tab,
+    enterStatePreserved: enterValueAfter === enterValue,
+    enterUrlUnchanged: enterHome.url === enterBefore.url,
+    enterMarkerPreserved: enterHome.marker === enterBefore.marker,
+    originalValueRestored: restoredValue === originalValue,
+  };
+}
+
+function brandHomePassed(result, hrefFragment) {
+  return (
+    result.control.tag === 'A' &&
+    result.control.href.includes(hrefFragment) &&
+    result.control.label === '라이언의 2027 정시모집 홈으로 이동' &&
+    result.control.hasLogo &&
+    result.control.hasTitle &&
+    result.clicked &&
+    result.clickHomeTab === '2027 변동사항' &&
+    result.clickStatePreserved &&
+    result.clickUrlUnchanged &&
+    result.clickMarkerPreserved &&
+    result.enterFocused &&
+    result.enterHomeTab === '2027 변동사항' &&
+    result.enterStatePreserved &&
+    result.enterUrlUnchanged &&
+    result.enterMarkerPreserved &&
+    result.originalValueRestored
+  );
+}
+
 async function capture(cdp, path) {
   const result = await cdp.send('Page.captureScreenshot', {
     format: 'png',
@@ -260,6 +384,7 @@ try {
   const pcForecastTermsInResults = await cdp.evaluate(
     `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
   );
+  const pcBrandHome = await auditBrandHomeNavigation(cdp, '가천대', '간호학');
   await capture(cdp, screenshots.pc);
 
   const responsivePc = [];
@@ -330,6 +455,11 @@ try {
   }))()`);
   const mobileForecastTermsInResults = await cdp.evaluate(
     `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
+  );
+  const mobileBrandHome = await auditBrandHomeNavigation(
+    cdp,
+    '가천대',
+    '간호학',
   );
   await capture(cdp, screenshots.mobile);
 
@@ -421,6 +551,10 @@ try {
   if (!mobile.pcLink.includes('Regular_A_Ryan'))
     issues.push('Mobile PC link mismatch');
   if (!pc.portalLink || !mobile.portalLink) issues.push('Portal link missing');
+  if (!brandHomePassed(pcBrandHome, 'Regular_A_Ryan/'))
+    issues.push('PC brand home navigation mismatch');
+  if (!brandHomePassed(mobileBrandHome, 'Regular_A_RyanM/'))
+    issues.push('Mobile brand home navigation mismatch');
   if (!pc.changeSummaryClosed || !mobile.changeSummaryClosed)
     issues.push('Change summary is open by default');
 
@@ -438,6 +572,8 @@ try {
     flexibleTracks,
     pcResults,
     mobileResults,
+    pcBrandHome,
+    mobileBrandHome,
     simplifiedPc,
     simplifiedMobile,
     screenshots,

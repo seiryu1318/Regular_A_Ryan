@@ -194,6 +194,46 @@
     "filterClosed": true,
     "filterText": "상세 필터모집군가군나군다군백분위 범위50% 우선부터%표준점수 범위50% 우선부터점환산점수 범위50% 우선부터점"
   },
+  "pcBrandHome": {
+    "control": {
+      "tag": "A",
+      "href": "https://seiryu1318.github.io/Regular_A_Ryan/",
+      "label": "라이언의 2027 정시모집 홈으로 이동",
+      "hasLogo": true,
+      "hasTitle": true
+    },
+    "clicked": true,
+    "clickHomeTab": "2027 변동사항",
+    "clickStatePreserved": true,
+    "clickUrlUnchanged": true,
+    "clickMarkerPreserved": true,
+    "enterFocused": true,
+    "enterHomeTab": "2027 변동사항",
+    "enterStatePreserved": true,
+    "enterUrlUnchanged": true,
+    "enterMarkerPreserved": true,
+    "originalValueRestored": true
+  },
+  "mobileBrandHome": {
+    "control": {
+      "tag": "A",
+      "href": "https://seiryu1318.github.io/Regular_A_RyanM/",
+      "label": "라이언의 2027 정시모집 홈으로 이동",
+      "hasLogo": true,
+      "hasTitle": true
+    },
+    "clicked": true,
+    "clickHomeTab": "2027 변동사항",
+    "clickStatePreserved": true,
+    "clickUrlUnchanged": true,
+    "clickMarkerPreserved": true,
+    "enterFocused": true,
+    "enterHomeTab": "2027 변동사항",
+    "enterStatePreserved": true,
+    "enterUrlUnchanged": true,
+    "enterMarkerPreserved": true,
+    "originalValueRestored": true
+  },
   "simplifiedPc": {
     "advancedFiltersClosed": true,
     "analysisClosed": true,
