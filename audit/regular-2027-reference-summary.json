@@ -1,15 +1,24 @@
 {
-  "source_rows": 410,
+  "source_rows": 425,
   "project_profiles": 203,
-  "project_reference_rows": 410,
+  "project_reference_rows": 425,
   "existing_profiles": 185,
   "supplemental_profiles": 18,
-  "unique_source_labels": 410,
+  "unique_source_labels": 425,
   "blank_metrics": 11,
-  "student_record_rows": 58,
+  "student_record_rows": 60,
   "social_study_advantage_rows": 14,
-  "parenthesized_ratio_cells": 278,
-  "bonus_cells": 158,
+  "parenthesized_ratio_cells": 282,
+  "bonus_cells": 159,
+  "resolved_source_conflicts": [
+    {
+      "label": "동국WISE(일반)",
+      "previous": "학생부 정량 10% (일부), 일부 수능 90%와 학생부 10%",
+      "corrected": "학생부 공란, 국어·수학·영어·탐구2 중 상위 2개 각 50%",
+      "resolution": "원본 정시 시트 E228·N228이 공식 최종 모집요강에 맞게 수정되어 별도 덮어쓰기 없이 동기화",
+      "source": "https://ipsi.dongguk.ac.kr/resources/files/jungsi_2027.pdf"
+    }
+  ],
   "issues": 0,
   "details": []
 }

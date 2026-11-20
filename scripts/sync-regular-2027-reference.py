@@ -13,6 +13,8 @@ SOURCE_URL = "https://docs.google.com/spreadsheets/d/1teV1-aE6u7ueHC5o1B3iRHCRN-
 EXPECTED_HEADERS = ["지역", "대학명", "사탐런유리", "지표", "학생부", "국어", "수학", "미기", "영어", "탐구2", "탐구1", "사탐", "과탐", "특이사항"]
 
 BASE_ALIASES = {
+    "서울": "서울대",
+    "호원": "호원대",
     "성균": "성균관대",
     "한국외대": "한국외국어대",
     "이화": "이화여대",
@@ -52,7 +54,6 @@ METRICS = {
     "등급": ["등급"],
 }
 
-
 def text(value: object) -> str:
     return str(value or "").strip()
 
@@ -61,6 +62,9 @@ def clean_percentage(value: object) -> str:
     result = text(value)
     result = re.sub(r"(?<=\d)\.(?=%)", "", result)
     result = re.sub(r"(?<=\d)\.(?=%\))", "", result)
+    grouped = re.fullmatch(r"\((\d+(?:\.\d+)?(?:\s*/\s*\d+(?:\.\d+)?)+)\)", result)
+    if grouped:
+        result = "(" + " / ".join(f"{part.strip()}%" for part in grouped.group(1).split("/")) + ")"
     return result
 
 
@@ -99,15 +103,24 @@ TRACK_LABELS = {
     "치": "치의예과",
     "한의": "한의예과",
     "한의인": "한의예과 인문형",
+    "한의자": "한의예과 자연형",
+    "한의1": "한의예과 1유형",
+    "한의2": "한의예과 2유형",
+    "한의확통": "한의예과 확률과 통계형",
+    "한의미기": "한의예과 미적분·기하형",
+    "한의A": "한의예과 A형",
+    "한의B": "한의예과 B형",
     "약": "약학과",
     "약한약": "약학과·한약학과",
     "의약": "의약학계열",
     "의치": "의예과·치의예과",
     "의치약": "의예과·치의예과·약학과",
     "의치약자": "의예과·치의예과·약학과·자연계열",
-    "의간": "의예과·한의예과·간호학과",
-    "의보건": "한의예과·간호·보건계열",
+    "의간": "의예과·간호학과",
+    "의보건": "의료·보건계열",
     "간호": "간호학과",
+    "간호인": "간호학과 인문형",
+    "간호자": "간호학과 자연형",
     "간호물치": "간호학과·물리치료학과",
     "간호방사선": "간호학과·방사선학과",
     "간호임상": "간호학과·임상병리학과",
@@ -226,17 +239,24 @@ def track_label(label: str, qualifier: str) -> str:
 
 def track_categories(label: str, qualifier: str, note: str) -> list[str]:
     compact = re.sub(r"\s+", "", qualifier)
+    if label in {
+        "가천(일반1)", "가천(일반2)", "대구한의(일반)",
+        "동의(일반)", "동신(일반)", "원광(일반)",
+    }:
+        return ["인문", "자연"]
+    if label in {"동국WISE(일반)", "상지(일반)", "호원(일반)"}:
+        return ["인문", "자연", "예체능"]
     if compact in {"인", "인1", "인2", "인A", "인B", "인,A", "경", "경A", "경B", "사회", "교육", "신학", "사복유아", "국제", "문창"}:
         return ["인문"]
-    if compact in {"자", "자1", "자2", "자A", "자B", "자,B", "자-인", "자-자", "자공", "자상", "자연", "자연공", "이공", "공", "공A", "공B", "공과B", "정보", "AI", "보건", "간호", "간호물치", "간호방사선", "간호임상", "건축", "과교", "수교", "수과교", "항공운항", "운송", "해사A"}:
+    if compact in {"자", "자1", "자2", "자A", "자B", "자,B", "자-인", "자-자", "자공", "자상", "자연", "자연공", "이공", "공", "공A", "공B", "공과B", "정보", "AI", "보건", "의보건", "간호", "간호인", "간호자", "간호물치", "간호방사선", "간호임상", "건축", "과교", "수교", "수과교", "항공운항", "운송", "해사A"}:
         return ["자연"]
     if compact in {"예체능", "미술", "음악", "작곡", "스포츠"}:
         return ["예체능"]
-    if compact in {"의", "의예", "치", "한의", "한의인", "약", "약한약", "의약", "의치", "의치약"}:
+    if compact in {"의", "의예", "치", "한의", "한의인", "한의자", "한의1", "한의2", "한의확통", "한의미기", "한의A", "한의B", "약", "약한약", "의약", "의치", "의치약"}:
         return ["의약학"]
     if compact in {"의치약자", "자연약"}:
         return ["자연", "의약학"]
-    if compact in {"의간", "의보건"}:
+    if compact == "의간":
         return ["자연", "의약학"]
     if compact == "인예":
         return ["인문", "예체능"]
@@ -428,7 +448,7 @@ data["summary"]["reference2027Rows"] = len(reference["rows"])
 data["reference2027"] = {
     "source": SOURCE_URL,
     "sheet": "정시",
-    "range": "A1:N411",
+    "range": reference.get("range", "A1:N426"),
     "rows": len(reference["rows"]),
     "matchedExistingProfiles": len(grouped_rows) - supplemental_profiles,
     "supplementalProfiles": supplemental_profiles,

@@ -16,14 +16,45 @@ REQUIRED_LABELS = {
     "대신(신학)", "대신(자전)", "목포가톨릭(간호)", "목포가톨릭(사복유아)", "한예종", "서울장신대",
     "아신대", "중앙승가대", "화성의과학대", "부산장신대", "영남신학대", "DGIST", "POSTECH", "UNIST",
     "한국침례신대", "KAIST", "영산선학대", "호남신대", "GIST", "KENTECH",
+    "경희(한의인)", "경희(한의자)", "성신(간호인)", "성신(간호자)",
+    "가천(일반1)", "가천(일반2)", "가천(의약)", "가천(한의)",
+    "대구한의(한의인)", "대구한의(한의자)", "동국WISE(한의1)", "동국WISE(한의2)",
+    "동의(한의확통)", "동의(한의미기)", "상지(한의A)", "상지(한의B)",
+    "동신(의보건)", "동신(한의)", "원광(의치약자)", "원광(한의자)",
+    "호원(간호)", "호원(일반)",
 }
 SCIENCE_INSTITUTES = {"DGIST", "UNIST", "KAIST", "KENTECH"}
 TRACK_CATEGORIES = {"인문", "자연", "예체능", "의약학"}
 RAW_TRACK_LABELS = {"인", "자", "경", "공", "의", "약", "한의", "간호", "A", "B", "C", "일반", "자전"}
+EXPECTED_SPLIT_CATEGORIES = {
+    "성신(간호인)": ["자연"],
+    "성신(간호자)": ["자연"],
+    "가천(일반1)": ["인문", "자연"],
+    "가천(일반2)": ["인문", "자연"],
+    "동신(의보건)": ["자연"],
+    "호원(간호)": ["자연"],
+}
+RESOLVED_SOURCE_CONFLICTS = {
+    "동국WISE(일반)": {
+        "previous": "학생부 정량 10% (일부), 일부 수능 90%와 학생부 10%",
+        "corrected": "학생부 공란, 국어·수학·영어·탐구2 중 상위 2개 각 50%",
+        "resolution": "원본 정시 시트 E228·N228이 공식 최종 모집요강에 맞게 수정되어 별도 덮어쓰기 없이 동기화",
+        "source": "https://ipsi.dongguk.ac.kr/resources/files/jungsi_2027.pdf",
+    },
+}
 
 
 def value(row: list, index: int) -> str:
     return str(row[index] if index < len(row) and row[index] is not None else "").strip()
+
+
+def normalized_percentage(item: str) -> str:
+    item = re.sub(r"(?<=\d)\.(?=%)", "", item)
+    item = re.sub(r"(?<=\d)\.(?=%\))", "", item)
+    grouped = re.fullmatch(r"\((\d+(?:\.\d+)?(?:\s*/\s*\d+(?:\.\d+)?)+)\)", item)
+    if grouped:
+        return "(" + " / ".join(f"{part.strip()}%" for part in grouped.group(1).split("/")) + ")"
+    return item
 
 
 reference = json.loads(REFERENCE_PATH.read_text(encoding="utf-8"))
@@ -35,7 +66,7 @@ if reference.get("headers") != EXPECTED_HEADERS:
 rows = reference.get("rows", [])
 profiles = data.get("profiles", [])
 labels = [value(row, 1) for row in rows]
-if len(rows) != 410:
+if len(rows) != 425:
     issues.append(f"원자료 행 수 {len(rows)}")
 if len(labels) != len(set(labels)):
     issues.append("원자료 대학별 분리 행 중복")
@@ -95,18 +126,20 @@ for index, row in enumerate(rows, 2):
         issues.append(f"{index}행 {label} 자연계열 분류 오류: {track_categories}")
     if track_code == "간호" and track_categories != ["자연"]:
         issues.append(f"{index}행 {label} 간호학과 분류 오류: {track_categories}")
+    if label in EXPECTED_SPLIT_CATEGORIES and track_categories != EXPECTED_SPLIT_CATEGORIES[label]:
+        issues.append(f"{index}행 {label} 세분 계열 분류 오류: {track_categories}")
     expected_fields = {
         "region": value(row, 0),
         "indicator": indicator,
         "studentRecord": student,
-        "korean": value(row, 5),
-        "math": value(row, 6),
-        "calculusGeometryBonus": value(row, 7),
-        "english": value(row, 8),
-        "inquiry2": value(row, 9),
-        "inquiry1": value(row, 10),
-        "socialBonus": value(row, 11),
-        "scienceBonus": value(row, 12),
+        "korean": normalized_percentage(value(row, 5)),
+        "math": normalized_percentage(value(row, 6)),
+        "calculusGeometryBonus": normalized_percentage(value(row, 7)),
+        "english": normalized_percentage(value(row, 8)),
+        "inquiry2": normalized_percentage(value(row, 9)),
+        "inquiry1": normalized_percentage(value(row, 10)),
+        "socialBonus": normalized_percentage(value(row, 11)),
+        "scienceBonus": normalized_percentage(value(row, 12)),
         "note": note,
     }
     for field, expected in expected_fields.items():
@@ -137,6 +170,10 @@ summary = {
     "social_study_advantage_rows": sum(value(row, 2) == "TRUE" for row in rows),
     "parenthesized_ratio_cells": sum(bool(re.fullmatch(r"\(\d+(?:\.\d+)?%\)", value(row, column))) for row in rows for column in (5, 6, 8, 9, 10)),
     "bonus_cells": sum(bool(value(row, column)) for row in rows for column in (7, 11, 12)),
+    "resolved_source_conflicts": [
+        {"label": label, **details}
+        for label, details in RESOLVED_SOURCE_CONFLICTS.items()
+    ],
     "issues": len(issues),
     "details": issues,
 }

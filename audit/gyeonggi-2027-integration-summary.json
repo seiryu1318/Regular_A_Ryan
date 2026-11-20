@@ -1,9 +1,9 @@
 {
   "rawRows": 4200,
   "logicalRows": 4130,
-  "confirmedRows": 3894,
-  "quarantinedRows": 236,
-  "officialNameConfirmed": 3536,
+  "confirmedRows": 3907,
+  "quarantinedRows": 223,
+  "officialNameConfirmed": 3549,
   "historicalNameConfirmed": 3572,
   "stageRowsMerged": 67,
   "linkedProfiles": 202,

@@ -3453,9 +3453,14 @@ function buildProfileAnalysis(
         ? `${region} 2027 정시`
         : '전국 2027 정시';
   if (rows.some((row) => row.reference2027)) {
-    const referenceRows = rows
-      .map((row) => row.reference2027)
-      .filter((row): row is Reference2027Row => Boolean(row));
+    const referenceRows = [
+      ...new Map(
+        rows
+          .map((row) => row.reference2027)
+          .filter((row): row is Reference2027Row => Boolean(row))
+          .map((row) => [row.sourceRow, row] as const),
+      ).values(),
+    ];
     const values = (
       key: keyof Pick<Reference2027Row, 'indicator' | 'studentRecord'>,
     ) =>
@@ -3845,6 +3850,7 @@ function mergeEquivalentAdmissionGroups(rows: MethodView[]) {
     const sharedSelection = stripAdmissionGroupPrefix(row.selectionDetail);
     const key = JSON.stringify([
       row.id,
+      row.reference2027?.sourceRow ?? null,
       row.examName,
       row.trackName,
       row.englishMethod,
@@ -9246,11 +9252,76 @@ function splitMethodsByDepartment(
   ];
 }
 
+function referenceSubtypeRank(unit: Unit2027, reference?: Reference2027Row) {
+  if (!reference?.trackCode) return 0;
+  const code = normalize(reference.trackCode);
+  const department = normalize(`${unit.department} ${unit.detailedTrack}`);
+  const mathChoices = normalize(unit.mathChoices);
+  const isKoreanMedicine = department.includes('한의예');
+  const isNursing = department.includes('간호');
+  const isMedicineOrPharmacy =
+    /(?:의예|약학)/.test(department) && !/(?:한의예|한약학)/.test(department);
+  const isHealth = /(?:간호|물리치료|보건)/.test(department);
+  const isHumanType =
+    unit.sourceTrack === '인문' || department.includes('인문');
+  const isNaturalType =
+    unit.sourceTrack === '자연' || department.includes('자연');
+  const requireMatch = (matches: boolean, score = 240) =>
+    matches ? score : -1000;
+
+  if (code === '한의인') return requireMatch(isKoreanMedicine && isHumanType);
+  if (code === '한의자') return requireMatch(isKoreanMedicine && isNaturalType);
+  if (code === '간호인') return requireMatch(isNursing && isHumanType);
+  if (code === '간호자') return requireMatch(isNursing && isNaturalType);
+  if (code === '한의1')
+    return requireMatch(isKoreanMedicine && /(?:유형)?1/.test(department));
+  if (code === '한의2')
+    return requireMatch(isKoreanMedicine && /(?:유형)?2/.test(department));
+  if (code === '한의확통')
+    return requireMatch(
+      isKoreanMedicine &&
+        (/(?:확률과통계|확통)/.test(department) ||
+          (mathChoices.includes('확통') && !mathChoices.includes('미적'))),
+    );
+  if (code === '한의미기')
+    return requireMatch(
+      isKoreanMedicine &&
+        (/(?:미적분|기하)/.test(department) ||
+          (/(?:미적|기하)/.test(mathChoices) && !mathChoices.includes('확통'))),
+    );
+  if (code === '한의a')
+    return requireMatch(isKoreanMedicine && /a형/.test(department));
+  if (code === '한의b')
+    return requireMatch(isKoreanMedicine && /b형/.test(department));
+  if (code === '의약') return requireMatch(isMedicineOrPharmacy, 220);
+  if (code === '한의') return requireMatch(isKoreanMedicine, 220);
+  if (code === '간호') return requireMatch(isNursing, 180);
+  if (code === '의보건')
+    return requireMatch(isHealth && !isKoreanMedicine, 200);
+  if (code === '의간')
+    return requireMatch(
+      isNursing || (department.includes('의예') && !isKoreanMedicine),
+      160,
+    );
+  if (code === '의치약자')
+    return requireMatch(isNaturalType && !isKoreanMedicine, 180);
+  const generalNumber = code.match(/^일반([12])$/)?.[1];
+  if (generalNumber)
+    return examTypeNumber(unit.examName) === generalNumber ? 100 : -1000;
+  if (reference.label === '성신(자연)' && isNursing) return -1000;
+  if (reference.label === '호원(일반)' && isNursing) return -1000;
+  if (reference.label === '동신(일반)' && (isKoreanMedicine || isHealth))
+    return -1000;
+  return 0;
+}
+
 function unitMethodIsCompatible(unit: Unit2027, method: MethodView) {
-  const groupMatches = atomicAdmissionGroups(method.admissionGroup).includes(
-    unit.admissionGroup,
-  );
+  const groupMatches =
+    (Boolean(method.reference2027) &&
+      /^(?:—|군외)$/.test(method.admissionGroup)) ||
+    atomicAdmissionGroups(method.admissionGroup).includes(unit.admissionGroup);
   if (!groupMatches) return false;
+  if (referenceSubtypeRank(unit, method.reference2027) <= -1000) return false;
   const methodCategories = methodTrackCategories(method);
   return unitFormulaCategories(unit).some((category) =>
     methodCategories.includes(category),
@@ -9294,17 +9365,24 @@ function unitMethodRank(unit: Unit2027, method: MethodView) {
     normalize(method.trackName).includes(normalize(unit.detailedTrack))
       ? 18
       : 0);
-  return groupRank + categoryRank + examRank + trackRank;
+  return (
+    groupRank +
+    categoryRank +
+    examRank +
+    trackRank +
+    referenceSubtypeRank(unit, method.reference2027)
+  );
 }
 
 function unitFormulaCategories(unit: Unit2027): TrackCategory[] {
-  if (unit.sourceTrack === '인문' || unit.sourceTrack === '자연')
-    return [unit.sourceTrack];
   const categories = (unit.trackCategories ?? [unit.trackCategory]).filter(
     (category): category is TrackCategory =>
       TRACK_CATEGORIES.includes(category as TrackCategory),
   );
-  return categories.length ? categories : ['인문'];
+  if (categories.length) return categories;
+  if (unit.sourceTrack === '인문' || unit.sourceTrack === '자연')
+    return [unit.sourceTrack];
+  return ['인문'];
 }
 
 function unitMethodSignature(method: MethodView) {

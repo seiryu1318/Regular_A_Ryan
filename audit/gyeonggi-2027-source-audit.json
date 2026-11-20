@@ -8,8 +8,8 @@
   "universities": 177,
   "excludedSpecialAdmissionRows": 3,
   "historicalNameConfirmed": 3572,
-  "displayConfirmed": 3894,
-  "unconfirmed": 236,
+  "displayConfirmed": 3907,
+  "unconfirmed": 223,
   "unconfirmedSample": [
     {
       "u": "감리교신학대",
@@ -573,24 +573,6 @@
       "u": "동국대(WISE)",
       "examName": "수능전형",
       "admissionGroup": "다군",
-      "department": "한의예과(유형1)",
-      "sourceRows": [
-        1418
-      ]
-    },
-    {
-      "u": "동국대(WISE)",
-      "examName": "수능전형",
-      "admissionGroup": "다군",
-      "department": "한의예과(유형2)",
-      "sourceRows": [
-        1406
-      ]
-    },
-    {
-      "u": "동국대(WISE)",
-      "examName": "수능전형",
-      "admissionGroup": "다군",
       "department": "호텔관광외식경영학부-조리외식경영학",
       "sourceRows": [
         1409
@@ -693,24 +675,6 @@
       "department": "보건의료행정학과",
       "sourceRows": [
         1515
-      ]
-    },
-    {
-      "u": "동의대",
-      "examName": "일반학생전형",
-      "admissionGroup": "나군",
-      "department": "한의예과(미적분/기하)",
-      "sourceRows": [
-        1523
-      ]
-    },
-    {
-      "u": "동의대",
-      "examName": "일반학생전형",
-      "admissionGroup": "나군",
-      "department": "한의예과(확률과통계)",
-      "sourceRows": [
-        1519
       ]
     },
     {
@@ -910,6 +874,42 @@
       "sourceRows": [
         1886
       ]
+    },
+    {
+      "u": "서울과기대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "경영학과-글로벌테크노경영(자연)",
+      "sourceRows": [
+        1892
+      ]
+    },
+    {
+      "u": "서울과기대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "산업공학과-ITM(인문)",
+      "sourceRows": [
+        1887
+      ]
+    },
+    {
+      "u": "서울과기대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "산업공학과-ITM(자연)",
+      "sourceRows": [
+        1893
+      ]
+    },
+    {
+      "u": "서울과기대",
+      "examName": "일반전형",
+      "admissionGroup": "가군",
+      "department": "산업공학과-산업정보시스템(인문)",
+      "sourceRows": [
+        1888
+      ]
     }
   ],
   "verification": {
@@ -917,7 +917,74 @@
     "officialProfilesChecked": 168,
     "officialProfilesSkipped": [],
     "officialExtractionErrors": {},
-    "officialNameConfirmed": 3536
+    "officialNameConfirmed": 3549,
+    "directlyVerifiedUnits": [
+      {
+        "u": "동국대(WISE)",
+        "department": "한의예과(유형1)",
+        "source": "https://ipsi.dongguk.ac.kr/resources/files/jungsi_2027.pdf"
+      },
+      {
+        "u": "동국대(WISE)",
+        "department": "한의예과(유형2)",
+        "source": "https://ipsi.dongguk.ac.kr/resources/files/jungsi_2027.pdf"
+      },
+      {
+        "u": "동의대",
+        "department": "한의예과(미적분/기하)",
+        "source": "2027_동의대_정시요강.pdf"
+      },
+      {
+        "u": "동의대",
+        "department": "한의예과(확률과통계)",
+        "source": "2027_동의대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "간호학과",
+        "source": "2027_호원대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "경영학과",
+        "source": "2027_호원대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "물리치료학과",
+        "source": "2027_호원대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "유아교육과",
+        "source": "2027_호원대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "응급구조학과",
+        "source": "2027_호원대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "자동차기계공학과",
+        "source": "2027_호원대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "치위생학과",
+        "source": "2027_호원대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "컴퓨터학과",
+        "source": "2027_호원대_정시요강.pdf"
+      },
+      {
+        "u": "호원대",
+        "department": "호텔외식조리학과",
+        "source": "2027_호원대_정시요강.pdf"
+      }
+    ]
   },
   "directoryLabels": 214,
   "directoryProfilesMatched": 202,

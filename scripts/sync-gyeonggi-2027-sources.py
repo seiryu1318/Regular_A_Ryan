@@ -33,6 +33,19 @@ COMMON_FLEXIBLE_PATTERN = re.compile(
     r"자유전공|자율전공|무전공|전공자유|자유융합"
 )
 
+DIRECTLY_VERIFIED_2027_UNITS = {
+    ("동국대(WISE)", "한의예과(유형1)"),
+    ("동국대(WISE)", "한의예과(유형2)"),
+    ("동의대", "한의예과(미적분/기하)"),
+    ("동의대", "한의예과(확률과통계)"),
+}
+DIRECTLY_VERIFIED_2027_UNIVERSITIES = {"호원대"}
+DIRECT_VERIFICATION_SOURCES = {
+    "동국대(WISE)": "https://ipsi.dongguk.ac.kr/resources/files/jungsi_2027.pdf",
+    "동의대": "2027_동의대_정시요강.pdf",
+    "호원대": "2027_호원대_정시요강.pdf",
+}
+
 SOURCE_ALIASES = {
     "강원대(강릉원주)": "강원대(강릉원주대)",
     "강원대(삼척)": "강원대",
@@ -522,6 +535,25 @@ def main() -> None:
         }
     else:
         verification = verify_official_names(units, data["profiles"], args.workers)
+
+    directly_verified = []
+    for unit in units:
+        key = (str(unit.get("u")), str(unit.get("department")))
+        if (
+            key in DIRECTLY_VERIFIED_2027_UNITS
+            or key[0] in DIRECTLY_VERIFIED_2027_UNIVERSITIES
+        ):
+            unit["officialNameConfirmed"] = True
+            unit["displayConfirmed"] = True
+            directly_verified.append({
+                "u": key[0],
+                "department": key[1],
+                "source": DIRECT_VERIFICATION_SOURCES[key[0]],
+            })
+    verification["officialNameConfirmed"] = sum(
+        bool(unit.get("officialNameConfirmed")) for unit in units
+    )
+    verification["directlyVerifiedUnits"] = directly_verified
 
     directory = extract_pdf_directory(PDF_SOURCE)
     matched_directory_profiles, unmatched_directory_labels, directory_conflicts = attach_directory(

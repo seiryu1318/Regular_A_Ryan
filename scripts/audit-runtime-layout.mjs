@@ -143,6 +143,18 @@ async function setSearch(cdp, placeholder, value) {
   await wait(350);
 }
 
+async function methodSearchSnapshot(cdp, query) {
+  await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', query);
+  return cdp.evaluate(`(() => ({
+    query: ${JSON.stringify(query)},
+    rows: document.querySelectorAll('.method-row').length,
+    primary: [...document.querySelectorAll('.method-row')]
+      .map((node) => node.innerText.trim()),
+    summary: [...document.querySelectorAll('.method-summary-row')]
+      .map((node) => node.innerText.trim()),
+  }))()`);
+}
+
 async function auditBrandHomeNavigation(cdp, clickValue, enterValue) {
   const placeholder = '대학, 모집단위, 전형명 검색';
   const originalValue = await cdp.evaluate(`(() => {
@@ -351,6 +363,27 @@ try {
     maxSummaryCells: Math.max(0, ...[...document.querySelectorAll('.method-summary-grid')]
       .map((node) => node.children.length)),
   }))()`);
+  const pcSplitRows = {};
+  for (const query of [
+    '경희대 한의예과',
+    '성신여대 간호학과',
+    '가천대 금융빅데이터학부',
+    '가천대 의예과',
+    '가천대 한의예과',
+    '대구한의대 한의예과',
+    '동국대(WISE) 한의예과',
+    '동의대 한의예과',
+    '상지대 한의예과',
+    '동신대 한의예과',
+    '원광대 한의예과',
+    '호원대 간호학과',
+    '호원대 경영학과',
+  ])
+    pcSplitRows[query] = await methodSearchSnapshot(cdp, query);
+  await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', '');
+  const pcAnalysisText = await cdp.evaluate(
+    `document.querySelector('.analysis-disclosure')?.textContent ?? ''`,
+  );
   await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', '간호학');
   const nursing = await cdp.evaluate(`(() => ({
     rows: document.querySelectorAll('.method-row').length,
@@ -439,6 +472,14 @@ try {
     maxSummaryCells: Math.max(0, ...[...document.querySelectorAll('.method-summary-grid')]
       .map((node) => node.children.length)),
   }))()`);
+  const mobileSplitRows = {};
+  for (const query of [
+    '성신여대 간호학과',
+    '가천대 한의예과',
+    '호원대 간호학과',
+  ])
+    mobileSplitRows[query] = await methodSearchSnapshot(cdp, query);
+  await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', '간호학');
   const mobileForecastTermsInMethods = await cdp.evaluate(
     `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
   );
@@ -483,6 +524,50 @@ try {
   )
     issues.push('Nursing search includes unrelated department');
   if (!mobileNursingRows) issues.push('Mobile nursing search empty');
+  const splitExpectations = [
+    ['경희대 한의예과', 2, ['한의예과(인문)', '한의예과(자연)', '35%', '40%']],
+    [
+      '성신여대 간호학과',
+      2,
+      ['간호학과(인문)', '간호학과(자연)', '20%', '30%'],
+    ],
+    ['가천대 금융빅데이터학부', 2, ['일반전형1', '일반전형2', '(40% / 30%)']],
+    ['가천대 의예과', 1, ['의예과', '25%', '30%']],
+    ['가천대 한의예과', 1, ['한의예과', '25%', '30%']],
+    ['대구한의대 한의예과', 2, ['한의예과(인문)', '한의예과(자연)']],
+    ['동국대(WISE) 한의예과', 2, ['한의예과(유형1)', '한의예과(유형2)']],
+    ['동의대 한의예과', 2, ['한의예과(미적분/기하)', '한의예과(확률과통계)']],
+    ['상지대 한의예과', 2, ['한의예과(A형)', '한의예과(B형)']],
+    ['동신대 한의예과', 1, ['한의예과', '25%']],
+    [
+      '원광대 한의예과',
+      2,
+      ['한의예과(인문)', '한의예과(자연)', '32.43%', '27.03%'],
+    ],
+    ['호원대 간호학과', 1, ['간호학과', '(50%)']],
+    ['호원대 경영학과', 1, ['경영학과', '(50%)']],
+  ];
+  for (const [query, expectedRows, requiredText] of splitExpectations) {
+    const snapshot = pcSplitRows[query];
+    const text = [
+      ...(snapshot?.primary ?? []),
+      ...(snapshot?.summary ?? []),
+    ].join(' ');
+    if (!snapshot || snapshot.rows !== expectedRows)
+      issues.push(`PC split search mismatch: ${String(query)}`);
+    else if (!requiredText.every((token) => text.includes(token)))
+      issues.push(`PC split search detail mismatch: ${String(query)}`);
+  }
+  for (const query of [
+    '성신여대 간호학과',
+    '가천대 한의예과',
+    '호원대 간호학과',
+  ]) {
+    if (mobileSplitRows[query]?.rows !== pcSplitRows[query]?.rows)
+      issues.push(`Mobile split search mismatch: ${query}`);
+  }
+  if (!pcAnalysisText.replaceAll(/\s/g, '').includes('반영유형425'))
+    issues.push(`2027 reference row count mismatch: ${pcAnalysisText}`);
   if (
     !simplifiedPc.advancedFiltersClosed ||
     !simplifiedPc.analysisClosed ||
@@ -568,6 +653,9 @@ try {
     initialMobileScoreRows,
     nursing,
     mobileNursingRows,
+    pcSplitRows,
+    mobileSplitRows,
+    pcAnalysisText,
     centralMedicine,
     flexibleTracks,
     pcResults,
@@ -585,6 +673,7 @@ try {
 } finally {
   cdp?.close();
   browser?.kill();
+  server.closeAllConnections?.();
   await close(server);
   await wait(250);
   try {
