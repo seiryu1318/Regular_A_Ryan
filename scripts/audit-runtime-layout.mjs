@@ -17,6 +17,8 @@ const edge =
 const output = join(root, 'audit', 'runtime-layout-summary.json');
 const temp = mkdtempSync(join(tmpdir(), 'regular-ryan-runtime-'));
 const screenshots = {
+  pcChanges: join(tmpdir(), 'regular-ryan-runtime-pc-changes.png'),
+  mobileChanges: join(tmpdir(), 'regular-ryan-runtime-mobile-changes.png'),
   pc: join(tmpdir(), 'regular-ryan-runtime-pc.png'),
   mobile: join(tmpdir(), 'regular-ryan-runtime-mobile.png'),
   pcMethods: join(tmpdir(), 'regular-ryan-runtime-pc-methods.png'),
@@ -157,6 +159,94 @@ async function methodSearchSnapshot(cdp, query) {
   }))()`);
 }
 
+async function auditChangeCategories(cdp, initial, screenshot) {
+  const categories = ['모집인원 변동', '모집군(모집시기) 변동', '기타 변동'];
+  const placeholder = '대학, 모집단위, 변경 내용 검색';
+  const choose = async (label) => {
+    const clicked = await cdp.evaluate(`(() => {
+      const tabs = [...document.querySelectorAll('.change-category-tabs [role=tab]')];
+      const tab = tabs.find((node) => node.getAttribute('aria-label') === ${JSON.stringify(label)});
+      if (!tab) return false;
+      tab.click();
+      return true;
+    })()`);
+    if (!clicked) throw new Error('Missing category tab: ' + label);
+    await wait(150);
+  };
+  const snapshot = () =>
+    cdp.evaluate(`(() => {
+      const nav = document.querySelector('.change-category-tabs');
+      const active = nav?.querySelector('[aria-selected=true]');
+      const panel = active && document.getElementById(active.getAttribute('aria-controls'));
+      const cards = [...(panel?.querySelectorAll('[data-change-id]') ?? [])];
+      return {
+        active: active?.getAttribute('aria-label') ?? '',
+        panelVisible: Boolean(panel && !panel.hidden),
+        totals: [...(nav?.querySelectorAll('.change-tab-count') ?? [])].map((node) => Number(node.textContent)),
+        ids: cards.map((node) => Number(node.dataset.changeId)),
+        years: cards.every((card) => [...card.querySelectorAll('h4')].map((year) => year.textContent).join('/') === '2026/2027'),
+        text: panel?.innerText ?? '',
+        width: innerWidth,
+        scrollWidth: Math.max(document.body.scrollWidth, document.documentElement.scrollWidth),
+        navFits: Boolean(nav && nav.scrollWidth <= nav.clientWidth + 1),
+      };
+    })()`);
+  const start = await snapshot();
+  const all = [];
+  for (const label of categories) {
+    await choose(label);
+    for (let i = 0; i < 6; i += 1) {
+      const expanded = await cdp.evaluate(`(() => {
+        const panel = document.querySelector('.change-section-panel:not([hidden])');
+        const button = [...(panel?.querySelectorAll('button') ?? [])].find((node) => node.textContent.trim() === '펼치기');
+        if (!button) return false;
+        button.click();
+        return true;
+      })()`);
+      if (!expanded) break;
+      await wait(90);
+    }
+    all.push(await snapshot());
+  }
+  await choose(categories[0]);
+  await setSearch(cdp, placeholder, '경희대 국제학과');
+  const searchedQuota = await snapshot();
+  await choose(categories[1]);
+  const searchedTiming = await snapshot();
+  await setSearch(cdp, placeholder, '');
+  await capture(cdp, screenshot);
+  await choose(categories[0]);
+  const ids = all.flatMap((entry) => entry.ids);
+  return {
+    initial: start.ids.length,
+    totals: start.totals,
+    groups: all.map(({ active, ids }) => ({ active, ids })),
+    passes:
+      start.active === categories[0] &&
+      start.ids.length === Math.min(4, initial) &&
+      start.totals.join('/') === '4/9/13' &&
+      all.every(
+        (entry, i) =>
+          entry.active === categories[i] &&
+          entry.ids.length === start.totals[i] &&
+          entry.years &&
+          entry.panelVisible &&
+          entry.navFits &&
+          entry.scrollWidth <= entry.width + 1,
+      ) &&
+      ids.length === 26 &&
+      new Set(ids).size === 26 &&
+      all[0].ids.includes(20) &&
+      all[0].text.includes('309명') &&
+      all[0].text.includes('149명') &&
+      all[0].text.includes('147명') &&
+      all[1].ids.includes(6) &&
+      all[1].text.includes('수시모집으로 이동') &&
+      searchedQuota.ids.length === 0 &&
+      searchedTiming.ids.join() === '7',
+  };
+}
+
 async function expandedMethodSnapshot(cdp, query) {
   const snapshot = await methodSearchSnapshot(cdp, query);
   await cdp.evaluate(`(() => {
@@ -217,7 +307,7 @@ async function auditBrandHomeNavigation(cdp, clickValue, enterValue) {
   })()`);
   await wait(250);
   const clickHome = await cdp.evaluate(`(() => ({
-    tab: document.querySelector('[role=tab][aria-selected=true]')?.textContent?.trim() ?? '',
+    tab: document.querySelector('.workspace > .tabs-list [role=tab][aria-selected=true]')?.textContent?.trim() ?? '',
     url: location.href,
     marker: window.__brandHomeAuditMarker ?? '',
   }))()`);
@@ -256,7 +346,7 @@ async function auditBrandHomeNavigation(cdp, clickValue, enterValue) {
   });
   await wait(250);
   const enterHome = await cdp.evaluate(`(() => ({
-    tab: document.querySelector('[role=tab][aria-selected=true]')?.textContent?.trim() ?? '',
+    tab: document.querySelector('.workspace > .tabs-list [role=tab][aria-selected=true]')?.textContent?.trim() ?? '',
     url: location.href,
     marker: window.__brandHomeAuditMarker ?? '',
   }))()`);
@@ -376,12 +466,13 @@ try {
     title: document.title,
     width: innerWidth,
     scrollWidth: Math.max(document.body.scrollWidth, document.documentElement.scrollWidth),
-    nav: [...document.querySelectorAll('[role=tab]')].map((node) => node.textContent.trim()),
+    nav: [...document.querySelectorAll('.workspace > .tabs-list [role=tab]')].map((node) => node.textContent.trim()),
     mobileLink: [...document.querySelectorAll('a')].find((node) => node.textContent.includes('모바일 버전'))?.href ?? '',
     portalLink: [...document.querySelectorAll('a')].find((node) => node.textContent.includes('라이언의 대입포털로 돌아가기'))?.href ?? '',
     headerAligns: [...document.querySelectorAll('thead th')].map((node) => getComputedStyle(node).textAlign),
     changeSummaryClosed: !document.querySelector('.change-summary-disclosure')?.open,
   }))()`);
+  const pcChanges = await auditChangeCategories(cdp, 10, screenshots.pcChanges);
   await clickText(cdp, '2027 반영방법');
   const initialPcRows = await cdp.evaluate(
     `document.querySelectorAll('.method-row').length`,
@@ -495,6 +586,11 @@ try {
       .map((node) => Number.parseFloat(getComputedStyle(node).fontSize)),
     changeSummaryClosed: !document.querySelector('.change-summary-disclosure')?.open,
   }))()`);
+  const mobileChanges = await auditChangeCategories(
+    cdp,
+    5,
+    screenshots.mobileChanges,
+  );
   await clickText(cdp, '2027 반영방법');
   const initialMobileRows = await cdp.evaluate(
     `document.querySelectorAll('.method-row').length`,
@@ -742,10 +838,14 @@ try {
     issues.push('Mobile brand home navigation mismatch');
   if (!pc.changeSummaryClosed || !mobile.changeSummaryClosed)
     issues.push('Change summary is open by default');
+  if (!pcChanges.passes || !mobileChanges.passes)
+    issues.push('Change tabs category, layout or search mismatch');
 
   report = {
     pc,
     responsivePc,
+    pcChanges,
+    mobileChanges,
     mobile,
     initialPcRows,
     initialMobileRows,

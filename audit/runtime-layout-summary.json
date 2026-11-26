@@ -2,7 +2,7 @@
   "pc": {
     "title": "라이언의 2027 정시모집",
     "width": 1416,
-    "scrollWidth": 1401,
+    "scrollWidth": 1416,
     "nav": [
       "일정",
       "2027 변동사항",
@@ -11,15 +11,7 @@
     ],
     "mobileLink": "https://seiryu1318.github.io/Regular_A_RyanM/",
     "portalLink": "https://seiryu1318.github.io/admission_Ryan/",
-    "headerAligns": [
-      "center",
-      "center",
-      "center",
-      "center",
-      "center",
-      "center",
-      "center"
-    ],
+    "headerAligns": [],
     "changeSummaryClosed": true
   },
   "responsivePc": [
@@ -40,6 +32,110 @@
       "scrollWidth": 753
     }
   ],
+  "pcChanges": {
+    "initial": 4,
+    "totals": [
+      4,
+      9,
+      13
+    ],
+    "groups": [
+      {
+        "active": "모집인원 변동",
+        "ids": [
+          2,
+          20,
+          42,
+          68
+        ]
+      },
+      {
+        "active": "모집군(모집시기) 변동",
+        "ids": [
+          3,
+          6,
+          7,
+          22,
+          23,
+          28,
+          47,
+          75,
+          80
+        ]
+      },
+      {
+        "active": "기타 변동",
+        "ids": [
+          10,
+          13,
+          17,
+          18,
+          19,
+          21,
+          32,
+          45,
+          46,
+          54,
+          55,
+          66,
+          78
+        ]
+      }
+    ],
+    "passes": true
+  },
+  "mobileChanges": {
+    "initial": 4,
+    "totals": [
+      4,
+      9,
+      13
+    ],
+    "groups": [
+      {
+        "active": "모집인원 변동",
+        "ids": [
+          2,
+          20,
+          42,
+          68
+        ]
+      },
+      {
+        "active": "모집군(모집시기) 변동",
+        "ids": [
+          3,
+          6,
+          7,
+          22,
+          23,
+          28,
+          47,
+          75,
+          80
+        ]
+      },
+      {
+        "active": "기타 변동",
+        "ids": [
+          10,
+          13,
+          17,
+          18,
+          19,
+          21,
+          32,
+          45,
+          46,
+          54,
+          55,
+          66,
+          78
+        ]
+      }
+    ],
+    "passes": true
+  },
   "mobile": {
     "title": "라이언의 2027 정시모집",
     "width": 390,
@@ -532,6 +628,8 @@
     "maxSummaryCells": 5
   },
   "screenshots": {
+    "pcChanges": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-pc-changes.png",
+    "mobileChanges": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-mobile-changes.png",
     "pc": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-pc.png",
     "mobile": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-mobile.png",
     "pcMethods": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-pc-methods.png",

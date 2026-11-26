@@ -17,8 +17,8 @@ def issue(issues: list[dict], tab: str, code: str, detail: str) -> None:
     issues.append({"tab": tab, "code": code, "detail": detail})
 
 
-def regular_change_ids(source: str) -> set[int]:
-    match = re.search(r"const REGULAR_CHANGE_IDS = new Set\(\[(.*?)\]\);", source, re.S)
+def change_id_set(source: str, name: str) -> set[int]:
+    match = re.search(rf"const {name} = new Set\(\[(.*?)\]\);", source, re.S)
     if not match:
         return set()
     return {int(value) for value in re.findall(r"\d+", match.group(1))}
@@ -47,7 +47,16 @@ def main() -> None:
 
     # 정시 분석 탭: 기준 시트 동기화 행이 있으면 그 행 전체를 검사한다.
     reference_changes = [row for row in data.get("changes", []) if "docs.google.com/spreadsheets" in str(row.get("sourceFile", ""))]
-    change_ids = {int(row["id"]) for row in reference_changes} or regular_change_ids(app_source)
+    change_ids = {int(row["id"]) for row in reference_changes} or change_id_set(app_source, "REGULAR_CHANGE_IDS")
+    quota_ids = change_id_set(app_source, "QUOTA_CHANGE_IDS")
+    timing_ids = change_id_set(app_source, "TIMING_CHANGE_IDS")
+    if not quota_ids or not timing_ids or quota_ids & timing_ids or (quota_ids | timing_ids) - change_ids:
+        issue(issues, "정시 변화", "category-partition", f"모집인원 {sorted(quota_ids)}, 모집시기 {sorted(timing_ids)}")
+    change_categories = {
+        "모집인원 변동": len(change_ids & quota_ids),
+        "모집군(모집시기) 변동": len(change_ids & timing_ids),
+        "기타 변동": len(change_ids - quota_ids - timing_ids),
+    }
     change_by_id = {row.get("id"): row for row in data.get("changes", [])}
     if not change_ids:
         issue(issues, "정시 변화", "visible-id-parser", "화면 노출 ID 목록을 읽지 못함")
@@ -281,6 +290,7 @@ def main() -> None:
             "3개년 입시결과": len(scores),
             "일정": len(schedule),
         },
+        "changeCategories": change_categories,
         "missingPublishedValues": {
             "percentileBothBlank": missing_percentile,
             "conversionBothBlank": missing_conversion,

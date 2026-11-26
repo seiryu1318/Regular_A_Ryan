@@ -4,7 +4,6 @@
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   ArrowDown,
-  ArrowRight,
   ArrowUp,
   ArrowUpDown,
   CalendarDays,
@@ -82,6 +81,21 @@ type ChangeRow = {
   sourceFile: string;
   referenceLabel?: string;
 };
+
+const CHANGE_SECTIONS = [
+  { value: 'quota', label: '모집인원 변동' },
+  { value: 'timing', label: '모집군(모집시기) 변동' },
+  { value: 'other', label: '기타 변동' },
+] as const;
+type ChangeSection = (typeof CHANGE_SECTIONS)[number]['value'];
+const QUOTA_CHANGE_IDS = new Set([2, 20, 42, 68]);
+const TIMING_CHANGE_IDS = new Set([3, 6, 7, 22, 23, 28, 47, 75, 80]);
+
+function changeSectionFor(row: ChangeRow): ChangeSection {
+  if (QUOTA_CHANGE_IDS.has(row.id)) return 'quota';
+  if (TIMING_CHANGE_IDS.has(row.id)) return 'timing';
+  return 'other';
+}
 
 type Reference2027Row = {
   label: string;
@@ -331,23 +345,77 @@ const MAJOR_SEOUL_UNIVERSITIES = new Set([
   '이화여대',
 ]);
 const REGULAR_CHANGE_IDS = new Set([
-  2, 3, 6, 7, 10, 13, 17, 18, 19, 20, 21, 22, 23, 25, 28, 32, 42, 45, 46, 47,
-  54, 55, 66, 68, 72, 75, 78, 80,
+  2, 3, 6, 7, 10, 13, 17, 18, 19, 20, 21, 22, 23, 28, 32, 42, 45, 46, 47, 54,
+  55, 66, 68, 75, 78, 80,
 ]);
+const DONGGUK_REGULAR_GUIDE =
+  'https://ipsi.dongguk.edu/upload/file/20260916161730JHGHCW.PDF';
 const REGULAR_CHANGE_REWRITES: Record<number, Partial<ChangeRow>> = {
   2: { previous: '이월 인원만 선발' },
-  6: { category: '모집단위', current: '환경조경디자인학과: 정시모집 미선발' },
-  19: { current: '수능우수전형 Ⅱ 신설: 수능 90 + 학생부 10' },
-  22: { current: '의료인공지능공학과: 수능일반 14명 선발' },
-  23: { current: '지능형네트워크융합학과: 수능일반 8명 선발' },
-  25: { current: '경영대학: 수능일반 99명 선발' },
-  68: {
-    current: '무전공학부(진리자유학부) 신설: 정시 147명 선발',
-    previous: '정시 선발인원 미공개',
+  3: {
+    current:
+      '가군: 사회환경공학부, 전기전자공학부, 컴퓨터공학과, 산업공학과 / 다군: 사회과학대학융합전공학부, 융합생명과학대학자유전공학부, 영상디자인학과',
+    sourceFile:
+      'https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&searchSyr=2027&unvCd=0000052',
   },
-  72: {
-    current: '생명시스템대학 생명과학부 광역모집: 정시 일반전형 14명 선발',
-    previous: '생명과학부: 정시 일반전형 선발',
+  6: {
+    category: '모집시기',
+    current: '환경조경디자인학과: 수시모집으로 이동 (정시 미선발)',
+    sourceFile:
+      'https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&searchSyr=2027&unvCd=0000066',
+  },
+  10: {
+    current: '정시 스포츠융합과학과 일괄합산: 수능 40% + 학생부 30% + 실기 30%',
+    sourceFile:
+      'https://iphak.jcoresystem.kr/upload_data/mojib/20261007090613_6.pdf',
+  },
+  19: { current: '수능우수전형 Ⅱ 신설: 수능 90 + 학생부 10' },
+  20: {
+    category: '모집인원',
+    previous: '다군 정원 내 일반전형 330명(최초 모집요강 기준)',
+    current:
+      '다군 정원 내 일반전형 309명(광역모집 242명, 사범대학 67명). 수능 90% + 학생부평가 10%.',
+    sourceFile: DONGGUK_REGULAR_GUIDE,
+  },
+  22: {
+    category: '모집군',
+    previous: '의료인공지능공학과 수능 일반전형: 다군, 15명',
+    current: '의료인공지능공학과 수능 일반전형: 가군, 14명',
+    sourceFile: DONGGUK_REGULAR_GUIDE,
+  },
+  23: {
+    category: '모집군',
+    previous: '지능형네트워크융합학과 수능 일반전형: 다군, 9명',
+    current: '지능형네트워크융합학과 수능 일반전형: 나군, 8명',
+    sourceFile: DONGGUK_REGULAR_GUIDE,
+  },
+  42: {
+    category: '모집인원',
+    previous: '무대패션전공 정시 7명',
+    current: '무대패션전공 정시 10명 (+3명)',
+    sourceFile:
+      'https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&searchSyr=2027&unvCd=0000121',
+  },
+  47: {
+    previous:
+      '다군: 융합응용화학과, 융합바이오헬스전공, 지능형반도체전공, 첨단인공지능전공 / 가군: 음악학과',
+    current:
+      '가군: 융합바이오헬스전공, 지능형반도체전공 / 나군: 융합응용화학과, 첨단인공지능전공, 음악학과',
+    sourceFile:
+      'https://www.uos.ac.kr/admissionNew/html/jungsi/info.do?menuid=2002002001000000000',
+  },
+  68: {
+    category: '모집인원',
+    previous: '진리자유학부 가군 일반전형 149명(인문 73명, 자연 76명)',
+    current: '진리자유학부 가군 일반전형 147명(인문 72명, 자연 75명)',
+    sourceFile:
+      'https://admission.yonsei.ac.kr/seoul/upload/guide/20260901184445WSGU8N.PDF',
+  },
+  80: {
+    previous: '상상력인재학부: 나군',
+    current: '상상력인재학부: 다군',
+    sourceFile:
+      'https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&searchSyr=2027&unvCd=0000200',
   },
 };
 const SCORE_PROFILE_ALIASES: Record<string, string> = {
@@ -426,7 +494,7 @@ export default function Home() {
 
   const [changeQuery, setChangeQuery] = useState('');
   const [changeUniversity, setChangeUniversity] = useState('전체');
-  const [changeCategory, setChangeCategory] = useState('전체');
+  const [changeSection, setChangeSection] = useState<ChangeSection>('quota');
   const [changeSort, setChangeSort] = useState<SortState>({
     key: 'u',
     direction: 'asc',
@@ -625,10 +693,6 @@ export default function Home() {
     () => unique(regularChanges.map((row) => row.u)),
     [regularChanges],
   );
-  const changeCategories = useMemo(
-    () => unique(regularChanges.map((row) => row.category)),
-    [regularChanges],
-  );
   const profileRegions = useMemo(
     () =>
       regionOptions(
@@ -690,33 +754,36 @@ export default function Home() {
     return TRACK_CATEGORIES.filter((track) => available.has(track));
   }, [scoreViews]);
 
-  const changeRows = useMemo(() => {
-    const query = normalize(changeQuery);
+  const changeRowsBySection = useMemo(() => {
+    const terms = changeQuery
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(normalize);
     const filtered = regularChanges.filter((row) => {
-      const matchesQuery =
-        !query ||
-        normalize(
-          `${row.u} ${row.category} ${row.current} ${row.previous}`,
-        ).includes(query);
+      const searchable = normalize(
+        `${row.u} ${row.category} ${row.current} ${row.previous}`,
+      );
       return (
-        matchesQuery &&
-        (changeUniversity === '전체' || row.u === changeUniversity) &&
-        (changeCategory === '전체' || row.category === changeCategory)
+        terms.every((term) => searchable.includes(term)) &&
+        (changeUniversity === '전체' || row.u === changeUniversity)
       );
     });
-    return sortRows(filtered, changeSort, {
+    const sorted = sortRows(filtered, changeSort, {
       u: (row) => row.u,
       category: (row) => row.category,
       previous: (row) => row.previous,
       current: (row) => row.current,
     });
-  }, [
-    changeCategory,
-    changeQuery,
-    changeSort,
-    changeUniversity,
-    regularChanges,
-  ]);
+    const grouped: Record<ChangeSection, ChangeRow[]> = {
+      quota: [],
+      timing: [],
+      other: [],
+    };
+    for (const row of sorted) grouped[changeSectionFor(row)].push(row);
+    return grouped;
+  }, [changeQuery, changeSort, changeUniversity, regularChanges]);
+  const changeRows = changeRowsBySection[changeSection];
 
   const matchingProfiles = useMemo(() => {
     const query = normalize(profileQuery);
@@ -925,7 +992,6 @@ export default function Home() {
     if (tab === 'changes') {
       setChangeQuery('');
       setChangeUniversity('전체');
-      setChangeCategory('전체');
       setChangeSort({ key: 'u', direction: 'asc' });
       setChangeListBatch(1);
       setRecordListBatch(1);
@@ -966,11 +1032,15 @@ export default function Home() {
 
   function exportCurrent() {
     if (tab === 'changes') {
+      const sectionLabel = CHANGE_SECTIONS.find(
+        ({ value }) => value === changeSection,
+      )?.label;
       downloadCsv(
-        '2027_정시_변화.csv',
-        ['대학', '구분', '2026학년도', '2027학년도'],
+        `2027_정시_${sectionLabel}.csv`,
+        ['대학', '카테고리', '구분', '2026학년도', '2027학년도'],
         changeRows.map((row) => [
           row.u,
+          sectionLabel,
           row.category,
           row.previous,
           row.current,
@@ -1221,186 +1291,222 @@ export default function Home() {
           </TabsList>
 
           <TabsContent value="changes" className="tab-stack">
-            <details className="change-summary-disclosure">
-              <summary>전국 모집 요약</summary>
-              <div className="change-summary-content">
-                <section className="fact-grid">
-                  <Fact
-                    icon={<Landmark />}
-                    value={formatNumber(data.overview.totalRegular)}
-                    label="전국 정시 모집인원"
-                    note={`전년보다 ${formatNumber(Math.abs(data.overview.change))}명 감소`}
-                  />
-                  <Fact
-                    icon={<Sparkles />}
-                    value={`${data.overview.examFocusedRate}%`}
-                    label="수능위주 비율"
-                    note={`${formatNumber(data.overview.examFocused)}명`}
-                  />
-                  <Fact
-                    icon={<ArrowUp />}
-                    value={formatNumber(data.overview.groups.나)}
-                    label="나군 모집인원"
-                    note="가, 나, 다군 중 가장 많음"
-                  />
-                  <Fact
-                    icon={<ArrowDown />}
-                    value={formatNumber(data.overview.groups.다)}
-                    label="다군 모집인원"
-                    note="가, 나, 다군 중 가장 적음"
-                  />
-                </section>
-
-                <section className="notice-grid">
-                  <article>
-                    <strong>감소 인원의 75%가 비수도권</strong>
-                    <span>
-                      전국 감소 1,197명 중 비수도권이 903명 줄었습니다.
+            <Tabs
+              value={changeSection}
+              onValueChange={(value: ChangeSection) => {
+                setChangeSection(value);
+                setChangeListBatch(1);
+              }}
+              className="change-workspace"
+            >
+              <TabsList
+                aria-label="정시 변동 카테고리"
+                className="change-category-tabs"
+              >
+                {CHANGE_SECTIONS.map(({ value, label }) => (
+                  <TabsTrigger key={value} value={value} aria-label={label}>
+                    <span>{label}</span>
+                    <span className="change-tab-count" aria-hidden="true">
+                      {changeRowsBySection[value].length}
                     </span>
-                  </article>
-                  <article>
-                    <strong>학생부 반영 대학은 산식 확인</strong>
-                    <span>
-                      교과 정량, 교과평가, 출결처럼 반영 방식이 서로 다릅니다.
-                    </span>
-                  </article>
-                  <article>
-                    <strong>모집군 변경은 지원 조합에 영향</strong>
-                    <span>
-                      같은 대학 안에서도 모집단위별 가군, 나군, 다군 이동이
-                      있습니다.
-                    </span>
-                  </article>
-                </section>
-              </div>
-            </details>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
 
-            <FilterPanel>
-              <SearchField
-                value={changeQuery}
-                onChange={setChangeQuery}
-                placeholder="대학, 모집단위, 변경 내용 검색"
-              />
-              <FilterSelect
-                label="대학"
-                value={changeUniversity}
-                onChange={setChangeUniversity}
-                options={changeUniversities}
-              />
-              <FilterSelect
-                label="구분"
-                value={changeCategory}
-                onChange={setChangeCategory}
-                options={changeCategories}
-              />
-            </FilterPanel>
-
-            <section className="data-panel">
-              <SectionHead title="2027학년도 정시 변경사항" />
-              <Table className="data-table changes-table">
-                <TableHeader>
-                  <TableRow>
-                    <SortableHead
-                      label="대학"
-                      column="u"
-                      sort={changeSort}
-                      onSort={setChangeSort}
-                    />
-                    <SortableHead
-                      label="구분"
-                      column="category"
-                      sort={changeSort}
-                      onSort={setChangeSort}
-                    />
-                    <TableHead>연도</TableHead>
-                    <SortableHead
-                      label="정시 변경 내용"
-                      column="current"
-                      sort={changeSort}
-                      onSort={setChangeSort}
-                    />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleChangeRows.map((row) => (
-                    <Fragment key={row.id}>
-                      <TableRow className="change-year-row is-previous">
-                        <TableCell
-                          rowSpan={2}
-                          className="university-cell change-group-cell"
-                        >
-                          {row.u}
-                        </TableCell>
-                        <TableCell
-                          rowSpan={2}
-                          className={`change-group-cell change-category-cell ${changeCategoryClass(row.category)}`}
-                        >
-                          <span>{row.category}</span>
-                        </TableCell>
-                        <TableCell className="change-year-cell">
-                          <span>2026</span>
-                        </TableCell>
-                        <TableCell className="wrap-cell previous-cell">
-                          <ChangeContent text={row.previous} current={false} />
-                        </TableCell>
-                      </TableRow>
-                      <TableRow className="change-year-row is-current">
-                        <TableCell className="change-year-cell">
-                          <span>2027</span>
-                        </TableCell>
-                        <TableCell className="wrap-cell current-cell">
-                          <ChangeContent text={row.current} current />
-                        </TableCell>
-                      </TableRow>
-                    </Fragment>
-                  ))}
-                </TableBody>
-              </Table>
-              {changeRows.length === 0 ? (
-                <EmptyState />
-              ) : (
-                <ListDisclosure
-                  total={changeRows.length}
-                  shown={visibleChangeRows.length}
-                  initial={initialListSize}
-                  onExpand={() => setChangeListBatch((value) => value + 1)}
-                  onCollapse={() => setChangeListBatch(1)}
+              <FilterPanel className="changes-filter-panel">
+                <SearchField
+                  value={changeQuery}
+                  onChange={(value) => {
+                    setChangeQuery(value);
+                    setChangeListBatch(1);
+                  }}
+                  placeholder="대학, 모집단위, 변경 내용 검색"
                 />
-              )}
-            </section>
+                <FilterSelect
+                  label="대학"
+                  value={changeUniversity}
+                  onChange={(value) => {
+                    setChangeUniversity(value);
+                    setChangeListBatch(1);
+                  }}
+                  options={changeUniversities}
+                />
+                <label className="filter-field" htmlFor="change-sort">
+                  <span>정렬</span>
+                  <NativeSelect
+                    id="change-sort"
+                    value={`${changeSort.key}-${changeSort.direction}`}
+                    onChange={(event) => {
+                      const [key, direction] = event.target.value.split('-');
+                      setChangeSort({
+                        key,
+                        direction: direction === 'desc' ? 'desc' : 'asc',
+                      });
+                      setChangeListBatch(1);
+                    }}
+                    className="w-full"
+                  >
+                    <NativeSelectOption value="u-asc">
+                      대학명 오름차순
+                    </NativeSelectOption>
+                    <NativeSelectOption value="u-desc">
+                      대학명 내림차순
+                    </NativeSelectOption>
+                    <NativeSelectOption value="category-asc">
+                      세부 구분순
+                    </NativeSelectOption>
+                    <NativeSelectOption value="current-asc">
+                      변경 내용순
+                    </NativeSelectOption>
+                  </NativeSelect>
+                </label>
+              </FilterPanel>
 
-            <section className="data-panel">
-              <div className="section-head">
-                <div>
-                  <h2>학생부 반영 사례</h2>
-                </div>
-              </div>
-              <Table className="data-table record-table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>대학</TableHead>
-                    <TableHead>전형방법</TableHead>
-                    <TableHead>평가 방식</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleRecordRows.map((row) => (
-                    <TableRow key={`${row.u}-${row.method}`}>
-                      <TableCell className="university-cell">{row.u}</TableCell>
-                      <TableCell>{row.method}</TableCell>
-                      <TableCell>{row.type}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <ListDisclosure
-                total={data.studentRecord.length}
-                shown={visibleRecordRows.length}
-                initial={initialListSize}
-                onExpand={() => setRecordListBatch((value) => value + 1)}
-                onCollapse={() => setRecordListBatch(1)}
-              />
-            </section>
+              {CHANGE_SECTIONS.map(({ value, label }) => (
+                <TabsContent
+                  key={value}
+                  value={value}
+                  className="change-section-panel"
+                  data-change-section={value}
+                >
+                  {value === 'quota' && (
+                    <details className="change-summary-disclosure">
+                      <summary>전국 모집 요약</summary>
+                      <div className="change-summary-content">
+                        <section
+                          className="fact-grid"
+                          aria-label="전국 정시 모집인원"
+                        >
+                          <Fact
+                            icon={<Landmark />}
+                            value={formatNumber(data.overview.totalRegular)}
+                            label="전국 정시 모집인원"
+                            note={changeDeltaLabel(data.overview.change)}
+                          />
+                          <Fact
+                            icon={<Sparkles />}
+                            value={`${data.overview.examFocusedRate}%`}
+                            label="정시 수능위주 비율"
+                            note={`${formatNumber(data.overview.examFocused)}명`}
+                          />
+                          <Fact
+                            icon={<Landmark />}
+                            value={formatNumber(data.overview.capital)}
+                            label="수도권 정시 모집인원"
+                            note={changeDeltaLabel(data.overview.capitalChange)}
+                          />
+                          <Fact
+                            icon={<Landmark />}
+                            value={formatNumber(data.overview.nonCapital)}
+                            label="비수도권 정시 모집인원"
+                            note={changeDeltaLabel(
+                              data.overview.nonCapitalChange,
+                            )}
+                          />
+                        </section>
+                        <p className="change-overview-source">
+                          <a
+                            href="https://kcue.or.kr/news/sub02/sub01.php?at=view&idx=2764653"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            대교협 2027학년도 대학입학전형 시행계획
+                          </a>
+                        </p>
+                      </div>
+                    </details>
+                  )}
+
+                  <section className="changes-list-section" aria-label={label}>
+                    {value === changeSection &&
+                      (changeRows.length === 0 ? (
+                        <EmptyState />
+                      ) : (
+                        <>
+                          <ul className="changes-list">
+                            {visibleChangeRows.map((row) => (
+                              <li
+                                className="change-card"
+                                key={row.id}
+                                data-change-id={row.id}
+                              >
+                                <header className="change-card-heading">
+                                  <h3>{row.u}</h3>
+                                  <span>{row.category}</span>
+                                  {row.sourceFile.startsWith('https://') && (
+                                    <a
+                                      href={row.sourceFile}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      aria-label={`${row.u} 공식 근거`}
+                                    >
+                                      근거 <ExternalLink aria-hidden="true" />
+                                    </a>
+                                  )}
+                                </header>
+                                <div className="change-comparison">
+                                  <div className="change-period">
+                                    <h4>2026</h4>
+                                    <ChangeContent text={row.previous} />
+                                  </div>
+                                  <div className="change-period change-period-current">
+                                    <h4>2027</h4>
+                                    <ChangeContent text={row.current} />
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                          <ListDisclosure
+                            total={changeRows.length}
+                            shown={visibleChangeRows.length}
+                            initial={initialListSize}
+                            onExpand={() =>
+                              setChangeListBatch((batch) => batch + 1)
+                            }
+                            onCollapse={() => setChangeListBatch(1)}
+                          />
+                        </>
+                      ))}
+                  </section>
+
+                  {value === 'other' && (
+                    <details className="change-summary-disclosure change-record-disclosure">
+                      <summary>학생부 반영 사례</summary>
+                      <Table className="data-table record-table">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>대학</TableHead>
+                            <TableHead>전형방법</TableHead>
+                            <TableHead>평가 방식</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {visibleRecordRows.map((row) => (
+                            <TableRow key={`${row.u}-${row.method}`}>
+                              <TableCell className="university-cell">
+                                {row.u}
+                              </TableCell>
+                              <TableCell>{row.method}</TableCell>
+                              <TableCell>{row.type}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      <ListDisclosure
+                        total={data.studentRecord.length}
+                        shown={visibleRecordRows.length}
+                        initial={initialListSize}
+                        onExpand={() =>
+                          setRecordListBatch((batch) => batch + 1)
+                        }
+                        onCollapse={() => setRecordListBatch(1)}
+                      />
+                    </details>
+                  )}
+                </TabsContent>
+              ))}
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="rules" className="tab-stack">
@@ -2296,22 +2402,20 @@ function Fact({
   );
 }
 
-function ChangeContent({ text, current }: { text: string; current: boolean }) {
+function changeDeltaLabel(delta: number) {
+  if (!delta) return '전년과 동일';
+  return `전년 대비 ${formatNumber(Math.abs(delta))}명 ${delta < 0 ? '감소' : '증가'}`;
+}
+
+function ChangeContent({ text }: { text: string }) {
   const lines = text
     .split(/\s*(?=※)|\s*;\s*|\s+\/\s+(?=[가-힣])/)
     .map((line) => line.trim())
     .filter(Boolean);
   return (
-    <div className={`change-content ${current ? 'is-current' : 'is-previous'}`}>
+    <div className="change-content">
       {lines.map((line, index) => (
-        <p key={`${index}-${line}`}>
-          {current ? (
-            <ArrowRight aria-hidden="true" />
-          ) : (
-            <Minus aria-hidden="true" />
-          )}
-          <span>{line}</span>
-        </p>
+        <p key={`${index}-${line}`}>{line}</p>
       ))}
     </div>
   );
@@ -2699,16 +2803,6 @@ function GroupCheckboxFilter({
         ))}
       </div>
     </fieldset>
-  );
-}
-
-function SectionHead({ title }: { title: string }) {
-  return (
-    <div className="section-head">
-      <div>
-        <h2>{title}</h2>
-      </div>
-    </div>
   );
 }
 
@@ -8870,17 +8964,6 @@ function displayRegion(region: string, university: string) {
   return region === '서울' && MAJOR_SEOUL_UNIVERSITIES.has(university)
     ? '주요서울'
     : region;
-}
-
-function changeCategoryClass(category: string) {
-  const classes: Record<string, string> = {
-    모집군: 'is-group',
-    모집단위: 'is-department',
-    전형방법: 'is-method',
-    반영방법: 'is-reflection',
-    학생부: 'is-record',
-  };
-  return classes[category] ?? 'is-other';
 }
 
 function localFileHref(path: string) {
