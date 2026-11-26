@@ -1,7 +1,7 @@
 {
   "tabs": {
     "정시 변화": 28,
-    "반영방법": 425,
+    "반영방법": 438,
     "3개년 입시결과": 15335,
     "일정": 5
   },
@@ -13,12 +13,12 @@
     "adigaPairs": 514,
     "adigaMatchedRows": 13066,
     "adigaMismatchedRows": 0,
-    "reference2027Rows": 425,
-    "adiga2027Profiles": 195,
+    "reference2027Rows": 438,
+    "adiga2027Profiles": 197,
     "educationOfficeSources": 3
   },
   "methodCoverage2027": {
-    "aggregateFormulaRows": 425,
+    "aggregateFormulaRows": 438,
     "detailedUnitRows": 4130,
     "confirmedDetailedUnitRows": 3907,
     "quarantinedDetailedUnitRows": 223,

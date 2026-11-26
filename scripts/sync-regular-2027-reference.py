@@ -16,6 +16,41 @@ BASE_ALIASES = {
     "서울": "서울대",
     "호원": "호원대",
     "성균": "성균관대",
+    "가톨릭": "가톨릭대",
+    "가톨릭꽃동네": "가톨릭꽃동네대",
+    "감리교신학": "감리교신학대",
+    "경남": "경남대",
+    "경인교": "경인교대",
+    "국립경국": "국립경국대",
+    "국립금오공": "국립금오공대",
+    "김천": "김천대",
+    "대구교": "대구교대",
+    "대구예": "대구예술대",
+    "대전가톨릭": "대전가톨릭대",
+    "동양": "동양대",
+    "루터": "루터대",
+    "부산가톨릭": "부산가톨릭대",
+    "부산교": "부산교대",
+    "부산외": "부산외대",
+    "부산장신": "부산장신대",
+    "서울신학": "서울신학대",
+    "서울장신": "서울장신대",
+    "세한": "세한대",
+    "수원가톨릭": "수원가톨릭대",
+    "아주": "아주대",
+    "영산선학": "영산선학대",
+    "예수": "예수대",
+    "제주국제": "제주국제대",
+    "중부": "중부대",
+    "중앙승가": "중앙승가대",
+    "청주교": "청주교대",
+    "춘천교": "춘천교대",
+    "한경국립": "한경국립대",
+    "한국공학": "한국공학대",
+    "한국기술교": "한국기술교육대",
+    "한국외": "한국외국어대",
+    "한국체육": "한국체육대",
+    "한일장신": "한일장신대",
     "한국외대": "한국외국어대",
     "이화": "이화여대",
     "숙명": "숙명여대",
@@ -130,9 +165,13 @@ TRACK_LABELS = {
     "작곡": "작곡과",
     "문창": "문예창작과",
     "스포츠": "스포츠계열",
+    "체육": "체육계열",
+    "미술음악": "미술·음악계열",
+    "공연예술": "공연예술학과",
     "교육": "교육계열",
     "과교": "과학교육계열",
     "수교": "수학교육과",
+    "수학": "수학과",
     "수과교": "수학·과학교육계열",
     "신학": "신학계열",
     "사복유아": "사회복지·유아교육계열",
@@ -153,6 +192,8 @@ TRACK_LABELS = {
     "자전기술": "기술경영융합 자유전공",
     "광역": "광역 모집단위",
     "통합": "통합계열",
+    "트리니티": "트리니티융합대학",
+    "헬스케어사범": "헬스케어융합대학·사범대학",
     "공통": "공통계열",
     "우수순": "성적 우수영역 순 반영 모집단위",
     "국수": "국어·수학 선택형",
@@ -211,6 +252,8 @@ TRACK_LABELS = {
     "자연약": "자연계열·약학과",
     "운송": "해상운송계열",
     "해사A": "해사계열 A형",
+    "한의예 자": "한의예과 자연형",
+    "경영, 간호 인문": "경영학과·간호학과 인문형",
 }
 
 TRACK_LABEL_OVERRIDES = {
@@ -218,6 +261,7 @@ TRACK_LABEL_OVERRIDES = {
     "건국(B)": "수리중심 B형",
     "서강(A)": "A형 적용 모집단위",
     "서강(B)": "B형 적용 모집단위",
+    "POSTECH": "단일계열(무은재학부)",
 }
 
 
@@ -239,6 +283,8 @@ def track_label(label: str, qualifier: str) -> str:
 
 def track_categories(label: str, qualifier: str, note: str) -> list[str]:
     compact = re.sub(r"\s+", "", qualifier)
+    if label == "POSTECH":
+        return ["자연"]
     if label in {
         "가천(일반1)", "가천(일반2)", "대구한의(일반)",
         "동의(일반)", "동신(일반)", "원광(일반)",
@@ -248,11 +294,11 @@ def track_categories(label: str, qualifier: str, note: str) -> list[str]:
         return ["인문", "자연", "예체능"]
     if compact in {"인", "인1", "인2", "인A", "인B", "인,A", "경", "경A", "경B", "사회", "교육", "신학", "사복유아", "국제", "문창"}:
         return ["인문"]
-    if compact in {"자", "자1", "자2", "자A", "자B", "자,B", "자-인", "자-자", "자공", "자상", "자연", "자연공", "이공", "공", "공A", "공B", "공과B", "정보", "AI", "보건", "의보건", "간호", "간호인", "간호자", "간호물치", "간호방사선", "간호임상", "건축", "과교", "수교", "수과교", "항공운항", "운송", "해사A"}:
+    if compact in {"자", "자1", "자2", "자A", "자B", "자,B", "자-인", "자-자", "자공", "자상", "자연", "자연공", "이공", "공", "공A", "공B", "공과B", "정보", "AI", "보건", "의보건", "간호", "간호인", "간호자", "간호물치", "간호방사선", "간호임상", "건축", "과교", "수교", "수학", "수과교", "항공운항", "운송", "해사A"}:
         return ["자연"]
-    if compact in {"예체능", "미술", "음악", "작곡", "스포츠"}:
+    if compact in {"예체능", "미술", "음악", "미술음악", "작곡", "스포츠", "체육", "공연예술"}:
         return ["예체능"]
-    if compact in {"의", "의예", "치", "한의", "한의인", "한의자", "한의1", "한의2", "한의확통", "한의미기", "한의A", "한의B", "약", "약한약", "의약", "의치", "의치약"}:
+    if compact in {"의", "의예", "치", "한의", "한의인", "한의자", "한의예자", "한의1", "한의2", "한의확통", "한의미기", "한의A", "한의B", "약", "약한약", "의약", "의치", "의치약"}:
         return ["의약학"]
     if compact in {"의치약자", "자연약"}:
         return ["자연", "의약학"]
@@ -260,6 +306,8 @@ def track_categories(label: str, qualifier: str, note: str) -> list[str]:
         return ["자연", "의약학"]
     if compact == "인예":
         return ["인문", "예체능"]
+    if compact in {"경영,간호인문", "헬스케어사범"}:
+        return ["인문", "자연"]
     if compact.startswith("춘천인"):
         return ["인문"]
     if compact.startswith("춘천자") or compact == "강릉간호수산":
@@ -309,6 +357,13 @@ def change_category(row: dict[str, str]) -> str:
     if row["학생부"]:
         return "학생부"
     return "반영방법"
+
+
+def metrics_for_reference(row: dict[str, str]) -> list[str]:
+    # 단국대 천안 공식 요강 50–51쪽: 의약학 국·수는 표준점수, 탐구는 백분위.
+    if row["대학명"] == "단국천안(의약)":
+        return ["백분위", "표준점수"]
+    return METRICS.get(row["지표"], [])
 
 
 def method_summary(row: dict[str, str]) -> str:
@@ -361,10 +416,12 @@ for index, values in enumerate(reference["rows"], 1):
     label = row["대학명"]
     university = canonical_university(label, known_names)
     _, qualifier = split_label(label)
+    if label == "경희(한의예 자)":
+        qualifier = "한의자"
     display_track = track_label(label, qualifier)
     categories = track_categories(label, qualifier, row["특이사항"])
     student = row["학생부"]
-    metrics = METRICS.get(row["지표"], [])
+    metrics = metrics_for_reference(row)
     source_row = {
         "label": label,
         "region": row["지역"],
@@ -380,6 +437,7 @@ for index, values in enumerate(reference["rows"], 1):
         "socialBonus": row["사탐"],
         "scienceBonus": row["과탐"],
         "note": row["특이사항"],
+        "metrics": metrics,
         "trackCode": qualifier,
         "trackLabel": display_track,
         "trackCategories": categories,
@@ -427,7 +485,7 @@ for university, source_rows in grouped_rows.items():
     profile["reference2027Rows"] = source_rows
     source_metrics = []
     for source_row in source_rows:
-        for metric in METRICS.get(source_row["indicator"], []):
+        for metric in source_row.get("metrics", []):
             if metric not in source_metrics:
                 source_metrics.append(metric)
     if source_metrics:
@@ -448,7 +506,7 @@ data["summary"]["reference2027Rows"] = len(reference["rows"])
 data["reference2027"] = {
     "source": SOURCE_URL,
     "sheet": "정시",
-    "range": reference.get("range", "A1:N426"),
+    "range": reference.get("range", "A1:N439"),
     "rows": len(reference["rows"]),
     "matchedExistingProfiles": len(grouped_rows) - supplemental_profiles,
     "supplementalProfiles": supplemental_profiles,

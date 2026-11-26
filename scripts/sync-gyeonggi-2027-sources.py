@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import logging
+import os
 import re
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -18,12 +19,13 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "public" / "admissions-data.json"
 AUDIT_PATH = ROOT / "audit" / "gyeonggi-2027-source-audit.json"
 
-HTML_SOURCE = Path(
-    r"C:\Users\User\iCloudDrive\02. 진학 및 상담자료\01. 진학자료\01. 연도별 진학자료\08. 2026년\01. 전형방법\03. 모집요강\05. 정시모집\02. 관련 자료\2027 정시 모집정보 검색기(영덕고-김형진).html"
+ICLOUD_ROOT = Path(os.environ.get("RYAN_SOURCE_ICLOUD_ROOT") or Path.home() / "iCloudDrive")
+SOURCE_DIR = ICLOUD_ROOT / Path(
+    "02. 진학 및 상담자료/01. 진학자료/01. 연도별 진학자료/08. 2026년/"
+    "01. 전형방법/03. 모집요강/05. 정시모집/02. 관련 자료"
 )
-PDF_SOURCE = Path(
-    r"C:\Users\User\iCloudDrive\02. 진학 및 상담자료\01. 진학자료\01. 연도별 진학자료\08. 2026년\01. 전형방법\03. 모집요강\05. 정시모집\02. 관련 자료\2027 정시전형 모집요강(경기도교육청 진학지도리더교사 콘텐츠팀).pdf"
-)
+HTML_SOURCE = SOURCE_DIR / "2027 정시 모집정보 검색기(영덕고-김형진).html"
+PDF_SOURCE = SOURCE_DIR / "2027 정시전형 모집요강(경기도교육청 진학지도리더교사 콘텐츠팀).pdf"
 
 SOURCE_DATE = "2026-09-17"
 SPECIAL_ADMISSION_PATTERN = re.compile(
@@ -164,6 +166,9 @@ def extract_html_rows(path: Path) -> list[dict]:
 
 def classify_track(department: str, source_track: str, detailed_track: str) -> str:
     text = compact(f"{department} {detailed_track}")
+    # 삼육대 2027 대입정보포털은 환경디자인원예학과를 자연계열로 명시한다.
+    if department == "환경디자인원예학과" and source_track == "자연":
+        return "자연"
     if re.search(r"의예|치의예|치의학|한의예|한의학|약학|제약학|수의예|수의학|의과대", text):
         return "의약학"
     if re.search(

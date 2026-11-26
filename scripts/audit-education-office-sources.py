@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 
@@ -12,14 +13,16 @@ from pypdf import PdfReader
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "public" / "admissions-data.json"
 REPORT_PATH = ROOT / "audit" / "education-office-sources.json"
+ICLOUD_ROOT = Path(os.environ.get("RYAN_SOURCE_ICLOUD_ROOT") or Path.home() / "iCloudDrive")
+EDUCATION_SOURCES = ICLOUD_ROOT / "02. 진학 및 상담자료" / "01. 진학자료" / "02. 공통자료" / "09. 전공안내서 및 학생부종합 가이드북" / "시도교육청 발간자료"
 SOURCES = [
     (
         "울산교육청",
-        Path(r"C:\Users\User\iCloudDrive\02. 진학 및 상담자료\01. 진학자료\02. 공통자료\09. 전공안내서 및 학생부종합 가이드북\시도교육청 발간자료\2027학년도 울산교육청 대입전형 가이드북.pdf"),
+        EDUCATION_SOURCES / "2027학년도 울산교육청 대입전형 가이드북.pdf",
     ),
     (
         "서울교육청",
-        Path(r"C:\Users\User\iCloudDrive\02. 진학 및 상담자료\01. 진학자료\02. 공통자료\09. 전공안내서 및 학생부종합 가이드북\시도교육청 발간자료\2027학년도 서울교육청 대입전형 가이드북.pdf"),
+        EDUCATION_SOURCES / "2027학년도 서울교육청 대입전형 가이드북.pdf",
     ),
     (
         "인천교육청",

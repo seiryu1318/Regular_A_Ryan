@@ -13,10 +13,10 @@ REPORT_PATH = ROOT / "audit" / "regular-2027-reference-summary.json"
 EXPECTED_HEADERS = ["지역", "대학명", "사탐런유리", "지표", "학생부", "국어", "수학", "미기", "영어", "탐구2", "탐구1", "사탐", "과탐", "특이사항"]
 EXPECTED_METRICS = {"표+표", "표+변", "백", "등급", ""}
 REQUIRED_LABELS = {
-    "대신(신학)", "대신(자전)", "목포가톨릭(간호)", "목포가톨릭(사복유아)", "한예종", "서울장신대",
-    "아신대", "중앙승가대", "화성의과학대", "부산장신대", "영남신학대", "DGIST", "POSTECH", "UNIST",
-    "한국침례신대", "KAIST", "영산선학대", "호남신대", "GIST", "KENTECH",
-    "경희(한의인)", "경희(한의자)", "성신(간호인)", "성신(간호자)",
+    "대신(신학)", "대신(자전)", "목포가톨릭(간호)", "목포가톨릭(사복유아)", "한예종", "서울장신",
+    "아신대", "중앙승가", "화성의과학대", "부산장신", "영남신학대", "DGIST", "POSTECH", "UNIST",
+    "한국침례신대", "KAIST", "영산선학", "호남신대", "GIST", "KENTECH",
+    "경희(한의인)", "경희(한의예 자)", "성신(간호인)", "성신(간호자)",
     "가천(일반1)", "가천(일반2)", "가천(의약)", "가천(한의)",
     "대구한의(한의인)", "대구한의(한의자)", "동국WISE(한의1)", "동국WISE(한의2)",
     "동의(한의확통)", "동의(한의미기)", "상지(한의A)", "상지(한의B)",
@@ -27,6 +27,7 @@ SCIENCE_INSTITUTES = {"DGIST", "UNIST", "KAIST", "KENTECH"}
 TRACK_CATEGORIES = {"인문", "자연", "예체능", "의약학"}
 RAW_TRACK_LABELS = {"인", "자", "경", "공", "의", "약", "한의", "간호", "A", "B", "C", "일반", "자전"}
 EXPECTED_SPLIT_CATEGORIES = {
+    "POSTECH": ["자연"],
     "성신(간호인)": ["자연"],
     "성신(간호자)": ["자연"],
     "가천(일반1)": ["인문", "자연"],
@@ -57,6 +58,17 @@ def normalized_percentage(item: str) -> str:
     return item
 
 
+def expected_metrics(label: str, indicator: str) -> list[str]:
+    if label == "단국천안(의약)":
+        return ["백분위", "표준점수"]
+    return {
+        "표+표": ["표준점수"],
+        "표+변": ["표준점수", "변환표준점수"],
+        "백": ["백분위"],
+        "등급": ["등급"],
+    }.get(indicator, [])
+
+
 reference = json.loads(REFERENCE_PATH.read_text(encoding="utf-8"))
 data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
 issues: list[str] = []
@@ -66,8 +78,10 @@ if reference.get("headers") != EXPECTED_HEADERS:
 rows = reference.get("rows", [])
 profiles = data.get("profiles", [])
 labels = [value(row, 1) for row in rows]
-if len(rows) != 425:
+if len(rows) != 438:
     issues.append(f"원자료 행 수 {len(rows)}")
+if reference.get("range") != "A1:N439":
+    issues.append(f"원자료 범위 {reference.get('range')}")
 if len(labels) != len(set(labels)):
     issues.append("원자료 대학별 분리 행 중복")
 missing_required = sorted(REQUIRED_LABELS - set(labels))
@@ -146,6 +160,11 @@ for index, row in enumerate(rows, 2):
         actual = str(source.get(field) or "").strip()
         if actual != expected:
             issues.append(f"{index}행 {label} {field} 불일치: {actual} != {expected}")
+    metrics = expected_metrics(label, indicator)
+    if source.get("metrics", []) != metrics:
+        issues.append(
+            f"{index}행 {label} 활용지표 불일치: {source.get('metrics')} != {metrics}"
+        )
     if bool(source.get("socialStudyAdvantage")) != (value(row, 2) == "TRUE"):
         issues.append(f"{index}행 {label} 사탐런유리 불일치")
 postech = profile_by_label.get("POSTECH", ({}, {}))[1]
@@ -158,6 +177,34 @@ for label in SCIENCE_INSTITUTES:
         if source.get("korean") or source.get("math") or source.get("english") or source.get("inquiry2") or source.get("inquiry1"):
             issues.append(f"{label} 고정 비율 임의 생성")
 
+limited_metric_rows = [row for row in rows if value(row, 3) in {"", "등급"}]
+if len(limited_metric_rows) != 34:
+    issues.append(f"백분위·표준점수 미사용 행 수 {len(limited_metric_rows)}")
+
+silla = profile_by_label.get("신라대", ({}, {}))[1]
+if not (
+    silla.get("korean") == "25%"
+    and silla.get("math") == "25%"
+    and silla.get("english") == "25%"
+    and silla.get("inquiry2") == ""
+    and silla.get("inquiry1") == "25%"
+    and "상위 1과목" in silla.get("note", "")
+):
+    issues.append("신라대 탐구 상위 1과목 25% 반영 불일치")
+
+dankook_medical = profile_by_label.get("단국천안(의약)", ({}, {}))[1]
+if not (
+    dankook_medical.get("korean") == "25%"
+    and dankook_medical.get("math") == "35%"
+    and dankook_medical.get("english") == "15%"
+    and dankook_medical.get("inquiry2") == "25%"
+    and dankook_medical.get("scienceBonus") == "5%"
+    and "과탐Ⅱ" in dankook_medical.get("note", "")
+):
+    issues.append("단국천안(의약) 25/35/15/25 및 과탐Ⅱ 5% 불일치")
+if set(dankook_medical.get("metrics", [])) != {"백분위", "표준점수"}:
+    issues.append(f"단국천안(의약) 혼합 활용지표 불일치: {dankook_medical.get('metrics')}")
+
 summary = {
     "source_rows": len(rows),
     "project_profiles": len(profiles),
@@ -166,6 +213,7 @@ summary = {
     "supplemental_profiles": sum(bool(profile.get("referenceSupplementOnly")) for profile in profiles),
     "unique_source_labels": len(set(labels)),
     "blank_metrics": sum(not value(row, 3) for row in rows),
+    "grade_only_or_blank_metrics": len(limited_metric_rows),
     "student_record_rows": sum(bool(value(row, 4)) for row in rows),
     "social_study_advantage_rows": sum(value(row, 2) == "TRUE" for row in rows),
     "parenthesized_ratio_cells": sum(bool(re.fullmatch(r"\(\d+(?:\.\d+)?%\)", value(row, column))) for row in rows for column in (5, 6, 8, 9, 10)),

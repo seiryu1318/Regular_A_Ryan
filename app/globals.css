@@ -625,6 +625,11 @@ select {
   background: rgba(204, 69, 69, 0.24);
   border: 1px solid rgba(255, 119, 119, 0.38);
 }
+.ratio-legend .limited-metric {
+  color: #e6d8ff;
+  background: rgba(139, 92, 190, 0.24);
+  border: 1px solid rgba(188, 151, 226, 0.42);
+}
 
 .data-table {
   font-size: 15px;
@@ -1433,6 +1438,17 @@ select {
 .method-row td {
   height: 54px;
   border-bottom-color: rgba(173, 221, 238, 0.09);
+}
+.ratio-table tbody .method-row.method-non-score-row td,
+.ratio-table .method-summary-row.method-non-score-row td,
+.ratio-table .method-detail-row.method-non-score-row td {
+  background: #211a31 !important;
+}
+.ratio-table
+  .method-summary-row.method-non-score-row
+  :is(.method-summary-value, .method-summary-metrics) {
+  background: rgba(121, 81, 166, 0.14) !important;
+  box-shadow: inset 0 0 0 1px rgba(188, 151, 226, 0.22);
 }
 .university-method-cell {
   display: flex;
@@ -2628,6 +2644,11 @@ html:not(.dark) .ratio-legend .low {
   background: #f8dddd;
   border-color: #e6a0a0;
 }
+html:not(.dark) .ratio-legend .limited-metric {
+  color: #5f3d87;
+  background: #f0e8fa;
+  border-color: #c9b0e3;
+}
 html:not(.dark) .expand-method-button {
   background: #dcecf3;
   color: #176e91;
@@ -2639,6 +2660,25 @@ html:not(.dark) .expand-method-button:focus-visible {
 }
 html:not(.dark) .method-detail-row td {
   background: #f1f6f8 !important;
+}
+html:not(.dark) .ratio-table tbody .method-row.method-non-score-row td,
+html:not(.dark) .ratio-table .method-summary-row.method-non-score-row td,
+html:not(.dark) .ratio-table .method-detail-row.method-non-score-row td {
+  background: #f4effb !important;
+}
+html:not(.dark)
+  .ratio-table
+  .method-summary-row.method-non-score-row
+  :is(.method-summary-value, .method-summary-metrics) {
+  background: rgba(123, 81, 166, 0.06) !important;
+  box-shadow: inset 0 0 0 1px rgba(123, 81, 166, 0.16);
+}
+
+html.mobile-build .ratio-table .method-row.method-non-score-row td {
+  background: rgba(121, 81, 166, 0.16) !important;
+}
+html.mobile-build:not(.dark) .ratio-table .method-row.method-non-score-row td {
+  background: #f4effb !important;
 }
 html:not(.dark) .method-detail-lines p {
   color: #314b57;

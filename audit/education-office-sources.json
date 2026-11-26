@@ -2,7 +2,7 @@
   "sources": [
     {
       "agency": "울산교육청",
-      "path": "C:\\Users\\User\\iCloudDrive\\02. 진학 및 상담자료\\01. 진학자료\\02. 공통자료\\09. 전공안내서 및 학생부종합 가이드북\\시도교육청 발간자료\\2027학년도 울산교육청 대입전형 가이드북.pdf",
+      "path": "C:\\Users\\User\\iCloudDrive-stale-20261126-0905\\02. 진학 및 상담자료\\01. 진학자료\\02. 공통자료\\09. 전공안내서 및 학생부종합 가이드북\\시도교육청 발간자료\\2027학년도 울산교육청 대입전형 가이드북.pdf",
       "exists": true,
       "pages": 16,
       "contains2027": true,
@@ -11,7 +11,7 @@
     },
     {
       "agency": "서울교육청",
-      "path": "C:\\Users\\User\\iCloudDrive\\02. 진학 및 상담자료\\01. 진학자료\\02. 공통자료\\09. 전공안내서 및 학생부종합 가이드북\\시도교육청 발간자료\\2027학년도 서울교육청 대입전형 가이드북.pdf",
+      "path": "C:\\Users\\User\\iCloudDrive-stale-20261126-0905\\02. 진학 및 상담자료\\01. 진학자료\\02. 공통자료\\09. 전공안내서 및 학생부종합 가이드북\\시도교육청 발간자료\\2027학년도 서울교육청 대입전형 가이드북.pdf",
       "exists": true,
       "pages": 274,
       "contains2027": true,
@@ -29,8 +29,8 @@
     }
   ],
   "sourceFailures": [],
-  "universitiesChecked": 203,
-  "universitiesNamedInEducationOfficeSources": 199,
+  "universitiesChecked": 205,
+  "universitiesNamedInEducationOfficeSources": 201,
   "universitiesNotNamed": [
     "감신대",
     "한국침례신대",

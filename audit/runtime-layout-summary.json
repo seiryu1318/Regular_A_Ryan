@@ -217,6 +217,16 @@
       "summary": [
         "국어\n(50%)\n수학\n(50%)\n영어\n(50%)\n탐구2\n—\n탐구1\n(50%)"
       ]
+    },
+    "삼육대 환경디자인원예학과": {
+      "query": "삼육대 환경디자인원예학과",
+      "rows": 1,
+      "primary": [
+        "서울\t\n삼육대\n\t\n가\n나\n다\n\t일반전형\t자연\t\n환경디자인원예학과\n5명"
+      ],
+      "summary": [
+        "국어\n(35% / 25% / 25% / 15%)\n수학\n(35% / 25% / 25% / 15%)\n영어\n(35% / 25% / 25% / 15%)\n탐구2\n—\n탐구1\n(35% / 25% / 25% / 15%)"
+      ]
     }
   },
   "mobileSplitRows": {
@@ -253,7 +263,100 @@
       ]
     }
   },
-  "pcAnalysisText": "조건 분석전국 2027 정시반영유형425지표백, 등급, 표+표, 표+변사탐런 유리14미기 가산75사탐 가산14과탐 가산70",
+  "mobileLimitedMetric": {
+    "rows": 1,
+    "rowMarked": true,
+    "summaryMarked": true,
+    "rowBackground": "rgb(244, 239, 251)",
+    "summaryBackground": "rgb(244, 239, 251)"
+  },
+  "mobileUpdatedReferences": {
+    "silla": {
+      "query": "신라대",
+      "rows": 5,
+      "primary": [
+        "부산\n신라대\n가\n나\n다\n일반학생전형\n인문\n역사교육과\n1명",
+        "부산\n신라대\n가\n나\n다\n일반학생전형\n인문\n일어교육과\n1명",
+        "부산\n신라대\n가\n나\n다\n일반학생전형\n자연\n치위생학과\n1명",
+        "부산\n신라대\n가\n나\n다\n일반학생전형\n자연\n항공정비학과\n3명",
+        "부산\n신라대\n가\n나\n다\n일반학생전형\n인문\n교육학과\n1명"
+      ],
+      "summary": [
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%"
+      ]
+    },
+    "dankookMedical": {
+      "query": "단국대(천안) 의예과",
+      "rows": 1,
+      "primary": [
+        "충남\n단국대(천안)\n가\n나\n다\n일반학생전형\n의약학\n의예과\n26명"
+      ],
+      "summary": [
+        "국어\n25%\n수학\n35%\n영어\n15%\n탐구2\n25%\n탐구1\n—"
+      ],
+      "detail": "모집인원\n26명\n선발방식\n일괄합산\n캠퍼스\n천안\n\n반영영역\n국수영탐(2)\n탐구\n2과목, 과\n수학 선택\n미적/기하\n\n구분\n단국천안(의약)\n\n특이사항\n국어, 수학 표준점수, 과탐 백분위 평균, 과탐Ⅱ 5%\n\n과탐 가산\n5%\n\n영어 반영방법\n등급 환산\n한국사 반영방법\n—\n학생부\n—\n\n영어 방식\n등급 환산\n한국사\n—\n2026 백분위 50/70\n96.00%\n2026 환산점수 50/70\n962.20점\n2026 환산만점(추론)\n1000.00점\n활용지표\n백분위, 표준점수\n학생부\n—"
+    }
+  },
+  "pcAnalysisText": "조건 분석전국 2027 정시반영유형438활용지표등급, 백분위, 변환표준점수, 표준점수사탐런 유리14미기 가산77사탐 가산14과탐 가산73",
+  "pcUpdatedReferences": {
+    "silla": {
+      "query": "신라대",
+      "rows": 10,
+      "primary": [
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t인문\t\n역사교육과\n1명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t인문\t\n일어교육과\n1명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t자연\t\n치위생학과\n1명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t자연\t\n항공정비학과\n3명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t인문\t\n교육학과\n1명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t자연\t\n물리치료학과\n5명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t인문\t\n일본어일본학과\n1명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t자연\t\n컴퓨터교육과\n1명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t자연\t\n간호학과\n15명",
+        "부산\t\n신라대\n\t\n가\n나\n다\n\t일반학생전형\t인문\t\n국어교육과\n1명"
+      ],
+      "summary": [
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%",
+        "국어\n25%\n수학\n25%\n영어\n25%\n탐구2\n—\n탐구1\n25%"
+      ]
+    },
+    "dankookMedical": {
+      "query": "단국대(천안) 의예과",
+      "rows": 1,
+      "primary": [
+        "충남\t\n단국대(천안)\n\t\n가\n나\n다\n\t일반학생전형\t의약학\t\n의예과\n26명"
+      ],
+      "summary": [
+        "국어\n25%\n수학\n35%\n영어\n15%\n탐구2\n25%\n탐구1\n—"
+      ],
+      "detail": "모집인원\n26명\n선발방식\n일괄합산\n캠퍼스\n천안\n\n반영영역\n국수영탐(2)\n탐구\n2과목, 과\n수학 선택\n미적/기하\n\n구분\n단국천안(의약)\n\n특이사항\n국어, 수학 표준점수, 과탐 백분위 평균, 과탐Ⅱ 5%\n\n과탐 가산\n5%\n\n영어 반영방법\n등급 환산\n한국사 반영방법\n—\n학생부\n—\n\n영어 방식\n등급 환산\n한국사\n—\n2026 백분위 50/70\n96.00%\n2026 환산점수 50/70\n962.20점\n2026 환산만점(추론)\n1000.00점\n활용지표\n백분위, 표준점수\n학생부\n—"
+    },
+    "gradeOnly": {
+      "rows": 1,
+      "rowMarked": true,
+      "summaryMarked": true,
+      "rowBackground": "rgb(244, 239, 251)",
+      "summaryBackground": "rgb(244, 239, 251)"
+    },
+    "blankIndicator": {
+      "rows": 1,
+      "rowMarked": true,
+      "summaryMarked": true,
+      "rowBackground": "rgb(244, 239, 251)",
+      "summaryBackground": "rgb(244, 239, 251)"
+    }
+  },
   "centralMedicine": {
     "rows": 0,
     "text": []
@@ -430,7 +533,9 @@
   },
   "screenshots": {
     "pc": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-pc.png",
-    "mobile": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-mobile.png"
+    "mobile": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-mobile.png",
+    "pcMethods": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-pc-methods.png",
+    "mobileMethods": "C:\\Users\\User\\AppData\\Local\\Temp\\regular-ryan-runtime-mobile-methods.png"
   },
   "issues": []
 }

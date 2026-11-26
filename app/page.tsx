@@ -98,6 +98,7 @@ type Reference2027Row = {
   socialBonus: string;
   scienceBonus: string;
   note: string;
+  metrics?: string[];
   trackCode?: string;
   trackLabel: string;
   trackCategories: string[];
@@ -1037,7 +1038,9 @@ export default function Home() {
           row.reference2027?.scienceBonus ?? '',
           row.reference2027?.note ?? row.bonusDetail,
           row.englishMethod,
-          row.reference2027?.indicator ?? row.metric,
+          row.reference2027
+            ? referenceMetricList(row.reference2027).join(', ')
+            : row.metric,
           metricValue(row, '백분위'),
           metricValue(row, '등급'),
           metricValue(row, '표준점수'),
@@ -1568,6 +1571,7 @@ export default function Home() {
                   <div className="ratio-legend">
                     <span className="high">최고</span>
                     <span className="low">최저</span>
+                    <span className="limited-metric">등급 또는 지표 공란</span>
                   </div>
                 </div>
               </div>
@@ -1624,7 +1628,12 @@ export default function Home() {
                 <TableBody>
                   {visibleProfiles.map((row) => (
                     <Fragment key={row.rowId}>
-                      <TableRow className="method-row">
+                      <TableRow
+                        className={`method-row${isLimitedMetricReference(row.reference2027) ? ' method-non-score-row' : ''}`}
+                        data-reference-indicator={
+                          row.reference2027?.indicator || undefined
+                        }
+                      >
                         <TableCell className="muted-cell">
                           {displayRegion(row.r, row.u)}
                         </TableCell>
@@ -2349,7 +2358,9 @@ function MethodSummaryRow({
     );
   };
   return (
-    <TableRow className="method-summary-row">
+    <TableRow
+      className={`method-summary-row${isLimitedMetricReference(row.reference2027) ? ' method-non-score-row' : ''}`}
+    >
       <TableCell colSpan={6}>
         <div className="method-summary-grid">
           {ratioItem('국어', 'korean')}
@@ -2884,7 +2895,9 @@ function MethodDetailRow({
   if (row.reference2027) {
     const reference = row.reference2027;
     return (
-      <TableRow className="method-detail-row">
+      <TableRow
+        className={`method-detail-row${isLimitedMetricReference(reference) ? ' method-non-score-row' : ''}`}
+      >
         <TableCell colSpan={colSpan}>
           <div className="method-detail-lines">
             {row.unit2027 && (
@@ -3124,7 +3137,9 @@ function MethodSecondaryDetails({
         <div className="method-summary-metrics">
           <span>활용지표</span>
           <strong>
-            {row.reference2027?.indicator || row.metrics.join(', ') || '—'}
+            {row.reference2027
+              ? referenceMetricList(row.reference2027).join(', ') || '—'
+              : row.metrics.join(', ') || '—'}
           </strong>
         </div>
         <MethodSummaryValue
@@ -3461,17 +3476,15 @@ function buildProfileAnalysis(
           .map((row) => [row.sourceRow, row] as const),
       ).values(),
     ];
-    const values = (
-      key: keyof Pick<Reference2027Row, 'indicator' | 'studentRecord'>,
-    ) =>
-      [...new Set(referenceRows.map((row) => row[key]).filter(Boolean))].join(
+    const metricValues =
+      unique(referenceRows.flatMap((row) => referenceMetricList(row))).join(
         ', ',
       ) || '—';
     return {
       title,
       items: [
         { label: '반영유형', value: formatNumber(referenceRows.length) },
-        { label: '지표', value: values('indicator') },
+        { label: '활용지표', value: metricValues },
         {
           label: '사탐런 유리',
           value: formatNumber(
@@ -3650,7 +3663,18 @@ function referenceMetrics(indicator: string) {
   return [];
 }
 
+function referenceMetricList(reference: Reference2027Row) {
+  return reference.metrics ?? referenceMetrics(reference.indicator);
+}
+
+function isLimitedMetricReference(reference?: Reference2027Row) {
+  return Boolean(
+    reference && (!reference.indicator || reference.indicator === '등급'),
+  );
+}
+
 function referenceExamName(reference: Reference2027Row) {
+  if (reference.label === 'POSTECH') return '수시 일반전형Ⅰ (참고)';
   if (/일반Ⅰ/.test(`${reference.studentRecord} ${reference.note}`))
     return '일반Ⅰ';
   const numbered = reference.label.match(/일반\s*([12])/);
@@ -3729,7 +3753,7 @@ function expandProfileMethods(profile: ProfileView): MethodView[] {
         domainCount,
         englishMethod: referenceEnglishMethod(reference),
         bonusDetail: reference.note,
-        metrics: referenceMetrics(reference.indicator),
+        metrics: referenceMetricList(reference),
         ratioLabels,
         weightLabels,
         selectionDetail: reference.note,

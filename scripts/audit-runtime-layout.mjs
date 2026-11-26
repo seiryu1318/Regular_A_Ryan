@@ -19,6 +19,8 @@ const temp = mkdtempSync(join(tmpdir(), 'regular-ryan-runtime-'));
 const screenshots = {
   pc: join(tmpdir(), 'regular-ryan-runtime-pc.png'),
   mobile: join(tmpdir(), 'regular-ryan-runtime-mobile.png'),
+  pcMethods: join(tmpdir(), 'regular-ryan-runtime-pc-methods.png'),
+  mobileMethods: join(tmpdir(), 'regular-ryan-runtime-mobile-methods.png'),
 };
 const mime = {
   '.html': 'text/html; charset=utf-8',
@@ -153,6 +155,35 @@ async function methodSearchSnapshot(cdp, query) {
     summary: [...document.querySelectorAll('.method-summary-row')]
       .map((node) => node.innerText.trim()),
   }))()`);
+}
+
+async function expandedMethodSnapshot(cdp, query) {
+  const snapshot = await methodSearchSnapshot(cdp, query);
+  await cdp.evaluate(`(() => {
+    document.querySelector('.method-row .expand-method-button')?.click();
+  })()`);
+  await wait(250);
+  return {
+    ...snapshot,
+    detail: await cdp.evaluate(
+      `document.querySelector('.method-detail-row')?.innerText.trim() ?? ''`,
+    ),
+  };
+}
+
+async function limitedMetricSnapshot(cdp, query) {
+  await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', query);
+  return cdp.evaluate(`(() => {
+    const row = document.querySelector('.method-row');
+    const summary = document.querySelector('.method-summary-row');
+    return {
+      rows: document.querySelectorAll('.method-row').length,
+      rowMarked: row?.classList.contains('method-non-score-row') ?? false,
+      summaryMarked: summary?.classList.contains('method-non-score-row') ?? false,
+      rowBackground: row ? getComputedStyle(row.firstElementChild).backgroundColor : '',
+      summaryBackground: summary ? getComputedStyle(summary.firstElementChild).backgroundColor : '',
+    };
+  })()`);
 }
 
 async function auditBrandHomeNavigation(cdp, clickValue, enterValue) {
@@ -378,12 +409,20 @@ try {
     '원광대 한의예과',
     '호원대 간호학과',
     '호원대 경영학과',
+    '삼육대 환경디자인원예학과',
   ])
     pcSplitRows[query] = await methodSearchSnapshot(cdp, query);
   await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', '');
   const pcAnalysisText = await cdp.evaluate(
     `document.querySelector('.analysis-disclosure')?.textContent ?? ''`,
   );
+  const pcUpdatedReferences = {
+    silla: await methodSearchSnapshot(cdp, '신라대'),
+    dankookMedical: await expandedMethodSnapshot(cdp, '단국대(천안) 의예과'),
+    gradeOnly: await limitedMetricSnapshot(cdp, '대전신학대'),
+    blankIndicator: await limitedMetricSnapshot(cdp, 'POSTECH'),
+  };
+  await capture(cdp, screenshots.pcMethods);
   await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', '간호학');
   const nursing = await cdp.evaluate(`(() => ({
     rows: document.querySelectorAll('.method-row').length,
@@ -479,6 +518,12 @@ try {
     '호원대 간호학과',
   ])
     mobileSplitRows[query] = await methodSearchSnapshot(cdp, query);
+  const mobileLimitedMetric = await limitedMetricSnapshot(cdp, '대전신학대');
+  await capture(cdp, screenshots.mobileMethods);
+  const mobileUpdatedReferences = {
+    silla: await methodSearchSnapshot(cdp, '신라대'),
+    dankookMedical: await expandedMethodSnapshot(cdp, '단국대(천안) 의예과'),
+  };
   await setSearch(cdp, '대학, 전형, 계열, 모집단위 검색', '간호학');
   const mobileForecastTermsInMethods = await cdp.evaluate(
     `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
@@ -546,6 +591,7 @@ try {
     ],
     ['호원대 간호학과', 1, ['간호학과', '(50%)']],
     ['호원대 경영학과', 1, ['경영학과', '(50%)']],
+    ['삼육대 환경디자인원예학과', 1, ['자연', '(35% / 25% / 25% / 15%)']],
   ];
   for (const [query, expectedRows, requiredText] of splitExpectations) {
     const snapshot = pcSplitRows[query];
@@ -566,8 +612,62 @@ try {
     if (mobileSplitRows[query]?.rows !== pcSplitRows[query]?.rows)
       issues.push(`Mobile split search mismatch: ${query}`);
   }
-  if (!pcAnalysisText.replaceAll(/\s/g, '').includes('반영유형425'))
+  if (!pcAnalysisText.replaceAll(/\s/g, '').includes('반영유형438'))
     issues.push(`2027 reference row count mismatch: ${pcAnalysisText}`);
+  if (pcUpdatedReferences.blankIndicator.rows !== 1)
+    issues.push('POSTECH reference should appear once');
+  for (const [device, { silla, dankookMedical }] of Object.entries({
+    PC: pcUpdatedReferences,
+    Mobile: mobileUpdatedReferences,
+  })) {
+    const sillaTokens = ['국어25%', '수학25%', '영어25%', '탐구2—', '탐구125%'];
+    if (
+      !silla.rows ||
+      !silla.summary.every((summary) =>
+        sillaTokens.every((token) =>
+          summary.replaceAll(/\s/g, '').includes(token),
+        ),
+      )
+    )
+      issues.push(`${device} Silla 2027 ratio or inquiry-count mismatch`);
+    const dankookText = [...dankookMedical.summary, dankookMedical.detail]
+      .join(' ')
+      .replaceAll(/\s/g, '');
+    if (
+      dankookMedical.rows !== 1 ||
+      ![
+        '국어25%',
+        '수학35%',
+        '영어15%',
+        '탐구225%',
+        '과탐Ⅱ5%',
+        '미적/기하',
+        '활용지표백분위,표준점수',
+      ].every((token) => dankookText.includes(token))
+    )
+      issues.push(`${device} Dankook Cheonan medical 2027 method mismatch`);
+  }
+  for (const [label, snapshot] of Object.entries({
+    gradeOnly: pcUpdatedReferences.gradeOnly,
+    blankIndicator: pcUpdatedReferences.blankIndicator,
+  })) {
+    if (
+      !snapshot.rows ||
+      !snapshot.rowMarked ||
+      !snapshot.summaryMarked ||
+      snapshot.rowBackground !== 'rgb(244, 239, 251)' ||
+      snapshot.summaryBackground !== 'rgb(244, 239, 251)'
+    )
+      issues.push(`Limited-metric row styling mismatch: ${label}`);
+  }
+  if (
+    !mobileLimitedMetric.rows ||
+    !mobileLimitedMetric.rowMarked ||
+    !mobileLimitedMetric.summaryMarked ||
+    mobileLimitedMetric.rowBackground !== 'rgb(244, 239, 251)' ||
+    mobileLimitedMetric.summaryBackground !== 'rgb(244, 239, 251)'
+  )
+    issues.push('Mobile limited-metric row styling mismatch');
   if (
     !simplifiedPc.advancedFiltersClosed ||
     !simplifiedPc.analysisClosed ||
@@ -655,7 +755,10 @@ try {
     mobileNursingRows,
     pcSplitRows,
     mobileSplitRows,
+    mobileLimitedMetric,
+    mobileUpdatedReferences,
     pcAnalysisText,
+    pcUpdatedReferences,
     centralMedicine,
     flexibleTracks,
     pcResults,
