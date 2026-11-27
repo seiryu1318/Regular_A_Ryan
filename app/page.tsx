@@ -1,7 +1,14 @@
 'use client';
 /* oxlint-disable next/no-img-element -- The logo is embedded in the standalone HTML output. */
 
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import {
   ArrowDown,
   ArrowUp,
@@ -21,6 +28,7 @@ import {
   Smartphone,
   Sparkles,
   Sun,
+  X,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -41,6 +49,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ryanLogo from '@/public/ryan.jpg';
 
+import './header-controls.css';
 import { RELEASE_VERSION } from './release';
 import {
   FULL_ROW_QUARANTINE_IDS,
@@ -1273,7 +1282,10 @@ export default function Home() {
               라이언의 대입포털로 돌아가기
             </a>
             <details className="header-tools-menu">
-              <summary>도구</summary>
+              <summary>
+                도구
+                <span className="header-tools-caret" aria-hidden="true" />
+              </summary>
               <div>
                 <Button
                   variant="outline"
@@ -2045,56 +2057,62 @@ export default function Home() {
                       <TableRow className="result-summary">
                         <TableCell colSpan={6}>
                           <div className="result-summary-grid">
-                            {row.cutMetric === '백분위' ? (
+                            <div className="result-stat-pair result-stat-cut">
+                              {row.cutMetric === '백분위' ? (
+                                <CompactSortValue
+                                  label={scoreCutLabel(row, 50)}
+                                  column="p50"
+                                  value={scoreCutValue(row, row.p50)}
+                                  sort={scoreSort}
+                                  onSort={setScoreSort}
+                                />
+                              ) : (
+                                <CompactStaticValue
+                                  label={scoreCutLabel(row, 50)}
+                                  value={scoreCutValue(row, row.p50)}
+                                />
+                              )}
+                              {row.cutMetric === '백분위' ? (
+                                <CompactSortValue
+                                  label={scoreCutLabel(row, 70)}
+                                  column="p70"
+                                  value={scoreCutValue(row, row.p70)}
+                                  sort={scoreSort}
+                                  onSort={setScoreSort}
+                                />
+                              ) : (
+                                <CompactStaticValue
+                                  label={scoreCutLabel(row, 70)}
+                                  value={scoreCutValue(row, row.p70)}
+                                />
+                              )}
+                            </div>
+                            <div className="result-stat-pair result-stat-converted">
+                              <CompactStaticValue
+                                label="환산 50%"
+                                value={compactFixedNumber(row.cv50, '점')}
+                              />
+                              <CompactStaticValue
+                                label="환산 70%"
+                                value={compactFixedNumber(row.cv70, '점')}
+                              />
+                            </div>
+                            <div className="result-stat-pair">
                               <CompactSortValue
-                                label={scoreCutLabel(row, 50)}
-                                column="p50"
-                                value={scoreCutValue(row, row.p50)}
+                                label="모집인원"
+                                column="n"
+                                value={compactNumber(row.n)}
                                 sort={scoreSort}
                                 onSort={setScoreSort}
                               />
-                            ) : (
-                              <CompactStaticValue
-                                label={scoreCutLabel(row, 50)}
-                                value={scoreCutValue(row, row.p50)}
-                              />
-                            )}
-                            {row.cutMetric === '백분위' ? (
                               <CompactSortValue
-                                label={scoreCutLabel(row, 70)}
-                                column="p70"
-                                value={scoreCutValue(row, row.p70)}
+                                label="경쟁률"
+                                column="c"
+                                value={compactFixedNumber(row.c, ':1')}
                                 sort={scoreSort}
                                 onSort={setScoreSort}
                               />
-                            ) : (
-                              <CompactStaticValue
-                                label={scoreCutLabel(row, 70)}
-                                value={scoreCutValue(row, row.p70)}
-                              />
-                            )}
-                            <CompactSortValue
-                              label="모집인원"
-                              column="n"
-                              value={compactNumber(row.n)}
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
-                            <CompactSortValue
-                              label="경쟁률"
-                              column="c"
-                              value={compactFixedNumber(row.c, ':1')}
-                              sort={scoreSort}
-                              onSort={setScoreSort}
-                            />
-                            <CompactStaticValue
-                              label="환산 50%"
-                              value={compactFixedNumber(row.cv50, '점')}
-                            />
-                            <CompactStaticValue
-                              label="환산 70%"
-                              value={compactFixedNumber(row.cv70, '점')}
-                            />
+                            </div>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -2752,16 +2770,32 @@ function SearchField({
   onChange: (value: string) => void;
   placeholder: string;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="search-field">
       <Search className="search-icon" aria-hidden="true" />
       <Input
+        ref={inputRef}
         aria-label="검색"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="search-input"
         placeholder={placeholder}
       />
+      {value && (
+        <button
+          type="button"
+          className="search-clear-button"
+          aria-label="검색어 지우기"
+          onClick={() => {
+            onChange('');
+            inputRef.current?.focus({ preventScroll: true });
+          }}
+        >
+          <X aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 }

@@ -26,6 +26,9 @@ const screenshots = {
   mobile: join(tmpdir(), 'regular-ryan-runtime-mobile.png'),
   pcMethods: join(tmpdir(), 'regular-ryan-runtime-pc-methods.png'),
   mobileMethods: join(tmpdir(), 'regular-ryan-runtime-mobile-methods.png'),
+  pcResults: join(tmpdir(), 'regular-ryan-runtime-pc-results.png'),
+  pcResultsDark: join(tmpdir(), 'regular-ryan-runtime-pc-results-dark.png'),
+  mobileResults: join(tmpdir(), 'regular-ryan-runtime-mobile-results.png'),
 };
 const mime = {
   '.html': 'text/html; charset=utf-8',
@@ -148,6 +151,168 @@ async function setSearch(cdp, placeholder, value) {
   })()`);
   if (!changed) throw new Error(`Search field not found: ${placeholder}`);
   await wait(350);
+}
+
+async function auditSearchClear(cdp, placeholder, rowSelector) {
+  const snapshot = () =>
+    cdp.evaluate(`(() => {
+    const input = [...document.querySelectorAll('input')].find(
+      (node) => node.placeholder === ${JSON.stringify(placeholder)},
+    );
+    const field = input?.closest('.search-field');
+    const panel = field?.closest('.filter-panel');
+    const clear = field?.querySelector('.search-clear-button');
+    return {
+      value: input?.value,
+      focused: document.activeElement === input,
+      clearLabel: clear?.getAttribute('aria-label') ?? '',
+      selectValues: [...(panel?.querySelectorAll('select') ?? [])].map(select => select.value),
+      rows: document.querySelectorAll(${JSON.stringify(rowSelector)}).length,
+      inputFont: input ? parseFloat(getComputedStyle(input).fontSize) : 0,
+    };
+  })()`);
+  const before = await snapshot();
+  await setSearch(cdp, placeholder, '검증전용존재하지않는모집단위');
+  const typed = await snapshot();
+  await cdp.evaluate(`[...document.querySelectorAll('input')].find(
+    (node) => node.placeholder === ${JSON.stringify(placeholder)},
+  )?.closest('.search-field')?.querySelector('.search-clear-button')?.click()`);
+  await wait(360);
+  const cleared = await snapshot();
+  return {
+    before: before.rows,
+    typed: typed.rows,
+    cleared: cleared.rows,
+    inputFont: cleared.inputFont,
+    passes:
+      before.rows > 0 &&
+      !before.value &&
+      !before.clearLabel &&
+      typed.rows === 0 &&
+      typed.clearLabel === '검색어 지우기' &&
+      !cleared.value &&
+      !cleared.clearLabel &&
+      cleared.focused &&
+      cleared.rows === before.rows &&
+      cleared.selectValues.join() === before.selectValues.join(),
+  };
+}
+
+async function auditToolsMenu(cdp) {
+  const snapshot = () =>
+    cdp.evaluate(`(() => {
+    const menu = document.querySelector('.header-tools-menu');
+    const button = menu?.querySelector('summary');
+    const arrow = menu?.querySelector('.header-tools-caret');
+    const rect = button?.getBoundingClientRect();
+    return {
+      open: menu?.open ?? null,
+      label: button?.textContent?.trim() ?? '',
+      transform: arrow ? getComputedStyle(arrow).transform : null,
+      width: rect?.width ?? 0,
+      height: rect?.height ?? 0,
+      inViewport: Boolean(rect && rect.left >= 0 && rect.right <= innerWidth),
+    };
+  })()`);
+  const closed = await snapshot();
+  const toggle = () =>
+    cdp.evaluate(
+      "document.querySelector('.header-tools-menu summary')?.click()",
+    );
+  await toggle();
+  await wait(220);
+  const open = await snapshot();
+  await toggle();
+  await wait(220);
+  const restored = await snapshot();
+  return {
+    closed,
+    open,
+    restored,
+    passes:
+      closed.label === '도구' &&
+      closed.open === false &&
+      open.open === true &&
+      restored.open === false &&
+      closed.width >= 40 &&
+      closed.height >= 38 &&
+      closed.inViewport &&
+      open.inViewport &&
+      closed.transform !== null &&
+      open.transform !== closed.transform &&
+      restored.transform === closed.transform,
+  };
+}
+
+async function auditResultGeometry(cdp, width, mobile, screenshot) {
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width,
+    height: mobile ? 844 : 980,
+    deviceScaleFactor: 1,
+    mobile,
+  });
+  await wait(120);
+  const layout = await cdp.evaluate(`(() => {
+    const grid = document.querySelector('.result-summary-grid');
+    const cells = [...(grid?.querySelectorAll('.result-stat-pair > *:not(legend)') ?? [])];
+    const outerBounds = grid?.getBoundingClientRect();
+    const centered = cells.every((cell) => {
+      const bounds = cell.getBoundingClientRect();
+      const center = (bounds.left + bounds.right) / 2;
+      return ['span', 'strong'].every((selector) => {
+        const item = cell.querySelector(selector)?.getBoundingClientRect();
+        return item && Math.abs((item.left + item.right) / 2 - center) <= 2;
+      });
+    });
+    const occupiedRows = new Set(cells.map(cell => Math.round(cell.getBoundingClientRect().top))).size;
+    const fits = outerBounds && cells.every((cell) => {
+      const bounds = cell.getBoundingClientRect();
+      return bounds.left >= outerBounds.left - 1 &&
+        bounds.right <= outerBounds.right + 1 && cell.scrollWidth <= cell.clientWidth + 1;
+    });
+    return {
+      width: innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      cellCount: cells.length,
+      occupiedRows,
+      centered,
+      fits: Boolean(fits),
+      values: cells.map(cell => cell.querySelector('strong')?.textContent.trim() ?? ''),
+    };
+  })()`);
+  if (screenshot) await capture(cdp, screenshot);
+  const toggleDetails = () =>
+    cdp.evaluate(
+      "document.querySelector('.result-primary .expand-method-button')?.click()",
+    );
+  await toggleDetails();
+  await wait(120);
+  const detailsVisible = await cdp.evaluate(`(() => {
+    const rows = [...document.querySelectorAll('.result-detail-row')];
+    const row = rows[0];
+    return rows.length === 1 && row.scrollWidth <= row.clientWidth + 1 &&
+      ['실질경쟁률', '충원인원', '환산만점', '2026 국어'].every(label => row.innerText.includes(label));
+  })()`);
+  await toggleDetails();
+  await wait(120);
+  const detailsClosed = await cdp.evaluate(
+    "!document.querySelector('.result-detail-row')",
+  );
+  return {
+    ...layout,
+    detailsVisible,
+    detailsClosed,
+    passes:
+      layout.cellCount === 6 &&
+      layout.occupiedRows === (width <= 640 ? 2 : 1) &&
+      layout.centered &&
+      layout.fits &&
+      detailsVisible &&
+      detailsClosed &&
+      layout.scrollWidth <= layout.width + 1 &&
+      layout.values.includes('57.00%') &&
+      layout.values.includes('653.00점'),
+  };
 }
 
 async function methodSearchSnapshot(cdp, query) {
@@ -545,8 +710,21 @@ try {
     headerAligns: [...document.querySelectorAll('thead th')].map((node) => getComputedStyle(node).textAlign),
     changeSummaryClosed: !document.querySelector('.change-summary-disclosure')?.open,
   }))()`);
+  const pcTools = await auditToolsMenu(cdp);
+  const pcSearchClear = {
+    changes: await auditSearchClear(
+      cdp,
+      '대학, 전형, 모집단위 검색',
+      '[data-change-id]',
+    ),
+  };
   const pcChanges = await auditChangeCategories(cdp, 10, screenshots.pcChanges);
   await clickText(cdp, '2027 반영방법');
+  pcSearchClear.methods = await auditSearchClear(
+    cdp,
+    '대학, 전형, 계열, 모집단위 검색',
+    '.method-row',
+  );
   const initialPcRows = await cdp.evaluate(
     `document.querySelectorAll('.method-row').length`,
   );
@@ -607,11 +785,45 @@ try {
     `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
   );
   await clickText(cdp, '3개년 입시결과');
+  pcSearchClear.results = await auditSearchClear(
+    cdp,
+    '대학, 모집단위, 전형명 검색',
+    '.result-primary',
+  );
+  const pcResultGeometry = await auditResultGeometry(
+    cdp,
+    985,
+    false,
+    screenshots.pcResults,
+  );
+  await cdp.evaluate(`(() => {
+    const tools = document.querySelector('.header-tools-menu');
+    tools.open = true;
+    tools.querySelector('.theme-button').click();
+  })()`);
+  await wait(120);
+  const darkResultTheme = await cdp.evaluate(
+    "document.documentElement.classList.contains('dark')",
+  );
+  await cdp.evaluate(
+    "document.querySelector('.header-tools-menu').open = false",
+  );
+  await wait(180);
+  await capture(cdp, screenshots.pcResultsDark);
+  await cdp.evaluate(
+    "document.querySelector('.header-tools-menu .theme-button')?.click()",
+  );
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: 1440,
+    height: 980,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
   const initialPcScoreRows = await cdp.evaluate(
     `document.querySelectorAll('.result-primary').length`,
   );
   const pcResults = await cdp.evaluate(`(() => ({
-    labels: [...document.querySelectorAll('.result-summary-grid')]
+    labels: [...document.querySelectorAll('.result-stat-pair')]
       .flatMap((node) => [...node.children].map((child) => child.firstElementChild?.textContent?.trim() ?? '')),
     detailRows: document.querySelectorAll('.result-detail-row').length,
     filterClosed: !document.querySelector('.results-filter-panel .filter-more')?.open,
@@ -659,6 +871,14 @@ try {
       .map((node) => Number.parseFloat(getComputedStyle(node).fontSize)),
     changeSummaryClosed: !document.querySelector('.change-summary-disclosure')?.open,
   }))()`);
+  const mobileTools = await auditToolsMenu(cdp);
+  const mobileSearchClear = {
+    changes: await auditSearchClear(
+      cdp,
+      '대학, 전형, 모집단위 검색',
+      '[data-change-id]',
+    ),
+  };
   const mobileChanges = await auditChangeCategories(
     cdp,
     5,
@@ -687,6 +907,11 @@ try {
   mobileChanges.narrowFiltersPass = narrowChangeFilters;
   mobileChanges.passes &&= narrowChangeFilters;
   await clickText(cdp, '2027 반영방법');
+  mobileSearchClear.methods = await auditSearchClear(
+    cdp,
+    '대학, 전형, 계열, 모집단위 검색',
+    '.method-row',
+  );
   const initialMobileRows = await cdp.evaluate(
     `document.querySelectorAll('.method-row').length`,
   );
@@ -720,11 +945,29 @@ try {
     `document.body.innerText.includes('2027 예상 백분위컷') || document.body.innerText.includes('2027 예상컷')`,
   );
   await clickText(cdp, '3개년 입시결과');
+  mobileSearchClear.results = await auditSearchClear(
+    cdp,
+    '대학, 모집단위, 전형명 검색',
+    '.result-primary',
+  );
+  const mobileResultGeometry = await auditResultGeometry(
+    cdp,
+    390,
+    true,
+    screenshots.mobileResults,
+  );
+  const narrowMobileResultGeometry = await auditResultGeometry(cdp, 320, true);
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: 390,
+    height: 844,
+    deviceScaleFactor: 1,
+    mobile: true,
+  });
   const initialMobileScoreRows = await cdp.evaluate(
     `document.querySelectorAll('.result-primary').length`,
   );
   const mobileResults = await cdp.evaluate(`(() => ({
-    labels: [...document.querySelectorAll('.result-summary-grid')]
+    labels: [...document.querySelectorAll('.result-stat-pair')]
       .flatMap((node) => [...node.children].map((child) => child.firstElementChild?.textContent?.trim() ?? '')),
     detailRows: document.querySelectorAll('.result-detail-row').length,
     filterClosed: !document.querySelector('.results-filter-panel .filter-more')?.open,
@@ -935,12 +1178,37 @@ try {
     issues.push('Change summary is open by default');
   if (!pcChanges.passes || !mobileChanges.passes)
     issues.push('Change tabs category, layout or search mismatch');
+  if (![pcTools, mobileTools].every((result) => result.passes))
+    issues.push('Tools menu layout or open/close state mismatch');
+  if (Object.values(pcSearchClear).some((result) => !result.passes))
+    issues.push('PC search clear mismatch');
+  if (
+    Object.values(mobileSearchClear).some(
+      (result) => !result.passes || result.inputFont < 16,
+    )
+  )
+    issues.push('Mobile search clear or input zoom mismatch');
+  if (
+    ![pcResultGeometry, mobileResultGeometry, narrowMobileResultGeometry].every(
+      (result) => result.passes,
+    )
+  )
+    issues.push('Result stats alignment, visibility or viewport mismatch');
+  if (!darkResultTheme) issues.push('Results dark theme failed to activate');
 
   report = {
     pc,
     responsivePc,
     pcChanges,
     mobileChanges,
+    pcSearchClear,
+    mobileSearchClear,
+    pcTools,
+    mobileTools,
+    pcResultGeometry,
+    mobileResultGeometry,
+    narrowMobileResultGeometry,
+    darkResultTheme,
     mobile,
     initialPcRows,
     initialMobileRows,

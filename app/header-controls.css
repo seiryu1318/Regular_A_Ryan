@@ -1,0 +1,85 @@
+.search-field > .search-input[data-slot='input'] {
+  padding-inline-end: 42px;
+}
+
+.search-clear-button {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: 50%;
+  inset-inline-end: 3px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: min(38px, calc(100% - 6px));
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.search-clear-button:hover,
+.search-clear-button:focus-visible {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.search-clear-button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+.search-clear-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.masthead
+  .header-actions
+  :is(.navigation-button, .header-tools-menu > summary) {
+  min-height: 40px;
+  height: 40px;
+}
+
+.masthead .header-actions .header-tools-menu > summary {
+  gap: 8px;
+  border-color: rgba(173, 221, 238, 0.34);
+  border-radius: 7px;
+  background: #10323f;
+  color: #eefaff;
+}
+
+.masthead .header-actions .header-tools-menu > summary::after {
+  content: none;
+}
+
+.masthead .header-actions .header-tools-menu > summary:hover,
+.masthead .header-actions .header-tools-menu[open] > summary {
+  border-color: #84c6dd;
+  background: #164654;
+}
+
+.masthead .header-actions .header-tools-menu > summary:focus-visible {
+  outline: 2px solid #b1e9fc;
+  outline-offset: 2px;
+}
+
+.header-tools-caret {
+  flex: 0 0 10px;
+  width: 10px;
+  height: 6px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: #a4def0;
+  transition: transform 160ms ease;
+}
+
+.header-tools-menu[open] .header-tools-caret {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-tools-caret {
+    transition: none;
+  }
+}

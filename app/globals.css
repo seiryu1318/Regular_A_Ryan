@@ -5005,3 +5005,137 @@ html.mobile-build .change-category-tabs [data-slot='tabs-trigger'] {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* 정시 입시결과는 같은 지표의 두 값을 한 묶음에 표시한다. */
+html .results-table-compact .result-summary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+  padding: 5px 7px;
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
+}
+.result-stat-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--card);
+}
+.result-stat-cut {
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+}
+.result-stat-converted {
+  background: color-mix(in srgb, #e0a749 9%, var(--card));
+}
+html
+  .results-table-compact
+  .result-summary-grid
+  .result-stat-pair
+  > :is(.compact-sort-value, .compact-static-value) {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  min-height: 42px;
+  padding: 4px 3px;
+  text-align: center;
+}
+.results-table-compact
+  .result-summary-grid
+  .result-stat-pair
+  > :is(.compact-sort-value, .compact-static-value)
+  + :is(.compact-sort-value, .compact-static-value) {
+  border-inline-start: 1px solid var(--border);
+}
+.results-table-compact
+  .result-summary-grid
+  .result-stat-pair
+  > :is(.compact-sort-value, .compact-static-value)
+  > span {
+  color: var(--muted-foreground);
+  font-size: clamp(11px, 1.25vw, 13px);
+  justify-content: center;
+}
+.results-table-compact
+  .result-summary-grid
+  .result-stat-pair
+  > :is(.compact-sort-value, .compact-static-value)
+  > strong {
+  color: var(--foreground);
+  font-size: clamp(13px, 1.6vw, 15px);
+  text-align: center;
+}
+html
+  .results-table-compact
+  .result-stat-pair
+  .compact-sort-value:is(:hover, .is-active) {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+.results-table-compact .result-stat-pair .compact-sort-value:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+html .results-table-compact .result-secondary-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.results-table-compact .result-secondary-grid > :nth-child(4n) {
+  border-inline-end: 0;
+}
+.results-table-compact .result-primary :is(.table-link, .department-cell) {
+  overflow-wrap: anywhere;
+}
+@media (min-width: 761px) {
+  html:not(.mobile-build)
+    .results-table-compact
+    .result-primary
+    .department-cell {
+    display: table-cell;
+  }
+}
+@media (max-width: 760px) {
+  html:not(.mobile-build) .results-table-compact .result-summary-grid {
+    margin-bottom: 8px;
+  }
+  html:not(.mobile-build)
+    .results-table-compact
+    .result-primary.is-expanded
+    + .result-summary
+    .result-summary-grid {
+    margin-bottom: 0;
+  }
+}
+html.mobile-build .results-table-compact .result-summary-grid {
+  margin-bottom: 8px;
+}
+html.mobile-build
+  .results-table-compact
+  .result-primary.is-expanded
+  + .result-summary
+  .result-summary-grid {
+  margin-bottom: 0;
+}
+@media (max-width: 640px) {
+  .results-table-compact .result-stat-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .results-table-compact
+    .result-summary-grid
+    .result-stat-pair
+    > :is(.compact-sort-value, .compact-static-value)
+    + :is(.compact-sort-value, .compact-static-value) {
+    border-inline-start: 0;
+    border-top: 1px solid var(--border);
+  }
+}
+@media (max-width: 410px) {
+  html .results-table-compact .result-secondary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .results-table-compact .result-secondary-grid > :nth-child(2n) {
+    border-inline-end: 0;
+  }
+}
