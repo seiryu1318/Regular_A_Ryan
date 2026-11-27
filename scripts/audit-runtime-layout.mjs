@@ -11,6 +11,9 @@ import { tmpdir } from 'node:os';
 import { extname, join, resolve } from 'node:path';
 
 const root = process.cwd();
+const admissionsData = JSON.parse(
+  readFileSync(join(root, 'public', 'admissions-data.json'), 'utf8'),
+);
 const edge =
   process.env.EDGE_PATH ??
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
@@ -161,7 +164,19 @@ async function methodSearchSnapshot(cdp, query) {
 
 async function auditChangeCategories(cdp, initial, screenshot) {
   const categories = ['모집인원 변동', '모집군(모집시기) 변동', '기타 변동'];
-  const placeholder = '대학, 모집단위, 변경 내용 검색';
+  const sections = ['quota', 'timing', 'other'];
+  const nationalChanges = admissionsData.nationalChanges;
+  const expected = nationalChanges
+    ? sections.map((section) =>
+        nationalChanges.filter((row) => row.section === section),
+      )
+    : [
+        [2, 20, 42, 68],
+        [3, 6, 7, 22, 23, 28, 47, 75, 80],
+        [10, 13, 17, 18, 19, 21, 32, 45, 46, 54, 55, 66, 78],
+      ].map((ids) => ids.map((id) => ({ id })));
+  const expectedCounts = expected.map((rows) => rows.length);
+  const placeholder = '대학, 전형, 모집단위 검색';
   const choose = async (label) => {
     const clicked = await cdp.evaluate(`(() => {
       const tabs = [...document.querySelectorAll('.change-category-tabs [role=tab]')];
@@ -179,71 +194,129 @@ async function auditChangeCategories(cdp, initial, screenshot) {
       const active = nav?.querySelector('[aria-selected=true]');
       const panel = active && document.getElementById(active.getAttribute('aria-controls'));
       const cards = [...(panel?.querySelectorAll('[data-change-id]') ?? [])];
+      const filters = document.querySelector('.changes-filter-panel');
+      const labels = [...(filters?.querySelectorAll('.filter-field > span') ?? [])];
+      const controls = [...(filters?.querySelectorAll('input, select') ?? [])];
+      const filterCentered = labels.length === 2 && controls.length === 3 &&
+        labels.every((label) => getComputedStyle(label).textAlign === 'center') &&
+        controls.every((control) => {
+          const style = getComputedStyle(control);
+          return style.textAlign === 'center' &&
+            style.paddingInlineStart === style.paddingInlineEnd &&
+            (control.tagName !== 'SELECT' || style.textAlignLast === 'center');
+        });
       return {
         active: active?.getAttribute('aria-label') ?? '',
         panelVisible: Boolean(panel && !panel.hidden),
         totals: [...(nav?.querySelectorAll('.change-tab-count') ?? [])].map((node) => Number(node.textContent)),
         ids: cards.map((node) => Number(node.dataset.changeId)),
         years: cards.every((card) => [...card.querySelectorAll('h4')].map((year) => year.textContent).join('/') === '2026/2027'),
+        evidence: cards.map((card) => ({
+          unit: card.querySelector('.change-card-unit')?.textContent.trim(),
+          sources: [...card.querySelectorAll('h4 a')].map((link) => link.getAttribute('href')),
+        })),
         text: panel?.innerText ?? '',
         width: innerWidth,
         scrollWidth: Math.max(document.body.scrollWidth, document.documentElement.scrollWidth),
         navFits: Boolean(nav && nav.scrollWidth <= nav.clientWidth + 1),
+        filterCentered,
       };
     })()`);
   const start = await snapshot();
   const all = [];
-  for (const label of categories) {
+  const toggle = async (label) => {
+    const clicked = await cdp.evaluate(`(() => {
+      const panel = document.querySelector('.change-section-panel:not([hidden])');
+      const button = [...(panel?.querySelectorAll('button') ?? [])].find((node) => node.textContent.trim() === ${JSON.stringify(label)});
+      if (!button) return false;
+      button.click();
+      return true;
+    })()`);
+    if (clicked) await wait(100);
+    return clicked;
+  };
+  for (const [i, label] of categories.entries()) {
     await choose(label);
-    for (let i = 0; i < 6; i += 1) {
-      const expanded = await cdp.evaluate(`(() => {
-        const panel = document.querySelector('.change-section-panel:not([hidden])');
-        const button = [...(panel?.querySelectorAll('button') ?? [])].find((node) => node.textContent.trim() === '펼치기');
-        if (!button) return false;
-        button.click();
-        return true;
-      })()`);
-      if (!expanded) break;
-      await wait(90);
-    }
-    all.push(await snapshot());
+    const first = await snapshot();
+    const expanded = await toggle('펼치기');
+    const second = expanded ? await snapshot() : first;
+    const collapsed = expanded && (await toggle('접기'));
+    const restored = collapsed ? await snapshot() : first;
+    const byId = new Map(expected[i].map((row) => [row.id, row]));
+    const secondMatches = second.ids.every((id, index) => {
+      const row = byId.get(id);
+      if (!row || !nationalChanges) return Boolean(row);
+      const evidence = second.evidence[index];
+      return (
+        evidence.unit === [row.exam, row.department].join(' · ') &&
+        evidence.sources.join('\n') ===
+          [row.sources?.previous, row.sources?.current].join('\n')
+      );
+    });
+    all.push({
+      first,
+      second,
+      passes:
+        first.active === label &&
+        first.ids.length === Math.min(expectedCounts[i], initial) &&
+        expanded === expectedCounts[i] > initial &&
+        collapsed === expanded &&
+        second.ids.length === Math.min(expectedCounts[i], initial * 2) &&
+        new Set(second.ids).size === second.ids.length &&
+        secondMatches &&
+        first.ids.join() === restored.ids.join() &&
+        [first, second].every(
+          (entry) =>
+            entry.years &&
+            entry.panelVisible &&
+            entry.navFits &&
+            entry.filterCentered &&
+            entry.scrollWidth <= entry.width + 1,
+        ),
+    });
   }
-  await choose(categories[0]);
-  await setSearch(cdp, placeholder, '경희대 국제학과');
-  const searchedQuota = await snapshot();
-  await choose(categories[1]);
-  const searchedTiming = await snapshot();
-  await setSearch(cdp, placeholder, '');
+  const sampleIndex = all[1].first.ids.length
+    ? 1
+    : all.findIndex(({ first }) => first.ids.length);
+  let searchPasses = false;
+  if (sampleIndex !== -1) {
+    const sampleId = all[sampleIndex].first.ids[0];
+    const sample = expected[sampleIndex].find((row) => row.id === sampleId);
+    if (sample) {
+      const query = nationalChanges
+        ? [sample.u, sample.exam, sample.department].join(' ')
+        : '경희대 국제학과';
+      await choose(categories[(sampleIndex + 1) % categories.length]);
+      await setSearch(cdp, placeholder, query);
+      const beforeSwitch = await snapshot();
+      await choose(categories[sampleIndex]);
+      const afterSwitch = await snapshot();
+      searchPasses =
+        beforeSwitch.totals.join() === afterSwitch.totals.join() &&
+        afterSwitch.ids.includes(nationalChanges ? sampleId : 7);
+      await setSearch(cdp, placeholder, '');
+    }
+  }
   await capture(cdp, screenshot);
   await choose(categories[0]);
-  const ids = all.flatMap((entry) => entry.ids);
   return {
     initial: start.ids.length,
     totals: start.totals,
-    groups: all.map(({ active, ids }) => ({ active, ids })),
+    filterCentered: start.filterCentered,
+    groups: all.map(({ first, second }) => ({
+      active: first.active,
+      initial: first.ids.length,
+      expanded: second.ids.length,
+    })),
     passes:
       start.active === categories[0] &&
-      start.ids.length === Math.min(4, initial) &&
-      start.totals.join('/') === '4/9/13' &&
-      all.every(
-        (entry, i) =>
-          entry.active === categories[i] &&
-          entry.ids.length === start.totals[i] &&
-          entry.years &&
-          entry.panelVisible &&
-          entry.navFits &&
-          entry.scrollWidth <= entry.width + 1,
-      ) &&
-      ids.length === 26 &&
-      new Set(ids).size === 26 &&
-      all[0].ids.includes(20) &&
-      all[0].text.includes('309명') &&
-      all[0].text.includes('149명') &&
-      all[0].text.includes('147명') &&
-      all[1].ids.includes(6) &&
-      all[1].text.includes('수시모집으로 이동') &&
-      searchedQuota.ids.length === 0 &&
-      searchedTiming.ids.join() === '7',
+      start.totals.join() === expectedCounts.join() &&
+      (!nationalChanges ||
+        (await cdp.evaluate(
+          "document.querySelector('.change-workspace')?.textContent.includes('공식 모집요강과 대조해 확인한 항목') ?? false",
+        ))) &&
+      all.every(({ passes }) => passes) &&
+      searchPasses,
   };
 }
 
@@ -591,6 +664,28 @@ try {
     5,
     screenshots.mobileChanges,
   );
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: 320,
+    height: 760,
+    deviceScaleFactor: 1,
+    mobile: true,
+  });
+  await wait(100);
+  const narrowChangeFilters = await cdp.evaluate(`(() => {
+    const [search, university, sort] = [...document.querySelectorAll('.changes-filter-panel input, .changes-filter-panel select')];
+    const boxes = [search, university, sort].filter(Boolean).map((control) => control.getBoundingClientRect());
+    return boxes.length === 3 && boxes.every((box) => box.left >= 0 && box.right <= innerWidth + 1) &&
+      boxes[0].bottom <= boxes[1].top && boxes[1].bottom <= boxes[2].top &&
+      document.documentElement.scrollWidth <= innerWidth + 1;
+  })()`);
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: 390,
+    height: 844,
+    deviceScaleFactor: 1,
+    mobile: true,
+  });
+  mobileChanges.narrowFiltersPass = narrowChangeFilters;
+  mobileChanges.passes &&= narrowChangeFilters;
   await clickText(cdp, '2027 반영방법');
   const initialMobileRows = await cdp.evaluate(
     `document.querySelectorAll('.method-row').length`,

@@ -1,0 +1,59 @@
+{
+  "status": "VERIFIED_SUBSET",
+  "categories": {
+    "timing": 100,
+    "quota": 317,
+    "other": 158
+  },
+  "campusesRepresentedByDisplayName": 55,
+  "comparison": {
+    "sourceComplete": true,
+    "expectedYearCampusPairs": 408,
+    "completeYearCampusPairs": 408,
+    "completePairedCampuses": 204,
+    "campusesWithRowsInBothYears": 200,
+    "inputRows": 13437,
+    "universitiesWithRows": 200,
+    "matching": {
+      "comparable": 3873,
+      "oneYearOnly": 2477,
+      "conditionalOrUnknownQuota": 1580
+    },
+    "omittedRows": {
+      "specialAdmission": 53
+    },
+    "candidateCounts": {
+      "quota": 1131,
+      "timing": 176,
+      "other": 106
+    },
+    "sourceErrors": [],
+    "inputSha256": "4a379cc734dc034ecb4c758570b96e8a9312befa0f8cc9106c8dcd335d4e261a",
+    "additionalInputSha256": [
+      "a97fab35fadd30d6ebb4834360830ec0149ca9ea41661a1fe70fe482c2fc8abe"
+    ],
+    "guideVerification": {
+      "awaitingGuide:quota": 825,
+      "verified:quota": 306,
+      "verified:timing": 53,
+      "awaitingGuide:timing": 123,
+      "awaitingMethod:other": 11,
+      "awaitingGuide:other": 95
+    }
+  },
+  "guideEvidence": {
+    "counts": {
+      "verified": 850,
+      "conflicts": 0,
+      "unresolved": 1618
+    },
+    "unresolvedReasons": {
+      "guide inspected but no structured quota table extracted": 310,
+      "no exact unit + exam + group + quota cell found": 1308
+    },
+    "sha256": "dbe878cf53c4fd369c381baa3ed04edfa3f629ac6ffb634b55dbe0d0cd5d3c90"
+  },
+  "exhaustive": false,
+  "records": 575,
+  "recordsSha256": "d3a2f95fc8a5ea3a66583fc9f146ebf6b081788001c611ee142416df7691f81e"
+}

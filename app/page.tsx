@@ -78,8 +78,12 @@ type ChangeRow = {
   category: string;
   current: string;
   previous: string;
-  sourceFile: string;
+  sourceFile?: string;
   referenceLabel?: string;
+  section?: ChangeSection;
+  exam?: string;
+  department?: string;
+  sources?: { previous: string; current: string };
 };
 
 const CHANGE_SECTIONS = [
@@ -92,6 +96,7 @@ const QUOTA_CHANGE_IDS = new Set([2, 20, 42, 68]);
 const TIMING_CHANGE_IDS = new Set([3, 6, 7, 22, 23, 28, 47, 75, 80]);
 
 function changeSectionFor(row: ChangeRow): ChangeSection {
+  if (row.section) return row.section;
   if (QUOTA_CHANGE_IDS.has(row.id)) return 'quota';
   if (TIMING_CHANGE_IDS.has(row.id)) return 'timing';
   return 'other';
@@ -240,6 +245,8 @@ type SourceRow = {
 type AdmissionsData = {
   overview: Overview;
   changes: ChangeRow[];
+  nationalChanges?: ChangeRow[];
+  nationalChangesReview?: boolean;
   profiles: Profile[];
   studentRecord: StudentRecordRow[];
   scores: ScoreRow[];
@@ -685,10 +692,27 @@ export default function Home() {
     });
   }, [regularScores]);
   const regularChanges = useMemo(
-    () => regularAdmissionChanges(data?.changes ?? []),
+    () => data?.nationalChanges ?? regularAdmissionChanges(data?.changes ?? []),
     [data],
   );
 
+  const changeSearchIndex = useMemo(
+    () =>
+      regularChanges.map((row) => ({
+        row,
+        searchable: normalize(
+          [
+            row.u,
+            row.exam,
+            row.department,
+            row.category,
+            row.current,
+            row.previous,
+          ].join(' '),
+        ),
+      })),
+    [regularChanges],
+  );
   const changeUniversities = useMemo(
     () => unique(regularChanges.map((row) => row.u)),
     [regularChanges],
@@ -760,15 +784,13 @@ export default function Home() {
       .split(/\s+/)
       .filter(Boolean)
       .map(normalize);
-    const filtered = regularChanges.filter((row) => {
-      const searchable = normalize(
-        `${row.u} ${row.category} ${row.current} ${row.previous}`,
-      );
-      return (
-        terms.every((term) => searchable.includes(term)) &&
-        (changeUniversity === '전체' || row.u === changeUniversity)
-      );
-    });
+    const filtered = changeSearchIndex
+      .filter(
+        ({ row, searchable }) =>
+          (changeUniversity === '전체' || row.u === changeUniversity) &&
+          terms.every((term) => searchable.includes(term)),
+      )
+      .map(({ row }) => row);
     const sorted = sortRows(filtered, changeSort, {
       u: (row) => row.u,
       category: (row) => row.category,
@@ -782,7 +804,7 @@ export default function Home() {
     };
     for (const row of sorted) grouped[changeSectionFor(row)].push(row);
     return grouped;
-  }, [changeQuery, changeSort, changeUniversity, regularChanges]);
+  }, [changeQuery, changeSearchIndex, changeSort, changeUniversity]);
   const changeRows = changeRowsBySection[changeSection];
 
   const matchingProfiles = useMemo(() => {
@@ -1037,13 +1059,27 @@ export default function Home() {
       )?.label;
       downloadCsv(
         `2027_정시_${sectionLabel}.csv`,
-        ['대학', '카테고리', '구분', '2026학년도', '2027학년도'],
+        [
+          '대학',
+          '전형',
+          '모집단위',
+          '카테고리',
+          '구분',
+          '2026학년도',
+          '2027학년도',
+          '2026 근거',
+          '2027 근거',
+        ],
         changeRows.map((row) => [
           row.u,
+          row.exam ?? '',
+          row.department ?? '',
           sectionLabel,
           row.category,
           row.previous,
           row.current,
+          row.sources?.previous ?? '',
+          row.sources?.current ?? row.sourceFile ?? '',
         ]),
       );
     } else if (tab === 'rules') {
@@ -1320,7 +1356,7 @@ export default function Home() {
                     setChangeQuery(value);
                     setChangeListBatch(1);
                   }}
-                  placeholder="대학, 모집단위, 변경 내용 검색"
+                  placeholder="대학, 전형, 모집단위 검색"
                 />
                 <FilterSelect
                   label="대학"
@@ -1362,6 +1398,13 @@ export default function Home() {
                 </label>
               </FilterPanel>
 
+              {data?.nationalChanges && (
+                <p className="px-2 text-sm text-muted-foreground">
+                  {data.nationalChangesReview && '검토본 · '}
+                  공식 모집요강과 대조해 확인한 항목의 건수입니다. 추가 확인이
+                  필요한 변동은 집계를 보류했습니다.
+                </p>
+              )}
               {CHANGE_SECTIONS.map(({ value, label }) => (
                 <TabsContent
                   key={value}
@@ -1433,24 +1476,38 @@ export default function Home() {
                                 <header className="change-card-heading">
                                   <h3>{row.u}</h3>
                                   <span>{row.category}</span>
-                                  {row.sourceFile.startsWith('https://') && (
-                                    <a
-                                      href={row.sourceFile}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      aria-label={`${row.u} 공식 근거`}
-                                    >
-                                      근거 <ExternalLink aria-hidden="true" />
-                                    </a>
-                                  )}
+                                  {!row.sources &&
+                                    row.sourceFile?.startsWith('https://') && (
+                                      <a
+                                        href={row.sourceFile}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        aria-label={`${row.u} 공식 근거`}
+                                      >
+                                        근거 <ExternalLink aria-hidden="true" />
+                                      </a>
+                                    )}
                                 </header>
+                                {(row.exam || row.department) && (
+                                  <p className="change-card-unit">
+                                    {[row.exam, row.department]
+                                      .filter(Boolean)
+                                      .join(' · ')}
+                                  </p>
+                                )}
                                 <div className="change-comparison">
                                   <div className="change-period">
-                                    <h4>2026</h4>
+                                    <ChangeYear
+                                      year="2026"
+                                      source={row.sources?.previous}
+                                    />
                                     <ChangeContent text={row.previous} />
                                   </div>
                                   <div className="change-period change-period-current">
-                                    <h4>2027</h4>
+                                    <ChangeYear
+                                      year="2027"
+                                      source={row.sources?.current}
+                                    />
                                     <ChangeContent text={row.current} />
                                   </div>
                                 </div>
@@ -2405,6 +2462,26 @@ function Fact({
 function changeDeltaLabel(delta: number) {
   if (!delta) return '전년과 동일';
   return `전년 대비 ${formatNumber(Math.abs(delta))}명 ${delta < 0 ? '감소' : '증가'}`;
+}
+
+function ChangeYear({ year, source }: { year: string; source?: string }) {
+  return (
+    <h4>
+      {source?.startsWith('https://') ? (
+        <a
+          href={source}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`${year}학년도 모집요강`}
+        >
+          {year}
+          <ExternalLink aria-hidden="true" />
+        </a>
+      ) : (
+        year
+      )}
+    </h4>
+  );
 }
 
 function ChangeContent({ text }: { text: string }) {

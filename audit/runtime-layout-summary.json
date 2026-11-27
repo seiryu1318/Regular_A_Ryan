@@ -2,7 +2,7 @@
   "pc": {
     "title": "라이언의 2027 정시모집",
     "width": 1416,
-    "scrollWidth": 1416,
+    "scrollWidth": 1401,
     "nav": [
       "일정",
       "2027 변동사항",
@@ -33,108 +33,59 @@
     }
   ],
   "pcChanges": {
-    "initial": 4,
+    "initial": 10,
     "totals": [
-      4,
-      9,
-      13
+      317,
+      100,
+      158
     ],
+    "filterCentered": true,
     "groups": [
       {
         "active": "모집인원 변동",
-        "ids": [
-          2,
-          20,
-          42,
-          68
-        ]
+        "initial": 10,
+        "expanded": 20
       },
       {
         "active": "모집군(모집시기) 변동",
-        "ids": [
-          3,
-          6,
-          7,
-          22,
-          23,
-          28,
-          47,
-          75,
-          80
-        ]
+        "initial": 10,
+        "expanded": 20
       },
       {
         "active": "기타 변동",
-        "ids": [
-          10,
-          13,
-          17,
-          18,
-          19,
-          21,
-          32,
-          45,
-          46,
-          54,
-          55,
-          66,
-          78
-        ]
+        "initial": 10,
+        "expanded": 20
       }
     ],
     "passes": true
   },
   "mobileChanges": {
-    "initial": 4,
+    "initial": 5,
     "totals": [
-      4,
-      9,
-      13
+      317,
+      100,
+      158
     ],
+    "filterCentered": true,
     "groups": [
       {
         "active": "모집인원 변동",
-        "ids": [
-          2,
-          20,
-          42,
-          68
-        ]
+        "initial": 5,
+        "expanded": 10
       },
       {
         "active": "모집군(모집시기) 변동",
-        "ids": [
-          3,
-          6,
-          7,
-          22,
-          23,
-          28,
-          47,
-          75,
-          80
-        ]
+        "initial": 5,
+        "expanded": 10
       },
       {
         "active": "기타 변동",
-        "ids": [
-          10,
-          13,
-          17,
-          18,
-          19,
-          21,
-          32,
-          45,
-          46,
-          54,
-          55,
-          66,
-          78
-        ]
+        "initial": 5,
+        "expanded": 10
       }
     ],
-    "passes": true
+    "passes": true,
+    "narrowFiltersPass": true
   },
   "mobile": {
     "title": "라이언의 2027 정시모집",

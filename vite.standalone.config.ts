@@ -6,13 +6,29 @@ import tailwindcss from '@tailwindcss/postcss';
 import { defineConfig } from 'vite';
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+const reviewRoot = process.env.RYAN_STANDALONE_OUTPUT;
 
 export default defineConfig({
   root: path.join(projectRoot, 'standalone'),
   base: './',
   publicDir: false,
   resolve: {
-    alias: { '@': projectRoot },
+    alias: [
+      ...(reviewRoot
+        ? [
+            {
+              find: '../public/admissions-data.json',
+              replacement: path.resolve(
+                projectRoot,
+                reviewRoot,
+                'public',
+                'admissions-data.json',
+              ),
+            },
+          ]
+        : []),
+      { find: '@', replacement: projectRoot },
+    ],
   },
   css: { postcss: { plugins: [tailwindcss()] } },
   plugins: [react()],

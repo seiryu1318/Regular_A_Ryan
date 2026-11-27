@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import re
 from datetime import date
@@ -8,9 +9,7 @@ from urllib.parse import urlparse
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_PATH = ROOT / "public" / "admissions-data.json"
 APP_PATH = ROOT / "app" / "page.tsx"
-REPORT_PATH = ROOT / "audit" / "all-tabs-summary.json"
 
 
 def issue(issues: list[dict], tab: str, code: str, detail: str) -> None:
@@ -40,8 +39,55 @@ def score_aliases(source: str) -> dict[str, str]:
     return aliases
 
 
+def audit_national_changes(rows: list[dict], issues: list[dict]) -> tuple[set[int], dict]:
+    labels = {
+        "quota": "모집인원 변동",
+        "timing": "모집군(모집시기) 변동",
+        "other": "기타 변동",
+    }
+    categories = dict.fromkeys(labels.values(), 0)
+    ids = set()
+    identities = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            issue(issues, "정시 변화", "invalid-change-row", repr(row))
+            continue
+        row_id = row.get("id")
+        if type(row_id) is not int or row_id in ids:
+            issue(issues, "정시 변화", "invalid-change-id", repr(row_id))
+        else:
+            ids.add(row_id)
+        section = row.get("section")
+        if section in labels:
+            categories[labels[section]] += 1
+        else:
+            issue(issues, "정시 변화", "invalid-change-section", f"ID {row_id}")
+        for field in ("u", "exam", "department", "category", "previous", "current"):
+            if not isinstance(row.get(field), str) or not row[field].strip():
+                issue(issues, "정시 변화", "blank-field", f"ID {row_id} {field}")
+        identity = tuple(row.get(key) for key in ("section", "u", "exam", "department", "category"))
+        if identity in identities:
+            issue(issues, "정시 변화", "duplicate-change", repr(identity))
+        identities.add(identity)
+        if row.get("previous") == row.get("current"):
+            issue(issues, "정시 변화", "unchanged-values", f"ID {row_id}")
+        sources = row.get("sources", {})
+        for year_key in ("previous", "current"):
+            value = sources.get(year_key) if isinstance(sources, dict) else None
+            source = urlparse(value if isinstance(value, str) else "")
+            if source.scheme != "https" or not source.hostname:
+                issue(issues, "정시 변화", "invalid-year-source", f"ID {row_id} {year_key}")
+    return ids, categories
+
+
 def main() -> None:
-    data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--review-dir", type=Path)
+    args = parser.parse_args()
+    output_root = ROOT / args.review_dir if args.review_dir else ROOT
+    data_path = output_root / "public" / "admissions-data.json"
+    report_path = output_root / "audit" / "all-tabs-summary.json"
+    data = json.loads(data_path.read_text(encoding="utf-8"))
     app_source = APP_PATH.read_text(encoding="utf-8")
     issues: list[dict] = []
 
@@ -71,6 +117,14 @@ def main() -> None:
                 issue(issues, "정시 변화", "blank-field", f"ID {change_id} {field}")
     if "regularAdmissionChanges(data?.changes" not in app_source:
         issue(issues, "정시 변화", "render-filter", "정시 전용 필터 연결을 확인할 수 없음")
+    if "nationalChanges" in data:
+        national_changes = data["nationalChanges"]
+        if not isinstance(national_changes, list) or not national_changes:
+            issue(issues, "정시 변화", "invalid-national-changes", "검증된 전국 변동 행이 비어 있음")
+        else:
+            change_ids, change_categories = audit_national_changes(national_changes, issues)
+        if "data?.nationalChanges ?? regularAdmissionChanges" not in app_source:
+            issue(issues, "정시 변화", "national-render-binding", "전국 변동 데이터 연결을 확인할 수 없음")
 
     # 반영방법 탭: 기준 시트의 대학별 분리 행과 필수 표기를 검사한다.
     profiles = data.get("profiles", [])
@@ -318,7 +372,7 @@ def main() -> None:
         "issues": len(issues),
         "details": issues,
     }
-    REPORT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
     if issues:
         raise SystemExit(1)
